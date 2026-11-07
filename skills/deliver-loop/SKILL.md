@@ -44,7 +44,8 @@ read the matching section before step 3.
 - Chain every step and the gate into the commit by exit code: `python3 edit.py && make ci && git commit …`; never judge a gate from filtered output (`| tail` hides failures).
 - Every commit carries its own tests and doc updates (CHANGELOG `[Unreleased]`, story QA table, architecture); a fix round that changes behaviour updates them too.
 - Every claim in the story is backed by a test; build the QA table and test counts from the runner (`--collect-only`, grep), never from memory.
-- Scripted edits assert that every replacement matched.
+- Scripted edits assert that every replacement matched, and the commit is chained after them with `&&` (KILN-30: a QA-table regex matched nothing after Prettier padded the table, and a `;` let the commit go out without it).
+- Work-in-progress commits (build, fix rounds) are pushed as they go green, because David wants every commit pushed; only the **ship commit** — story `done`, final score table — carries `Score: x/10`. Tell the reviewer so, or it reads every unscored push as a violation.
 - Run the app the way the owner will before review: README quick start in a fresh shell, the printed dev URL, the feature clicked through in a real browser (curl never sends a CORS preflight).
 - Race and failure claims need a run against the real dependency and a deterministic interleaving; fakes and sleeps hide bugs.
 - Split a cycle's first commit by part (ui / feature / e2e / docs); `git diff --cached --stat` shows only files the task touched; run formatters from the repo root.
