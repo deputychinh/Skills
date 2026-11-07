@@ -29,3 +29,18 @@ With the CLI (real, billed model runs), from the repo root: `claude plugin eval 
 
 Re-run the affected cases after any change to the skills they exercise. When a skill's text led a
 run astray, add a case (or a grader) that would have caught it before fixing the text.
+
+## Results
+
+Run with skill-creator's workflow (one run per configuration, graded against the repo, not the
+transcript). Baseline: the previous version of the skills.
+
+| Round           | Cases                                | This version | Previous version | Time (mean)          |
+| --------------- | ------------------------------------ | ------------ | ---------------- | -------------------- |
+| 1               | bug-after-deploy, resume-from-ledger | 60 %         | 73 %             | 15.3 min vs 20.1 min |
+| 2 (after fixes) | same                                 | **100 %**    | 73 %             | 10.5 min vs 20.1 min |
+
+Round 1 found that `fix-bug` took incident requests away from `ship` (no ledger, no Incident path,
+no mitigation before the fix) and that incident notes and retros were not part of "done"; round 2
+ran after those fixes. Not yet run: `expense-app-vue-node` and `slow-list-2000-items` (each builds
+or profiles a whole app).

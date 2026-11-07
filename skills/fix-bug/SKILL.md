@@ -20,7 +20,7 @@ trade-off between two expected behaviours).
   The ledger is what makes the work resumable and reviewable; a fix without one loses its why.
 - **Users affected in production right now?** Decide mitigation _before_ investigating — roll back
   to the last good release, turn the flag off, or halt the rollout — and write the decision with its
-  reason and time under Rulings, even when the decision is "no rollback possible here" (say what
+  reason, time and business cost (what users lose while rolled back) under Rulings, even when the decision is "no rollback possible here" (say what
   would be done where it is possible). Mitigation restores users in minutes; a root-cause fix takes
   hours, and users should not wait for it. Then follow `monitor`'s incident path alongside this one.
 
