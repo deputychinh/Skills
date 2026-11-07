@@ -1,0 +1,10 @@
+export default {
+  extends: ['@commitlint/config-conventional'],
+  rules: {
+    // One scope per deployable or cross-cutting area. Add a scope when a new deployable appears.
+    'scope-enum': [2, 'always', [{{SCOPES}}]],
+    'scope-empty': [2, 'never'],
+    'subject-case': [2, 'always', 'lower-case'],
+    'body-max-line-length': [1, 'always', 100],
+  },
+};

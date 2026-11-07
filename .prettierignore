@@ -1,0 +1,3 @@
+# Templates hold {{PLACEHOLDERS}} that are not valid JSON/JS/YAML until a project fills them.
+skills/*/templates/
+package-lock.json

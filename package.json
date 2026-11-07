@@ -1,0 +1,23 @@
+{
+  "name": "skills",
+  "private": true,
+  "description": "David's personal Claude Code skills, installed into ~/.claude/skills by symlink.",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "prepare": "husky",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "lint-staged": {
+    "*.{js,mjs,json,md,yml,yaml}": "prettier --write"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "21.2.3",
+    "@commitlint/config-conventional": "21.2.3",
+    "husky": "9.1.7",
+    "lint-staged": "17.6.0",
+    "prettier": "3.9.10"
+  }
+}
