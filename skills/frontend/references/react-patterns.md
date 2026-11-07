@@ -127,6 +127,11 @@ Verified on 2026-11-07 against https://tanstack.com/query/latest/docs/framework/
   **[house][TQ] (memory)**
 - Code-split by route and by heavy widget (`lazy` + `Suspense` with a sized fallback). **[house][web.dev]**
 
+- `validateSearch` does not strip what it rejects: the route's search is the raw params merged with
+  the validated ones, so `?mode=diff` still arrives typed as a mode. Check values with a type guard
+  before trusting them, and build corrected search objects from validated values — `navigate`'s
+  `previous` still holds the raw ones. (KILN-8, verified with a test on @tanstack/react-router 1.168.)
+
 ## 7. i18n
 
 - Source copy in `src/locales/en*.ts`; `vi*.ts` mirrors keys; a test asserts parity. **[house]**
