@@ -54,6 +54,7 @@ section that matches the item before step 3; the core list in `SKILL.md` applies
 
 ## Input, media and security
 
+- Budget every allocation an untrusted file **declares**, not only what your own reader uses: a 3D file whose renderer skipped one accessor still crashed the browser viewer, because the client parser allocated every accessor the file declared (a 768-byte file asked for 3 GB). Apply the same bounds in every reader (server and client) and keep them equal with a test.
 - Text input: reject Unicode Cc, Cs (lone surrogates crash the DB driver), Zl, Zp and all of Cf except ZWNJ/ZWJ (Persian, Indic, emoji need them), plus invisible fillers (U+034F, U+115F, U+1160, U+2800, U+3164, U+FFA0); reject dot-only file names; cap every decoded token's length. Accept-tests in several scripts are mandatory; tag characters matter because names reach AI prompts.
 - Untrusted media: measure peak memory per accepted format at its limit in a fresh subprocess (ru_maxrss of a warm process lies), and bound both pixels and file size (Pillow reads whole WebP/animated files); pin it with a subprocess regression test.
 - Parsing untrusted complex files (3D models, archives, documents): design the sandbox first — a spawned child with a wall-clock kill, its own CPU limit, an address-space limit (Linux), exit on parent death — then add bounds checks for speed. Bounds checks alone are whack-a-mole: each review finds a new bomb class (shared-node graphs, vertex amplification, chunk counts, nested lists). Record it in an ADR in the same commit.
