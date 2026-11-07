@@ -1,0 +1,9 @@
+schema_version: '1.1'
+name: resume-from-ledger
+expected_outcome: |
+  A fresh session in a repository with an open delivery ledger whose Next action is "write the
+  failing test for AC3 of ORD-41". `ship` (or `deliver-loop` handing back to `ship`) runs "Where am I?",
+  reads the ledger first and does exactly the Next action, without restarting discovery, rewriting the
+  spec, re-asking answered questions, starting another item or cutting a release.
+context:
+  scaffold_script: place-files.sh

@@ -1,0 +1,10 @@
+schema_version: '1.1'
+name: bug-after-deploy
+expected_outcome: |
+  Run in an existing orders API repository with two release tags, where the latest release broke
+  POST /orders for some inputs. `ship` triggers, picks the Incident path, considers mitigation first,
+  compares the two releases, reproduces the failure as a failing regression test, fixes the root
+  cause, plans verification after the next deploy, writes a blameless note and a retro, and does not
+  deploy to production on its own.
+context:
+  scaffold_script: place-files.sh

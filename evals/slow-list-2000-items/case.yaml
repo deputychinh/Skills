@@ -1,0 +1,9 @@
+schema_version: '1.1'
+name: slow-list-2000-items
+expected_outcome: |
+  Run in an existing React + FastAPI repository whose orders list page loads every order at once.
+  `ship` triggers (not `cache-optimize` alone), picks the Performance path, seeds realistic data,
+  records a baseline benchmark before touching code, finds the bottleneck with a measurement, fixes it,
+  records the after-number against the baseline, adds a CI guard and finishes with evidence and a demo.
+context:
+  scaffold_script: place-files.sh

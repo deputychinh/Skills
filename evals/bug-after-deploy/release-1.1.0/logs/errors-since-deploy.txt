@@ -1,0 +1,4 @@
+2026-11-06T09:14:02Z ERROR POST /orders 500 KeyError: 'SUMMER5'
+2026-11-06T09:14:07Z ERROR POST /orders 500 AttributeError: 'NoneType' object has no attribute 'upper'
+2026-11-06T09:15:31Z ERROR POST /orders 500 AttributeError: 'NoneType' object has no attribute 'upper'
+error rate POST /orders: before deploy 0.2 %, since 1.1.0 4.1 %

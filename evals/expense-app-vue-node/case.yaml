@@ -1,0 +1,7 @@
+schema_version: '1.1'
+name: expense-app-vue-node
+expected_outcome: |
+  Run in an empty folder with no git history and no delivery profile. `ship` triggers, picks the
+  Small new path, creates the repo and a delivery ledger, builds the app with Vue and Node/TypeScript
+  without asking about the stack (the prompt names it), reviews each item independently, runs the
+  app, and finishes with a results page, the app URL, the run command and a retro.
