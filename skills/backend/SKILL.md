@@ -1,31 +1,33 @@
 ---
 name: backend
-description: Use when adding or changing an endpoint, use case, repository, worker job or integration, or a migration as part of such a change, in Node.js (TypeScript with NestJS or Fastify) or Python (FastAPI) ("backend", "API", "endpoint", "service", "worker", "job", "NestJS", "Fastify", "FastAPI", "viết API", "sửa backend", "thêm endpoint", "xử lý nền"). Writes server code the house way — layered (controllers/routes → services → domain → ports/adapters, one transaction per use case), contract-first OpenAPI with RFC 9457 problem codes, idempotency keys, queue jobs with leases and idempotent handlers, outbound calls with timeouts, retries and circuit breakers, typed settings validated at boot, structured logs and traces, per-resource authorization, and tests on a real database — each with pasted evidence. Not for deciding a new system's shape (`system-design`, `architect`) or schema design and live migrations (`database`). Inside a delivery, `ship` and `deliver-loop` call this skill.
+description: Use when adding or changing an endpoint, use case, repository, worker job, webhook or integration — or the migration that goes with it — in Node.js/TypeScript (NestJS, Fastify) or Python (FastAPI), even when the request only says "API", "backend", "worker" or "fix the server". Produces layered code (routes → services → domain → adapters, one transaction per use case), a contract-first OpenAPI diff with RFC 9457 errors, idempotent writes and jobs, outbound calls with timeouts and breakers, per-resource authorization and tests on a real database. Live migrations go to `database`, system shape to `architect`. Inside a delivery, `ship` and `deliver-loop` call this skill.
 ---
 
 # backend — server code that keeps its promises under retries, failures and attackers
 
 Scope: one backlog item's server-side change. Two stacks are first-class and follow the same rules:
 
-- **Node.js + TypeScript** — NestJS (house default; Bazaar uses it) or Fastify (lightweight
+- **Node.js + TypeScript** — NestJS (modular services) or Fastify (small, latency-sensitive
   services), strict TS, ESM, zod at the edge, Prisma/Drizzle/Kysely, Vitest, pino, OpenTelemetry.
   Details: `references/node-typescript.md`.
 - **Python** — FastAPI + SQLAlchemy Core + Alembic + Postgres, a worker on a Postgres job queue,
-  ruff + mypy strict + pytest ≥ 90 %.
+  ruff + mypy strict + pytest. Details: `references/layering-and-domain.md` §6.
 
-The house standards live in `~/.claude/skills/init-project/references/` (`backend-architecture.md`,
+The general standards live in `init-project`'s references (`backend-architecture.md`,
 `api-design.md`, `data-and-reliability.md`, `security.md`); this skill turns them into steps and
-checks. It does not choose the system's shape: when the change adds a bounded context, a datastore,
+checks. Follow the repo's conventions where they exist, or these defaults where they do not. It does not choose the system's shape: when the change adds a bounded context, a datastore,
 a new process or touches an accepted ADR, run `system-design` and `architect` first, then come back.
 
 ## Pick the stack
 
 Use the stack the repo already has (`package.json` + `nest-cli.json`/`fastify` → Node;
-`pyproject.toml` → Python). For a new service, follow the repo's ADRs; with no ADR, Node + NestJS
-for a multi-module service in a TypeScript monorepo, Fastify for a small, latency-sensitive service,
-FastAPI where the team or the domain (data, ML, AI pipelines) is Python. Never mix two stacks in one
-service. The repo's own `CLAUDE.md`/`CONTRIBUTING.md` overrides anything here (Bazaar: classes +
-SOLID, one enum per file, zod DTOs, `ErrorCode` table, coverage ≥ 80 %).
+`pyproject.toml` → Python). For a new service, follow the repo's ADRs, then the backend default in
+the delivery profile (see the repo README); with neither, ask once. Both stacks are equally
+supported: NestJS suits a multi-module service in a TypeScript monorepo, Fastify a small,
+latency-sensitive service, FastAPI a team or domain (data, ML, AI pipelines) that is already Python.
+Never mix two stacks in one service. The repo's own `CLAUDE.md`/`CONTRIBUTING.md` overrides anything
+here (for example: classes and SOLID, one enum per file, zod DTOs, an `ErrorCode` table, a coverage
+threshold).
 
 | Step         | Node (TypeScript)                                                            | Python                                                                 |
 | ------------ | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -40,7 +42,7 @@ SOLID, one enum per file, zod DTOs, `ErrorCode` table, coverage ≥ 80 %).
 
 ## Workflow
 
-1. **Load the house rules for this repo.** Read `CLAUDE.md`/`AGENTS.md`, `CONTRIBUTING.md` or
+1. **Load the repo's conventions.** Read `CLAUDE.md`/`AGENTS.md`, `CONTRIBUTING.md` or
    `docs/conventions.md`, `docs/architecture/README.md` and every ADR whose title matches the area
    (`grep -il <area> docs/adr/*.md`). List the ports, error codes and enums you will reuse (Node:
    `grep -rn "abstract class\|enum ErrorCode" src packages`; Python:

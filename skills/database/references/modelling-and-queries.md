@@ -1,8 +1,8 @@
 # Modelling, indexing and query review
 
 Tags: **[PG]** PostgreSQL docs · **[UTIL]** Markus Winand, _Use The Index, Luke_ · **[KAR]** Bill Karwin,
-_SQL Antipatterns_ · **[DDIA]** Kleppmann, _Designing Data-Intensive Applications_ · **[house]** Kiln
-conventions/ADRs · **[mem]** from memory, not checked online this time.
+_SQL Antipatterns_ · **[DDIA]** Kleppmann, _Designing Data-Intensive Applications_ · **[def]** defaults from
+`init-project`'s `data-and-reliability.md` and `api-design.md` · **[mem]** from memory, not checked online this time.
 
 Verified on 2026-11-07 against:
 
@@ -23,11 +23,12 @@ Verified on 2026-11-07 against:
 4. Reading EXPLAIN (ANALYZE, BUFFERS)
 5. Query review
 6. Pagination and bounded results
+7. Statement-count tests (N+1 guard)
 
 ## 1. Data modelling
 
 - Model from the queries and invariants of the use cases, not from the UI screens. One aggregate per
-  transaction; reference other aggregates by id. [DDIA] [house]
+  transaction; reference other aggregates by id. [DDIA] [def]
 - Start in third normal form: every non-key column depends on the key, the whole key, nothing but the
   key. Repeating groups and comma-separated lists become child tables ("Jaywalking"). [KAR] [mem]
 - Denormalise only with a measured read problem and a named mechanism that keeps the copy right
@@ -35,7 +36,7 @@ Verified on 2026-11-07 against:
 - Put invariants in the database: `NOT NULL`, `CHECK`, `UNIQUE` (partial unique for "one active per
   owner"), foreign keys with deliberate `ON DELETE` (`RESTRICT` by default, `CASCADE` only inside an
   aggregate). App validation is for messages; constraints are for truth. [KAR] [PG]
-- Types: `timestamptz` in UTC [house]; `numeric` or integer minor units for money, never `float` [KAR];
+- Types: `timestamptz` in UTC [def]; `numeric` or integer minor units for money, never `float` [KAR];
   `text` + `CHECK (length(x) <= n)` instead of `varchar(n)` where the limit is a business rule [mem];
   `jsonb` (not `json`) for genuinely schemaless parts, with the queried keys promoted to columns [DDIA] [mem].
 - Avoid: EAV ("entity-attribute-value"), polymorphic associations (`commentable_type` +
@@ -43,25 +44,27 @@ Verified on 2026-11-07 against:
   multi-column attributes (`tag1, tag2, tag3`), metadata tribbles (`sales_2025`, `sales_2026` tables —
   use partitioning). [KAR]
 - Soft delete only when restore/audit is a requirement; it costs a predicate on every query and
-  breaks unique constraints unless they are partial (`WHERE deleted_at IS NULL`). [house] [mem]
+  breaks unique constraints unless they are partial (`WHERE deleted_at IS NULL`). [def] [mem]
 - History/audit: an append-only table written in the same transaction, or an outbox event. [DDIA]
 - Personal data: classify columns (identifier, contact, content, sensitive); keep PII in few tables so
-  deletion is one path; no PII in ids, URLs or object keys. [house]
+  deletion is one path; no PII in ids, URLs or object keys. [def]
 
 ## 2. Keys and ids
 
 - Surrogate primary key `uuid` holding UUID v7 (time-ordered): inserts append to the right of the
-  B-tree instead of scattering like v4, ids sort by creation, and range-based batching works. [house]
+  B-tree instead of scattering like v4, ids sort by creation, and range-based batching works. [def]
   [mem for the locality argument]
 - Postgres 17 has no built-in v7 generator (`gen_random_uuid()` is v4); Postgres 18 adds `uuidv7()`.
   On 17, generate v7 in the application (Python 3.14 `uuid.uuid7()` or the `uuid6`/`uuid-utils`
-  package) and pass it in. [PG18 docs verified; Python API from memory]
+  package; Node: the `uuid` package's `v7()`) and pass it in. MySQL has no native UUID type: store
+  `BINARY(16)`; v7 matters even more there, because InnoDB clusters rows by primary key and every
+  secondary index carries it, so random v4 keys fragment the whole table. [PG18 docs verified; Python API from memory]
 - UUID v7 exposes creation time; do not use it as a secret or where creation time is sensitive. [mem]
 - Natural keys (email, slug) get a `UNIQUE` constraint but are not the PK — they change. [KAR] [mem]
-- Composite PKs for pure join tables (`(asset_id, tag_id)`), which also serve as the index for the
+- Composite PKs for pure join tables (`(order_id, tag_id)`), which also serve as the index for the
   first column. [mem]
 - Idempotency keys and external event ids get a `UNIQUE` constraint; `INSERT … ON CONFLICT DO NOTHING
-RETURNING` decides the winner. [house: Kiln ADR 0006]
+RETURNING` decides the winner. [def]
 
 ## 3. Indexes
 
@@ -115,8 +118,8 @@ Design rules:
 - `Sort Method: external merge Disk` → `work_mem` too small for this sort or a missing index for the
   order. [mem]
 - `LIMIT` stops nodes early, so actual < estimate is not an estimation error there. [PG]
-- Plans change with data size: always test on a seeded dataset near production size (Kiln house rule:
-  top queries on ~1 M rows). Use `auto_explain` in staging to catch slow plans in context. [house] [mem]
+- Plans change with data size: always test on a seeded dataset near production size (a good default:
+  top queries on ~1 M rows, or the size `benchmarks/plan.md` names). Use `auto_explain` in staging to catch slow plans in context. [def] [mem]
 - Tools: paste plans into explain.dalibo.com or explain.depesz.com to read them (do not paste
   production data with PII). [mem]
 
@@ -127,9 +130,11 @@ Checklist for each new or changed query [UTIL] [KAR] [mem]:
 - Bounded: has a `LIMIT` or a key predicate that bounds it; the API caps page size.
 - Selects only needed columns (enables index-only scans, smaller payloads); no `SELECT *` in hot paths.
 - Uses bind parameters — never string-built SQL (injection and plan-cache misses). SQLAlchemy Core
-  `text()` with `:params` or the expression language.
+  `text()` with `:params` or the expression language; Node: query builders or the `Prisma.sql` /
+  Drizzle `sql` tagged templates, Kysely — never string concatenation.
 - No query in a loop: batch with `WHERE id = ANY(:ids)`, a join, or a second query keyed by the
-  parent ids (the `selectinload` shape). Guard with a statement-count test.
+  parent ids (the `selectinload` shape; Prisma `include`, Drizzle relational `with`). Guard with a
+  statement-count test (§7).
 - `COUNT(*)` on a large table for a badge or total: use an estimate, a cached counter, or "more than N".
 - `NOT IN (subquery)` with NULLs returns nothing — use `NOT EXISTS`. [KAR]
 - `OR` across different columns often defeats indexes — consider `UNION ALL` of two indexed queries.
@@ -148,4 +153,48 @@ created_at DESC, id DESC LIMIT :n`; Postgres supports row-value comparison and c
   `ORDER BY` columns in order: `(created_at, id)` (or just `id` when ids are UUID v7). [UTIL]
 - Cost: no jumping to page 37; the client sends an opaque cursor (base64 of the last key) instead of a
   page number. Fine for feeds and infinite scroll. [UTIL]
-- API contract: `limit` defaulted and capped (e.g. default 50, max 200), `next_cursor` null at the end. [house: api-design] [mem for numbers]
+- API contract: `limit` defaulted and capped (e.g. default 50, max 200), `next_cursor` null at the end. [def] [mem for numbers]
+
+## 7. Statement-count tests (N+1 guard)
+
+Count the statements one request or one repository call issues on a seeded page of data and
+assert an exact number, so a loop that starts querying fails CI instead of production. [mem]
+
+Python (SQLAlchemy):
+
+```python
+@contextmanager
+def count_statements(engine):
+    seen: list[str] = []
+    def listener(conn, cursor, statement, *args):
+        seen.append(statement)
+    event.listen(engine, "before_cursor_execute", listener)
+    try:
+        yield seen
+    finally:
+        event.remove(engine, "before_cursor_execute", listener)
+
+def test_list_orders_is_two_queries(client, engine, seed_orders):
+    seed_orders(count=50, lines_each=3)
+    with count_statements(engine) as seen:
+        client.get("/api/v1/orders?limit=50")
+    assert len(seen) == 2  # orders page + lines by ANY(:ids)
+```
+
+Node (Prisma; Vitest):
+
+```ts
+it('lists a page of orders in two queries', async () => {
+  const seen: string[] = [];
+  const prisma = new PrismaClient({ log: [{ emit: 'event', level: 'query' }] });
+  prisma.$on('query', (e) => seen.push(e.query));
+  await seedOrders(prisma, { count: 50, linesEach: 3 });
+  seen.length = 0;
+  await new PrismaOrdersRepository(prisma).listPage({ limit: 50 });
+  expect(seen).toHaveLength(2); // orders page + lines by IN (…)
+});
+```
+
+- Drizzle: pass `logger: { logQuery: (query) => seen.push(query) }` to `drizzle()`; Kysely: a
+  `log(event)` callback that pushes when `event.level === 'query'`; raw `pg`: wrap `pool.query`. [mem]
+- Assert an exact count, not "at most N", so an extra query is noticed and either justified or removed.

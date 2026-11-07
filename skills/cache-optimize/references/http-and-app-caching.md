@@ -2,8 +2,8 @@
 
 Tags: **[RFC9111]** HTTP Caching · **[RFC8246]** `immutable` · **[RFC5861]** stale-while-revalidate /
 stale-if-error · **[MDN]** MDN HTTP caching guide · **[REDIS]** Redis docs · **[TQ]** TanStack Query
-docs · **[DDIA]** Kleppmann · **[PG]** PostgreSQL 17 docs · **[house]** init-project references / Kiln ADRs · **[mem]** from memory,
-not checked online this time.
+docs · **[DDIA]** Kleppmann · **[PG]** PostgreSQL 17 docs · **[default]** a default of these skills (override with the repo's
+conventions) · **[mem]** from memory, not checked online this time.
 
 Verified on 2026-11-07 against:
 
@@ -49,13 +49,13 @@ Verified on 2026-11-07 against:
 
 | Resource                                                      | Header                                                                                                                      | Why                                                  |
 | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| Vite hashed assets `/assets/*-[hash].js/css/woff2`            | `public, max-age=31536000, immutable`                                                                                       | URL changes when content does [MDN]                  |
+| Bundler hashed assets `/assets/*-[hash].js/css/woff2`         | `public, max-age=31536000, immutable`                                                                                       | URL changes when content does [MDN]                  |
 | `index.html`, SPA fallback, service worker script             | `no-cache` + `ETag`/`Last-Modified`                                                                                         | always revalidate, cheap 304 [MDN]                   |
 | Un-fingerprinted public files (`/favicon.ico`, `/robots.txt`) | `public, max-age=86400` (short)                                                                                             | cannot be recalled once cached [MDN] [mem for value] |
 | JSON API, logged-in user data                                 | `private, no-cache` (+ ETag if computing it is cheap)                                                                       | personal, must stay fresh [MDN]                      |
 | Public, shared API data (catalog, config)                     | `public, max-age=60, s-maxage=300, stale-while-revalidate=60`                                                               | edge absorbs load [mem]                              |
 | Secrets, tokens, one-time pages                               | `no-store`                                                                                                                  | never persisted [MDN]                                |
-| Presigned storage URLs (SeaweedFS/S3)                         | `response-cache-control: private, max-age=<≤ URL lifetime>, immutable`, signed at a fixed window start so the URL is stable | Kiln ADR 0008 [house]                                |
+| Presigned storage URLs (S3-compatible)                        | `response-cache-control: private, max-age=<≤ URL lifetime>, immutable`, signed at a fixed window start so the URL is stable | a new signature per render defeats the cache [mem]   |
 | Error responses (5xx)                                         | `no-store` or very short                                                                                                    | do not pin an outage [mem]                           |
 
 Notes:
@@ -66,8 +66,10 @@ Notes:
 - A cookie does not make a response private — say `private`. Do not use `Vary: Cookie` for that. [MDN]
 - Long-lived responses cannot be recalled from intermediate caches; `Clear-Site-Data: "cache"` clears
   only the browser. Fingerprint instead of hoping. [MDN]
-- Where it is set: Vite emits hashed names; the static server/CDN (Caddy, nginx, S3 bucket policy)
-  sets headers by path; FastAPI sets them per route (middleware for the default `no-cache`). [mem]
+- Where it is set: the bundler (Vite, webpack) emits hashed names; the static server/CDN (Caddy,
+  nginx, object-storage metadata) sets headers by path; the API sets them per route with a hook or
+  middleware for the default `no-cache` (Fastify `onSend` hook, Nest interceptor, FastAPI
+  middleware). [mem]
 
 ## 3. Validators, Vary and CDNs
 
@@ -88,26 +90,29 @@ Notes:
 ## 4. Application caches: patterns
 
 Decide in this order: is the slow thing fixable (index, N+1, payload)? → can HTTP caching do it? →
-in-process memo → materialised view/summary table → Redis. Kiln: no Redis without an ADR. [house]
+in-process memo → materialised view/summary table → Redis. A new datastore such as Redis needs an
+ADR (`architect`), because it adds a failure mode and an operations cost. [default]
 
 - **Cache-aside** (default): read cache → on miss read DB → set with TTL; on write update the DB then
   delete the key so the next read repopulates. Memory stays bounded to the working set. [REDIS]
 - **Write-through**: write cache and DB together; every write pays twice; for data where staleness
   is costly. [REDIS blog, mem]
 - **Write-behind**: cache first, DB later — risks loss; avoid for business data. [mem]
-- **In-process** (`functools.lru_cache`, `cachetools.TTLCache`): fastest, but per instance, warms
+- **In-process** (Node: `lru-cache`; Python: `functools.lru_cache`, `cachetools.TTLCache`): fastest, but per instance, warms
   separately and cannot be invalidated across instances; fine for config, feature flags, lookup
   tables. [REDIS] [mem]
-- **Result caching of expensive pure work** keyed by content hash (Kiln caches AI results by file
-  hash, ADR 0002) — the key itself guarantees correctness, no invalidation needed. [house]
+- **Result caching of expensive pure work** keyed by content hash (e.g. an AI or thumbnail result
+  keyed by the file's SHA-256) — the key itself guarantees correctness, no invalidation needed.
+  [mem]
 
 Key design [REDIS] [mem]:
 
-- `cache:{entity}:{id}` shape; add schema version and tenant: `kiln:v3:asset:{studio_id}:{asset_id}`.
+- `cache:{entity}:{id}` shape; add schema version and tenant: `shop:v3:order:{tenant_id}:{order_id}`.
   Bump the version on a serialisation change instead of flushing. [REDIS for shape; mem for version]
 - Personal data only under a key containing the user/tenant; never in a shared key; respect retention
-  (the deletion path must also delete cache keys). [house]
-- Serialize with a stable schema (pydantic model dump), not pickle. [mem]
+  (the deletion path must also delete cache keys). [default]
+- Serialise with a stable schema (zod-validated JSON in Node, a pydantic model dump in Python), not
+  `pickle` or class instances, so a deploy can read what the previous one wrote. [mem]
 
 ## 5. Invalidation, stampedes and failure modes
 
@@ -117,7 +122,7 @@ Key design [REDIS] [mem]:
   leave a deleted-but-unchanged state, and deleting before commit lets a reader re-cache old data). [REDIS] [mem for the race]
 - Remaining race: a slow reader can set a stale value after the delete; mitigate with short TTLs,
   versioned values (store `version` and refuse older), or delete again after a short delay. [mem] [DDIA]
-- Event-driven invalidation from the outbox/job queue when several caches derive from one write. [house]
+- Event-driven invalidation from the outbox/job queue when several caches derive from one write. [default]
 - **Stampede**: when a hot key expires many requests hit the DB at once. Protect with a single-flight
   lock (`SET key:lock <token> NX PX 5000`; winners load, others wait briefly and re-read), probabilistic
   early refresh, or serve-stale-while-refreshing. [REDIS]
@@ -125,13 +130,18 @@ Key design [REDIS] [mem]:
 - **Negative caching**: cache "not found" briefly (seconds) to stop repeated misses for absent ids
   from hammering the DB; keep it short so creations appear quickly. [mem]
 - **Cache down ≠ app down**: timeouts on cache calls (tens of ms), fall back to the source, circuit
-  breaker around the cache client. [house: Release It!] [mem]
+  breaker around the cache client. [mem: Nygard, _Release It!_]
 - **Observe**: hit ratio, latency, evictions, memory per namespace; a low hit ratio means remove the
   cache. Set `maxmemory` + an eviction policy (`allkeys-lru`) for pure caches. [mem]
-- Redis client-side caching (server-assisted tracking) exists in redis-py ≥ 5.1; it flushes local
+- Redis client-side caching (server-assisted tracking) exists in redis-py ≥ 5.1 and node-redis [mem
+  for node-redis]; it flushes local
   entries when a connection drops; use it only for read-mostly keys. [REDIS]
 
-## 6. TanStack Query
+## 6. TanStack Query (React and Vue)
+
+The same core runs `@tanstack/react-query` and `@tanstack/vue-query`; options and defaults match.
+Vue: `useQuery({ queryKey: computed(() => orderKeys.detail(id.value)), queryFn, staleTime })` —
+pass refs or getters in the key so it refetches when they change. [TQ] [mem for the Vue adapter]
 
 - Defaults: `staleTime` 0 (data stale immediately), `gcTime` 5 min after the last observer unmounts;
   stale queries refetch on mount, window focus and reconnect; failed queries retry 3 times with
@@ -139,12 +149,13 @@ Key design [REDIS] [mem]:
 - Set `staleTime` per query from how fast the data really changes: reference data minutes to hours,
   a list others edit seconds to a minute, a job status 0 with `refetchInterval` while running. [mem]
 - Keep `gcTime` ≥ `staleTime`, or cached data is dropped before it would be considered stale. [mem]
-- Query keys are hierarchical arrays from one factory per feature (`assetKeys.detail(id)`), so
-  invalidation can target `['assets']` or one item. Kiln: keys live in the feature's hooks. [house] [mem]
-- After a mutation: `queryClient.invalidateQueries({ queryKey: assetKeys.lists() })`, and
+- Query keys are hierarchical arrays from one factory per feature (`orderKeys.detail(id)`), so
+  invalidation can target `['orders']` or one item; keep the factory next to the feature's
+  composables or hooks. [mem]
+- After a mutation: `queryClient.invalidateQueries({ queryKey: orderKeys.lists() })`, and
   `setQueryData` for the detail when the response returns the new entity; optimistic updates with
   rollback in `onError` only where latency is felt. [mem — TQ mutation docs not re-fetched]
-- Prefetch on intent (`prefetchQuery` in the route loader or on hover) rather than waterfalls of
+- Prefetch on intent (`prefetchQuery` in a route loader, a Vue Router guard, or on hover) rather than waterfalls of
   `useQuery` in nested components. [mem]
 - Disable retries for 4xx (validation, 404, 409) via a `retry` function; keep them for network/5xx. [mem]
 - Do not set `refetchOnWindowFocus: false` globally to hide a slow endpoint — fix the endpoint or raise

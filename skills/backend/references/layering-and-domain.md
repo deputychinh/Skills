@@ -2,8 +2,8 @@
 
 Tags: **[CA]** Martin, _Clean Architecture_ (2017) · **[CP]** Percival & Gregory, _Architecture
 Patterns with Python_ ("Cosmic Python", cosmicpython.com) · **[12F]** 12factor.net · **[FA]** FastAPI
-docs · **[RFC9457]** · **[HOUSE]** `~/.claude/skills/init-project/references/backend-architecture.md`
-and Kiln `docs/conventions.md`. Items marked _(memory)_ were not re-checked online for this draft.
+docs · **[RFC9457]** · **[DEF]** defaults from `init-project`'s `backend-architecture.md`
+and the repo's `docs/conventions.md`. Items marked _(memory)_ were not re-checked online for this draft.
 
 Stack note: §1–5 are stack-neutral; file names, `@dataclass`, pydantic-settings, SQLAlchemy and
 §6 are **Python-specific**. Node equivalents (Nest modules, abstract-class ports,
@@ -40,10 +40,10 @@ Python layout (Node layout: `node-typescript.md` §3):
   app passes the SQL adapter. **[CP ch. 4]**
 - Endpoints stay thin: parse input, call one service, choose the status code. Orchestration lives in
   the service. **[CP ch. 4]**
-- One composition root wires concrete adapters; nothing else instantiates an adapter. **[HOUSE]**
+- One composition root wires concrete adapters; nothing else instantiates an adapter. **[DEF]**
 - Check the rule mechanically: `grep -rnE "^(from|import) (fastapi|sqlalchemy|boto3|httpx|pydantic)" <pkg>/domain`
   must print nothing; add an import-linter contract or a pytest that walks `domain/` imports so CI
-  enforces it. **[HOUSE]** Node: `grep -rnE "from '(@nestjs|@prisma|fastify|zod)" src/**/domain`
+  enforces it. **[DEF]** Node: `grep -rnE "from '(@nestjs|@prisma|fastify|zod)" src/**/domain`
   plus an ESLint `no-restricted-paths` rule.
 - Prefer few deep modules over many pass-through classes; a port earns its place when there are two
   implementations (real + fake) or a real boundary. _(memory: Ousterhout)_
@@ -51,65 +51,65 @@ Python layout (Node layout: `node-typescript.md` §3):
 ## 2. Unit of work and transactions
 
 - The UoW is the single entry to persistence for a use case: it opens a session, exposes
-  repositories (`uow.assets`) and commits only on an explicit `commit()`; leaving the block without
+  repositories (`uow.orders`) and commits only on an explicit `commit()`; leaving the block without
   one rolls back. **[CP ch. 6]**
 - Explicit commit over auto-commit-on-exit: an exception or early return leaves the system unchanged. **[CP ch. 6]**
 - Service tests use a `FakeUnitOfWork` with fake repositories and a `committed` flag ("don't mock
-  what you don't own"); integration tests check commit and rollback on the real engine — in this
-  house, Postgres, not SQLite. **[CP ch. 6]** **[HOUSE]**
+  what you don't own"); integration tests check commit and rollback on the real engine — the
+  production engine (Postgres here), not SQLite, because locking and constraint behaviour differ. **[CP ch. 6]** **[DEF]**
 - One aggregate changed per transaction; other aggregates react through a job/event row written in
-  the same transaction. **[HOUSE]** _(memory: Vernon, IDDD)_
+  the same transaction. **[DEF]** _(memory: Vernon, IDDD)_
 - Concurrency on one aggregate: `SELECT … FOR UPDATE` or a `version` column checked in the `UPDATE …
-WHERE version = :v`; on mismatch raise a domain `Conflict` → 409. **[HOUSE]**
+WHERE version = :v`; on mismatch raise a domain `Conflict` → 409. **[DEF]**
 - Set `lock_timeout` and `statement_timeout` per connection so a transaction cannot hang a worker
-  (Kiln: 5 s / 15 s). **[HOUSE: Kiln architecture]**
-- Idempotency key row + the created resource + its stored response in one transaction (Kiln ADR 0006).
+  (e.g. 5 s / 15 s). **[DEF]**
+- Idempotency key row + the created resource + its stored response in one transaction (`api-and-integrations.md` §2).
 
 ## 3. Domain modelling
 
 - Value objects (Python): `@dataclass(frozen=True, slots=True)`, validated in `__post_init__`; Node:
   a class with `private constructor` + static `create()` that validates, `readonly` fields;
-  compared by value; money, sizes, content types, slugs, date ranges are value objects, never bare `str`/`float`. **[HOUSE]**
-- Entities carry identity (UUID v7 strings in Kiln) and state transitions as methods
-  (`version.complete(etag)`), each rejecting illegal transitions with a typed error. **[HOUSE]**
+  compared by value; money, sizes, content types, slugs, date ranges are value objects, never bare `str`/`float`. **[DEF]**
+- Entities carry identity (e.g. UUID v7, which sorts by creation time) and state transitions as methods
+  (`order.confirm(at)`), each rejecting illegal transitions with a typed error. **[DEF]**
 - A state machine is an enum of states plus one table of allowed transitions; test every
-  disallowed pair (Hypothesis `sampled_from` over the enum product). **[HOUSE]**
-- Time is injected (a `Clock` port), stored in UTC; no `datetime.now()` / `Date.now()` in the domain. **[HOUSE]**
+  disallowed pair (Hypothesis `sampled_from` over the enum product). **[DEF]**
+- Time is injected (a `Clock` port), stored in UTC; no `datetime.now()` / `Date.now()` in the domain. **[DEF]**
 - Domain objects never hold sessions, clients or settings; they receive values. **[CA]**
 - Repositories return domain objects, one per aggregate root, with intention-revealing query
-  methods (`find_expired_pending(older_than)`). **[HOUSE]** **[CP ch. 2]** _(memory for ch. 2)_
+  methods (`find_expired_pending(older_than)`). **[DEF]** **[CP ch. 2]** _(memory for ch. 2)_
 - Pydantic stays at the HTTP and AI-output boundary; map schema → domain explicitly in the route or
-  service. **[HOUSE: Kiln conventions]**
+  service. **[DEF]**
 
 ## 4. Errors
 
 - One `ErrorCode` enum (single source of truth) and a domain error class per failure mode carrying
-  that code; `errors.py` is framework-free. **[HOUSE]**
+  that code; `errors.py` is framework-free. **[DEF]**
 - Map to HTTP exactly once in `problems.py` with one exception handler; the web reacts to `status` +
-  `code`, never to text. **[HOUSE]**
+  `code`, never to text. **[DEF]**
 - RFC 9457 body: `type` (URI identifying the problem type; `about:blank` when omitted), `title`,
   `status`, `detail`, `instance`; media type `application/problem+json`; extension members (here
   `code`, `errors[]`) are allowed and clients must ignore unknown ones. RFC 9457 obsoletes RFC 7807. **[RFC9457]**
 - Vet what goes into `detail`: no stack traces or implementation internals. **[RFC9457]** (Zalando #177 says the same.)
 - Unknown exceptions: log once with the request id at ERROR, return a generic 500 problem with code
-  `INTERNAL`; never echo the exception message. **[HOUSE]** (OWASP A10:2025.)
-- Do not catch to "keep going" unless the fallback preserves meaning and is logged and measured. **[HOUSE]**
+  `INTERNAL`; never echo the exception message. **[DEF]** (OWASP A10:2025.)
+- Do not catch to "keep going" unless the fallback preserves meaning and is logged and measured. **[DEF]**
 - Workers: a domain error that cannot succeed on retry marks the job failed with its code; a
-  transient error re-queues with backoff. Classify explicitly; default is **not** retryable. **[HOUSE]**
+  transient error re-queues with backoff. Classify explicitly; default is **not** retryable. **[DEF]**
 
 ## 5. Configuration and process model
 
 - Config in the environment, separate from code; backing services are attached resources swapped by
   config. **[12F III, IV]**
-- Python: one `Settings` class (pydantic-settings), env prefix (`KILN_*`), read once at start-up; invalid or
-  missing values crash the process before it serves traffic. **[HOUSE]** Node: one zod env schema
+- Python: one `Settings` class (pydantic-settings), env prefix (`ORDERS_*`), read once at start-up; invalid or
+  missing values crash the process before it serves traffic. **[DEF]** Node: one zod env schema
   parsed once at boot (`node-typescript.md` §4).
 - Secrets typed as `SecretStr`, never logged, never defaulted; locally `.env`, in production a
-  secret store. **[HOUSE]**
+  secret store. **[DEF]**
 - Stateless processes, scale out by adding processes, start fast and shut down gracefully, logs as
   an event stream on stdout, admin tasks as one-off commands (`make migrate`). **[12F VI, VIII, IX, XI, XII]**
-- Dev/prod parity: same Postgres major version and an S3-compatible store locally (Kiln: SeaweedFS). **[12F X]**
-- Every bound is a named constant or setting with a validated range (bulkhead size ≤ 32 in Kiln). **[HOUSE]**
+- Dev/prod parity: same Postgres major version and an S3-compatible store locally (e.g. MinIO or SeaweedFS). **[12F X]**
+- Every bound is a named constant or setting with a validated range (e.g. bulkhead size 1–32). **[DEF]**
 
 ## 6. FastAPI specifics
 
@@ -120,8 +120,8 @@ Python only; for NestJS/Fastify see `node-typescript.md` §2 and §7.
 - `async def` only when every call inside is awaited non-blocking I/O; a blocking library (boto3,
   psycopg sync) in an `async def` blocks the event loop. A plain `def` route runs in a threadpool. **[FA async]**
 - The threadpool is finite (AnyIO default 40 tokens _(memory)_); keep bulkheads below it so
-  requests that don't touch the slow dependency still get a thread (Kiln KILN-23). **[HOUSE]**
+  requests that don't touch the slow dependency still get a thread; a bulkhead as large as the pool lets one slow dependency starve every route. **[DEF]**
 - Dependencies (`Depends`) provide the container's services and the authenticated principal; they
-  do not contain business rules. **[HOUSE]**
+  do not contain business rules. **[DEF]**
 - Response models are explicit (`response_model=`) so internal fields can't leak; set
   `model_config = ConfigDict(extra="forbid")` on request schemas. _(memory: pydantic v2 API)_

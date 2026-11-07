@@ -1,7 +1,7 @@
-# Vue patterns — the house way (primary stack)
+# Vue patterns
 
 Tags: **[vuejs]** vuejs.org, **[pinia]**, **[TQ]** TanStack Query for Vue, **[VR]** Vue Router,
-**[OWASP]**, **[house]** David's conventions. Versions checked on npm on 2026-11-07: vue 3.5.45
+**[OWASP]**, **[default]** these skills' default conventions (the repo's own conventions win). Versions checked on npm on 2026-11-07: vue 3.5.45
 (3.6 is still a release candidate), vue-router 5.4, pinia 4.1, @tanstack/vue-query 5.107, vue-i18n
 11.4, vee-validate 4.15, @testing-library/vue 8.1, eslint-plugin-vue 10.12, vue-tsc 3.3.
 **(memory)** = not re-checked online for this draft.
@@ -28,8 +28,8 @@ Tags: **[vuejs]** vuejs.org, **[pinia]**, **[TQ]** TanStack Query for Vue, **[VR
 
 - `src/features/<name>/{services,composables,components}`; route views in `src/views` (or file
   routes in `src/pages`) compose features; shared parts in `src/components`; stores in `src/stores`.
-  **[house]**
-- Services are plain typed functions over the API client, no Vue imports (easy to fake). **[house]**
+  **[default]**
+- Services are plain typed functions over the API client, no Vue imports (easy to fake). **[default]**
 - One component per file, PascalCase multi-word names (`AssetCard.vue`), test side by side; block
   order `<script setup lang="ts">`, `<template>`, `<style scoped>`. **[vuejs style guide] (memory)**
 
@@ -47,7 +47,7 @@ https://vuejs.org/guide/typescript/composition-api.html and https://vuejs.org/gu
   that caused them and named for what happened. **[vuejs]**
 - Two-way binding: `const model = defineModel<string>({ required: true })` (3.4+), named models
   `defineModel('page')`. If the child declares a `default`, the parent must initialise its value or
-  the two drift apart. Never mutate a prop directly; never cache server data in Pinia. **[vuejs][house]**
+  the two drift apart. Never mutate a prop directly; never cache server data in Pinia. **[vuejs][default]**
 - Primitives forward native attributes: fallthrough attrs land on the root; for a wrapped `input`
   use `defineOptions({ inheritAttrs: false })` and `v-bind="$attrs"` on the right element so
   `aria-*`, `disabled`, `type` work. **(memory)**
@@ -168,7 +168,7 @@ https://router.vuejs.org/guide/migration/v4-to-v5.html and https://vuejs.org/gui
   inputs, visible `<label :for="id">` with `id` from `useId()`. **[vuejs]**
 - Errors: text next to the field, `aria-invalid="true"`, `aria-describedby` → the error id; on
   submit focus the first invalid field (template ref) or an error summary. Keep what was typed.
-  **[house][WCAG 3.3.1] (memory)**
+  **[default][WCAG 3.3.1] (memory)**
 - Library when the repo has one, else VeeValidate: `useForm({ validationSchema: toTypedSchema(zodSchema) })`
   from `@vee-validate/zod`, `defineField('email')` for value + attrs, `handleSubmit` for submit.
   Verified on 2026-11-07 against https://vee-validate.logaretm.com/v4/guide/composition-api/typed-schema/
@@ -182,9 +182,9 @@ https://vue-i18n.intlify.dev/guide/migration/breaking11.html
 - `createI18n({ legacy: false, locale, fallbackLocale: 'en', messages })`; in components
   `const { t, n, d } = useI18n()`. Legacy API mode and `v-t` are deprecated in v11 and removed in v12;
   `$tc` is gone — use `t` with plurals. **[vue-i18n]**
-- Messages in `src/locales/en.ts` and `vi.ts`; a Vitest test flattens both and asserts equal key
+- Messages in `src/locales/<locale>.ts`; a Vitest test flattens every locale and asserts equal key
   sets. Named params, never concatenation; set `<html lang>` on locale change; lint with
-  `@intlify/eslint-plugin-vue-i18n` (`no-raw-text`). **[house]** (plugin rule: memory)
+  `@intlify/eslint-plugin-vue-i18n` (`no-raw-text`). **[default]** (plugin rule: memory)
 
 ## 11. Accessibility specifics
 
@@ -194,10 +194,10 @@ https://vue-i18n.intlify.dev/guide/migration/breaking11.html
   against https://vuejs.org/guide/built-ins/teleport.html **[vuejs]**
 - One app-level live region (`role="status"`, plus `role="alert"`) rendered empty at startup and
   fed from a small store or composable; screen readers miss regions inserted with their text.
-  **[house] (memory)**
+  **[default] (memory)**
 - `<Transition>`: the docs do not handle reduced motion — put durations in CSS behind
   `@media (prefers-reduced-motion: no-preference)` or zero them under `reduce`; JS hooks check
-  `matchMedia`. **[vuejs: no guidance — house rule]**
+  `matchMedia`. **[vuejs: no guidance — default rule]**
 
 ## 12. Async components, Suspense, KeepAlive, performance
 
@@ -246,4 +246,6 @@ Verified on 2026-11-07 against https://vuejs.org/guide/best-practices/security.h
   which on 2026-11-07 is `3.6.0-rc.14` on npm; `latest` is 3.5.45. Do not use it in production
   until 3.6 is stable and the repo opts in by ADR. Checked with `npm view vue dist-tags`; feature
   details from secondary sources **(not primary-verified)**.
-- Nuxt when SSR/SSG/SEO matter: own data fetching (`useFetch`), routing, auto-imports; ADR it. **(memory)**
+- Nuxt when SSR/SSG/SEO matter: own data fetching (`useFetch`), routing, auto-imports; ADR it. For
+  a fully static `nuxt generate` site, see the static export section of `react-patterns.md` (§10),
+  which covers both frameworks. **(memory)**

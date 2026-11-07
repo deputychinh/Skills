@@ -2,7 +2,8 @@
 
 Tags: **[MDN]**, **[web.dev]** Learn CSS, **[EL]** Every Layout, **[M3]** Material 3, **[WCAG]**,
 **[RUI]** Refactoring UI (Wathan & Schoger, book), **[CUBE]**, **[SL]** Stylelint and plugins,
-**[house]** David's design-system docs and Stylelint config. **(memory)** = not re-checked online.
+**[default]** these skills' default design-system conventions and Stylelint config (the repo's own
+win). **(memory)** = not re-checked online.
 
 ## Contents
 
@@ -14,7 +15,7 @@ Tags: **[MDN]**, **[web.dev]** Learn CSS, **[EL]** Every Layout, **[M3]** Materi
 6. Container queries, logical properties, clamp()
 7. Material 3 adaptive layouts
 8. CSS architecture
-9. House Stylelint rules
+9. Default Stylelint rules
 
 ## 1. Token tiers and theming
 
@@ -22,43 +23,45 @@ Tags: **[MDN]**, **[web.dev]** Learn CSS, **[EL]** Every Layout, **[M3]** Materi
   **semantic** (role: `--x-color-primary`, `--x-color-on-surface-muted`, `--x-space-gap-group`) →
   **component** (only when a component needs a knob: `--button-padding-inline`). Components read
   semantic or component tokens, never primitives. **(memory; common design-token practice)**
-- House sets in use: colour roles (surface, surface-raised, on-surface, on-surface-muted, primary,
-  on-primary, outline, success, warning, danger, focus), 4 px spacing scale, type sizes xs–2xl,
-  weights, leading, radius, shadow, duration/easing, z-index layers, target sizes. **[house: Kiln]**
+- A useful default set: colour roles (surface, surface-raised, on-surface, on-surface-muted,
+  primary, on-primary, outline, success, warning, danger, focus), 4 px spacing scale, type sizes
+  xs–2xl, weights, leading, radius, shadow, duration/easing, z-index layers, target sizes.
+  **[default]**
 - Pair every fill with its "on" colour (`primary` / `on-primary`) so contrast is checked once per pair.
   **[M3 colour roles] (memory)**
-- Themes redefine semantic tokens only. Pattern used in Kiln: default theme on `:root`; the other in
+- Themes redefine semantic tokens only. A pattern that respects both the OS setting and a stored
+  manual choice: default theme on `:root`; the other in
   `@media (prefers-color-scheme: …) { :root:not([data-theme='…']) {…} }` plus
   `:root[data-theme='…']` for the stored manual choice; set `color-scheme` per theme so form
-  controls and scrollbars follow. **[house]**
+  controls and scrollbars follow. **[default]**
 - Dark theme: lift surfaces with lighter tones instead of shadows, desaturate accents, avoid pure
   `#000`/`#fff` pairs for long text. **[M3] (memory)**
 - Motion tokens collapse to `0ms` (or a short fade) under `prefers-reduced-motion: reduce`.
-  **[house][MDN] (memory)**
-- Raw values live only in the tokens file; Stylelint exempts that folder. **[house]**
+  **[default][MDN] (memory)**
+- Raw values live only in the tokens file; Stylelint exempts that folder. **[default]**
 
 ## 2. Spacing and type scales
 
-- Spacing: 4 px base, steps 4, 8, 12, 16, 24, 32, 40, 48 (Kiln `--kiln-space-1…8`). A constrained
+- Spacing: 4 px base, steps 4, 8, 12, 16, 24, 32, 40, 48 (e.g. `--x-space-1…8`). A constrained
   scale beats arbitrary values; adjacent steps should differ by ~25 % or more to be distinguishable.
-  **[house][RUI] (memory)**
+  **[default][RUI] (memory)**
 - Grouping: space inside a group < space between groups (proximity). **[RUI] (memory)**
 - Start with too much white space and remove it. **[RUI] (memory)**
 - Type scale: a hand-picked set (12, 14, 16, 20, 24, 32) rather than a strict ratio; rem units so
-  user font settings apply. **[RUI][house] (memory)**
+  user font settings apply. **[RUI][default] (memory)**
 - Fluid display sizes only: `font-size: clamp(var(--x-text-xl), 1rem + 2vw, var(--x-text-2xl))` —
   keep a `rem` term so zoom still scales text (WCAG 1.4.4). **[web.dev] (memory)**
 
 ## 3. Typography
 
 - Body ≥ 16 px, line-height ~1.5 for body, ~1.2 for headings; longer lines need more leading.
-  **[house][RUI] (memory)**
-- Measure 45–75 characters: `max-inline-size: 65ch` on text blocks. **[house][EL] (memory)**
+  **[default][RUI] (memory)**
+- Measure 45–75 characters: `max-inline-size: 65ch` on text blocks. **[default][EL] (memory)**
 - Hierarchy through weight and colour (muted vs default) before size; two weights are usually
   enough. **[RUI] (memory)**
 - Left-align body text; centre only short headings or empty states. **[RUI] (memory)**
 - Numbers in tables: `font-variant-numeric: tabular-nums`, right-aligned. **(memory)**
-- Self-host variable fonts with a system fallback stack and `font-display: swap`. **[house]**
+- Self-host variable fonts with a system fallback stack and `font-display: swap`. **[default]**
 - Text must survive WCAG 1.4.12 text-spacing overrides (no fixed heights on text boxes). **(memory)**
 
 ## 4. Colour
@@ -71,14 +74,14 @@ and https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html
 - Non-text 3:1 against adjacent colours for what identifies a control and its states (borders of
   inputs, checkbox marks, selected tab indicator, focus indicator, meaningful chart parts); hover
   styling that is only supplemental is exempt. **[WCAG 1.4.11]**
-- Never colour alone (1.4.1): add icon, text, underline, pattern or weight. **[house]**
+- Never colour alone (1.4.1): add icon, text, underline, pattern or weight. **[default]**
 - APCA: a perceptual contrast method that was explored for WCAG 3; as of 2026 the WCAG 3 draft says
   the contrast algorithm is undecided. Use WCAG 2 ratios for conformance; APCA may inform choices
   for very thin or very large type. Checked 2026-11-07 via https://adrianroselli.com/2026/04/wcag3-contrast-as-of-april-2026.html
   (secondary source; W3C draft not opened). **[secondary]**
 - Build palettes with 8–10 shades per hue, picked by eye, not generated by `lighten()`; greys can
-  carry a slight tint of the brand hue. Kiln deliberately uses neutral greys so asset colours are
-  judged correctly. **[RUI] (memory)[house]**
+  carry a slight tint of the brand hue — unless users judge colour in the content itself (photos,
+  design assets), where neutral greys avoid skewing their perception. **[RUI] (memory)[default]**
 - State colours (success, warning, danger, info) each need a fill, an "on" colour and a subtle
   background variant, tested in both themes. **(memory)**
 
@@ -93,8 +96,8 @@ Names verified on 2026-11-07 against https://every-layout.dev/layouts/
   scroller), Imposter, Icon, Container. **[EL]** (CSS recipes from memory)
 - Prefer intrinsic layout: let content and available space decide (flex-wrap, `minmax`, `min()`),
   with as few breakpoints as possible. **[EL] (memory)**
-- AEC already ships `stack`, `cluster`, `container`, `grid` in `src/styles/layout/` — reuse them.
-  **[house]**
+- Reuse the repo's layout primitives if it has them (e.g. `stack`, `cluster`, `container`, `grid`
+  in `src/styles/layout/`) before writing new ones. **[default]**
 - Flex for one dimension, grid for two; `gap` instead of margins between siblings. **[web.dev] (memory)**
 - Use `min-block-size` instead of `height` for anything with text; `100dvh` instead of `100vh`
   on mobile. **[MDN] (memory)**
@@ -107,14 +110,14 @@ Verified on 2026-11-07 against https://developer.mozilla.org/en-US/docs/Web/CSS/
   `@container name (width >= 30rem) {…}` styles the descendants — not the container itself; do not
   change the queried size from inside the query (loop). **[MDN]**
 - Units `cqi`/`cqb` size things relative to the container. **[MDN] (memory)**
-- House note: Kiln's gallery grid follows the list pane via a container query, not the viewport.
-  Stylelint's `media-feature-range-notation: prefix` applies to `@media`; check whether it also
-  flags range syntax in `@container` before using it. **[house]**
+- A grid inside a list pane should follow the pane via a container query, not the viewport, because
+  the same component renders at different widths in a single-pane and a two-pane layout. Stylelint's `media-feature-range-notation: prefix` applies to `@media`; check whether it also
+  flags range syntax in `@container` before using it. **[default]**
 - Logical properties (`margin-inline`, `padding-block`, `inset-inline-start`, `inline-size`) so
   layouts follow writing direction. **[MDN] (memory)**
 - `clamp(min, preferred, max)` for fluid spacing/type; always pair a `vw` term with `rem`. **[MDN] (memory)**
 - `var()` does not work inside media query conditions; use literal px or PostCSS custom media
-  (`@media (--bp-md)` in AEC). **(memory)[house]**
+  (`@media (--bp-md)`). **(memory)[default]**
 
 ## 7. Material 3 adaptive layouts
 
@@ -131,11 +134,11 @@ drawer pages); the m3 pages themselves render client-side and could not be fetch
 
 - A rail holds 3–7 destinations plus an optional FAB. The navigation drawer is no longer recommended
   in M3 Expressive; the expanded rail replaces it. **[M3]**
-- Canonical layouts: list–detail, supporting pane, feed. **[M3][house]**
+- Canonical layouts: list–detail, supporting pane, feed. **[M3][default]**
 - On the web, dp ≈ CSS px. Cap content width (≈ 1200–1440 px) on large screens; text still ≤ 75 ch.
-  **[house]**
+  **[default]**
 - On compact, detail replaces the list (with back); on expanded both show and the detail pane scrolls
-  on its own. **[house: Kiln]**
+  on its own. **[default]**
 
 ## 8. CSS architecture
 
@@ -143,31 +146,32 @@ Verified on 2026-11-07 against https://developer.mozilla.org/en-US/docs/Web/CSS/
 
 - BEM: `.block`, `.block__element`, `.block--modifier`; state as `.is-*`/`.has-*` or ARIA attribute
   selectors (`.tabs__tab[aria-selected='true']`) so style follows real state. Block = file name.
-  **[house]**
+  **[default]**
 - Cascade layers: later-declared layers beat earlier ones regardless of specificity; unlayered
   styles beat all layered ones; for `!important` the order flips. Declare the order once:
-  `@layer reset, tokens, base, layout, components, utilities;`. **[MDN]** House repos do not use
-  layers yet — adopt only when setting up a repo, never half-way. **[house]**
+  `@layer reset, tokens, base, layout, components, utilities;`. **[MDN]** Adopt layers only when setting
+  up a repo or migrating all of its CSS, never half-way: unlayered styles beat every layer, so a
+  partial adoption inverts the cascade you expect. **[default]**
 - `:where()` has zero specificity — use it in resets and base styles so components override them
   with one class. **[MDN] (memory)**
 - CUBE CSS (Composition, Utility, Block, Exception) works with the cascade; its "composition" maps
   to the layout primitives above, "exception" to state attributes. Treat it as a lens, not a second
   naming scheme beside BEM. **[CUBE]**
-- `!important` only inside a utility layer or reduced-motion override, and the house lint forbids it
-  in components. **[house]**
+- `!important` only inside a utility layer or reduced-motion override; the default lint forbids it
+  in components. **[default]**
 
-## 9. House Stylelint rules (AEC and Kiln `stylelint.config.mjs`)
+## 9. Default Stylelint rules (`stylelint.config.mjs`)
 
 Plugin behaviour verified on 2026-11-07 against https://github.com/AndyOGo/stylelint-declaration-strict-value
 
-- `stylelint-config-standard` base. **[house]**
+- `stylelint-config-standard` base. **[default]**
 - `scale-unlimited/declaration-strict-value` on colour, fill, stroke, z-index, font-family/size/
   weight, line-height, border-radius, box-shadow, margin/padding, gap, transition/animation
   duration: values must be `var(--…)` (functions allowed by default; `0`, `inherit`, `transparent`,
-  `currentcolor`, `none`, `auto` ignored). **[SL][house]**
-- `plugin/selector-bem-pattern` with the block derived from the file name. **[house]**
+  `currentcolor`, `none`, `auto` ignored). **[SL][default]**
+- `plugin/selector-bem-pattern` with the block derived from the file name. **[default]**
 - `selector-class-pattern` BEM; `selector-max-id: 0`; `declaration-no-important`;
-  `max-nesting-depth: 1`; `selector-max-type: 0` in component, feature and layout files. **[house]**
-- `media-feature-range-notation: prefix` → write `(min-width: 600px)`, not `(width >= 600px)`. **[house]**
-- `order/properties-order`: position → box/layout → typography → visual → motion. **[house]**
+  `max-nesting-depth: 1`; `selector-max-type: 0` in component, feature and layout files. **[default]**
+- `media-feature-range-notation: prefix` → write `(min-width: 600px)`, not `(width >= 600px)`. **[default]**
+- `order/properties-order`: position → box/layout → typography → visual → motion. **[default]**
 - Run: `npx stylelint "src/**/*.css"` (or the repo's `npm run lint`); `--fix` for order only.

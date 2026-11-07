@@ -1,12 +1,12 @@
 ---
 name: css-design
-description: Designs and styles product UI the house way — design tokens (primitive → semantic → component) with light and dark themes and reduced motion, intrinsic layouts with flex, grid, container queries, logical properties and clamp(), spacing and type scales, readable typography, colour that passes WCAG 2.2 AA contrast and never carries meaning alone, Material 3 adaptive layouts per window size class, every component state (hover, focus-visible, active, disabled, loading, error), focus styles and 24/44 px targets, BEM CSS that passes Stylelint, and a screenshot review against Refactoring UI and Nielsen heuristics. Use when creating or changing how a screen or component looks or lays out, adding tokens or a theme, or when David says "CSS", "màu", "font", "responsive", "layout", "đẹp hơn", "dark mode", "spacing" or "nhìn xấu". Behaviour, state and tests belong to `frontend`. Inside a delivery, `ship` and `deliver-loop` call this skill.
+description: Use when creating or changing how a screen or component looks or lays out in a Vue or React app, adding tokens, a theme or dark mode, or when the user says "CSS", "colours", "font", "responsive", "layout", "spacing" or "it looks ugly" — even for one component. Produces token-based CSS (primitive → semantic → component, light and dark, reduced motion), intrinsic layouts with grid, flex and container queries, Material 3 adaptive layouts, WCAG 2.2 AA contrast and 24/44 px targets, every component state styled, BEM that passes Stylelint and a screenshot review. Behaviour, state and tests belong to `frontend`. Inside a delivery, `ship` and `deliver-loop` call this skill.
 ---
 
 # css-design — calm, consistent screens built from tokens, readable at 390 px and 1280 px
 
 Follow the repo's `docs/design-system.md`, its tokens file and `stylelint.config.mjs` first; this
-skill fills gaps. Component behaviour and tests belong to `frontend`; the final run-it-as-David check
+skill fills gaps. Component behaviour and tests belong to `frontend`; the final run-it-as-the-user check
 belongs to `verify-app`.
 
 ## Workflow
@@ -97,6 +97,6 @@ belongs to `verify-app`.
 
 - `references/tokens-and-layout.md` — token tiers and theming, spacing and type scales, typography,
   colour, layout primitives, container queries, Material 3 adaptive layouts, CSS architecture
-  (BEM, `@layer`, specificity) and the house Stylelint rules.
+  (BEM, `@layer`, specificity) and the default Stylelint rules.
 - `references/states-and-review.md` — component state matrix, focus and target-size rules, contrast
   and target probes, motion, visual regression, Refactoring UI and Nielsen review lists.

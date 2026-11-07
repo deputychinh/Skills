@@ -1,12 +1,12 @@
-# React patterns — React (secondary)
+# React patterns
 
-> React is the secondary stack. Use this file only when the repo already uses React (David's Kiln
-> and american-english-coach); new apps follow `vue-patterns.md`. Stack-neutral rules (four states,
-> forms, a11y, testing, security) match the Vue file.
+> Use this file when the app is React; Vue apps follow `vue-patterns.md`. Stack-neutral rules (four
+> states, forms, a11y, testing, security) match the Vue file, and both stacks are first-class.
 
 Tags: **[react.dev]**, **[TQ]** TanStack Query, **[TR]** TanStack Router, **[OWASP]**, **[web.dev]**,
-**[patterns.dev]**, **[house]** David's conventions (`init-project/references/frontend-and-ux.md`,
-Kiln `docs/conventions.md`). Items marked **(memory)** were not re-checked online for this draft.
+**[patterns.dev]**, **[default]** these skills' default conventions (see `init-project`'s
+`frontend-and-ux.md` reference) — the repo's own conventions win. Items marked **(memory)** were not
+re-checked online for this draft.
 
 ## Contents
 
@@ -19,17 +19,17 @@ Kiln `docs/conventions.md`). Items marked **(memory)** were not re-checked onlin
 7. i18n
 8. Performance basics
 9. Security
-10. Next.js static export variant
+10. Static export (Next.js / Nuxt generate) variant
 
 ## 1. Folder structure
 
 - `src/features/<name>/{services,hooks,components}`; routes compose features; shared parts in
   `src/components` (app) or `packages/ui` (library). Enums, constants, interfaces live once in
-  `src/enums`, `src/constants`, `src/interfaces`. **[house]**
+  `src/enums`, `src/constants`, `src/interfaces`. **[default]**
 - Services are plain typed functions over the generated API client (OpenAPI types); no React in
-  services, so they are unit-testable and fakeable. **[house]**
+  services, so they are unit-testable and fakeable. **[default]**
 - One component per file; `Name.tsx`, `Name.css`, `Name.test.tsx`, `Name.stories.tsx` side by side.
-  **[house]**
+  **[default]**
 - Avoid feature-wide barrel files that pull everything into one chunk. **[patterns.dev] (memory)**
 
 ## 2. Component API design
@@ -38,13 +38,13 @@ Kiln `docs/conventions.md`). Items marked **(memory)** were not re-checked onlin
   then find the minimal state and where it lives. **[react.dev "Thinking in React"] (memory)**
 - Props are the smallest typed surface: domain values and callbacks named `onX` for events. Extend
   the native element's attributes (`ButtonHTMLAttributes<HTMLButtonElement>`) for primitives and
-  spread the rest, so `aria-*`, `disabled`, `type` work. **[house: Kiln `Button`]**
+  spread the rest, so `aria-*`, `disabled`, `type` work. **[default]**
 - Prefer composition (`children`, slots as props) over boolean flags multiplying variants; a variant
   is an enum value, not three booleans. **[patterns.dev] (memory)**
 - Controlled vs uncontrolled: a component is controlled when its parent owns the value (`value` +
   `onChange`), uncontrolled when it keeps its own (`defaultValue`). Pick one per prop; never switch
   during a component's life. **[react.dev] (memory)**
-- Copy enters primitives through props (no strings inside `packages/ui`). **[house]**
+- Copy enters primitives through props (no strings inside `packages/ui`). **[default]**
 - Components and hooks are pure during render; hooks are called at the top level only, never in
   conditions or loops; only from components or custom hooks. **[react.dev Rules of Hooks] (memory)**
 
@@ -52,13 +52,13 @@ Kiln `docs/conventions.md`). Items marked **(memory)** were not re-checked onlin
 
 Verified on 2026-11-07 against https://react.dev/learn/you-might-not-need-an-effect
 
-| Data                            | Home                                                           |
-| ------------------------------- | -------------------------------------------------------------- |
-| From the server                 | TanStack Query (Kiln) or the repo's `useAsync` + service (AEC) |
-| Shareable / survives reload     | URL path or search params                                      |
-| Ephemeral UI (open, draft text) | `useState` / `useReducer` in the lowest common owner           |
-| Computable from the above       | a `const` in render (`useMemo` only if measured slow)          |
-| Browser or third-party store    | `useSyncExternalStore`                                         |
+| Data                            | Home                                                  |
+| ------------------------------- | ----------------------------------------------------- |
+| From the server                 | TanStack Query, or the repo's data hook + service     |
+| Shareable / survives reload     | URL path or search params                             |
+| Ephemeral UI (open, draft text) | `useState` / `useReducer` in the lowest common owner  |
+| Computable from the above       | a `const` in render (`useMemo` only if measured slow) |
+| Browser or third-party store    | `useSyncExternalStore`                                |
 
 - Derived values are computed during render, not mirrored into state by an effect. **[react.dev]**
 - Reset a subtree when an identity changes with `key={id}`, not an effect. **[react.dev]**
@@ -94,26 +94,26 @@ Verified on 2026-11-07 against https://tanstack.com/query/latest/docs/framework/
   `getQueryData`, write with `setQueryData`, return the snapshot; restore it in `onError`;
   invalidate in `onSettled`. **[TQ]**
 - Errors from the API are RFC 9457 problem details with a stable `code`; map code → locale key once at
-  the UI boundary. **[house: Kiln]**
+  the UI boundary. **[default]**
 - Four states per view: skeleton (reserve the final size, no layout shift), empty (what to do
-  first), error (what failed + retry), success. **[house]**
+  first), error (what failed + retry), success. **[default]**
 
 ## 5. Forms and validation
 
 - Every field has a visible `<label for>`; required and format rules are stated before input. **[WCAG 3.3.2] (memory)**
 - Validate on blur and on submit; show errors as text next to the field, linked with
   `aria-describedby`, set `aria-invalid="true"`; on submit move focus to the first invalid field or
-  to an error summary. **[house][WCAG 3.3.1] (memory)**
+  to an error summary. **[default][WCAG 3.3.1] (memory)**
 - Keep what the user typed after an error; do not ask again for data already given in the same
-  process (WCAG 3.3.7 Redundant Entry). **[house]**
-- Validate with the repo's schema library (zod in AEC) at the boundary; the server re-validates.
-  **[house]**
+  process (WCAG 3.3.7 Redundant Entry). **[default]**
+- Validate with the repo's schema library (e.g. zod) at the boundary; the server re-validates.
+  **[default]**
 - React 19: `useActionState(action, initialState)` returns `[state, dispatch, isPending]`; pass the
   dispatcher to `<form action>`; return the submitted values on error to keep input, because the
   form resets after a successful action. Verified on 2026-11-07 against
   https://react.dev/reference/react/useActionState **[react.dev]**
 - Disable the submit button only while pending; when the form is invalid, keep it enabled and explain
-  on submit, or explain why it is disabled. **[house]**
+  on submit, or explain why it is disabled. **[default]**
 
 ## 6. Routing, focus and error boundaries
 
@@ -128,30 +128,32 @@ Verified on 2026-11-07 against https://tanstack.com/query/latest/docs/framework/
   2026-11-07 against https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/ **[APG]**
 - Wrap each route and each risky widget (3D viewer, recorder, chart) in an error boundary
   (`react-error-boundary`) with a retry that also resets the query (`QueryErrorResetBoundary`).
-  **[house][TQ] (memory)**
-- Code-split by route and by heavy widget (`lazy` + `Suspense` with a sized fallback). **[house][web.dev]**
+  **[default][TQ] (memory)**
+- Code-split by route and by heavy widget (`lazy` + `Suspense` with a sized fallback). **[default][web.dev]**
 
 - `validateSearch` does not strip what it rejects: the route's search is the raw params merged with
-  the validated ones, so `?mode=diff` still arrives typed as a mode. Check values with a type guard
-  before trusting them, and build corrected search objects from validated values — `navigate`'s
-  `previous` still holds the raw ones. (KILN-8, verified with a test on @tanstack/react-router 1.168.)
+  the validated ones, so an unknown `?mode=diff` still arrives typed as a valid mode. Check values
+  with a type guard before trusting them, and build corrected search objects from validated values —
+  `navigate`'s `previous` still holds the raw ones. (Verified with a test on
+  @tanstack/react-router 1.168.)
 
 ## 7. i18n
 
-- Source copy in `src/locales/en*.ts`; `vi*.ts` mirrors keys; a test asserts parity. **[house]**
+- Source copy in `src/locales/<locale>.ts` (or the i18n library's JSON); every locale mirrors the
+  keys of the source locale; a test asserts parity. **[default]**
 - Interpolate values via the copy function, never string concatenation (word order differs).
   **(memory)**
 - `Intl.NumberFormat`, `Intl.DateTimeFormat`, `Intl.RelativeTimeFormat`, `Intl.PluralRules` with
-  the active locale; set `<html lang>`; mark inline English in Vietnamese UI with `lang="en"`.
-  **[house] (memory for lang marking: WCAG 3.1.2)**
-- Leave room for longer strings (Vietnamese and German run long); never fix widths around text.
+  the active locale; set `<html lang>`; mark inline phrases in another language with their own
+  `lang`. **[default] (memory for lang marking: WCAG 3.1.2)**
+- Leave room for longer strings (German and Finnish run long); never fix widths around text.
   **(memory)**
 
 ## 8. Performance basics
 
 Verified on 2026-11-07 against https://react.dev/reference/react/memo and https://web.dev/articles/inp
 
-- Targets at the 75th percentile: LCP ≤ 2.5 s, INP ≤ 200 ms (poor > 500 ms), CLS ≤ 0.1. **[web.dev][house]**
+- Targets at the 75th percentile: LCP ≤ 2.5 s, INP ≤ 200 ms (poor > 500 ms), CLS ≤ 0.1. **[web.dev][default]**
 - `memo` is an optimisation only: use it when a component re-renders often with the same props and
   the render is measurably expensive (React DevTools Profiler); try simpler fixes first (pass JSX as
   `children`, keep state local, remove needless effects). With React Compiler enabled, manual `memo`
@@ -161,7 +163,7 @@ Verified on 2026-11-07 against https://react.dev/reference/react/memo and https:
 - Keep expensive work out of input handlers; use `useDeferredValue`/`startTransition` for
   filter-as-you-type. **[react.dev] (memory)**
 - Images: explicit `width`/`height` or `aspect-ratio`, `loading="lazy"` below the fold, modern
-  formats. **[web.dev][house]**
+  formats. **[web.dev][default]**
 
 ## 9. Security
 
@@ -181,11 +183,17 @@ Verified on 2026-11-07 against https://cheatsheetseries.owasp.org/cheatsheets/Cr
   `NEXT_PUBLIC_*` variables (they ship to the browser). **(memory)**
 - `target="_blank"` links get `rel="noopener noreferrer"` (modern browsers imply `noopener`). **(memory)**
 
-## 10. Next.js static export variant (american-english-coach)
+## 10. Static export (Next.js / Nuxt generate) variant
 
-- `output: 'export'`: no server components that fetch at request time, no route handlers or
-  middleware at runtime; data loads in the client through the feature service + `useAsync`. Read
-  the bundled Next docs in `node_modules/next/dist/docs/` before using an API (the repo's `AGENTS.md`
-  says the version differs from training data). **[house]**
-- Test e2e against the built export served statically (port 8765 in AEC), not `next dev`. **[house]**
-- `'use client'` at the top of interactive leaves only; keep layout files server-safe. **(memory)**
+Applies to Next.js `output: 'export'` and to Nuxt `nuxt generate` (the Vue file points here).
+
+- No request-time server: no server components or `useAsyncData`/`useFetch` calls that need a
+  server at request time, no route handlers, server routes or middleware at runtime; data loads in
+  the client through the feature service and the data layer. **(memory)**
+- Framework versions move faster than training data: read the docs bundled with the installed
+  version (e.g. `node_modules/next/dist/docs/`) or the official docs before using an API. **[default]**
+- Test e2e against the built export served by a static file server on a fixed port, not the dev
+  server: the dev server rewrites and redirects (trailing slashes, 308s) and compiles on demand, so
+  journeys that pass there can fail or time out against the real output. **[default]**
+- Next.js: `'use client'` at the top of interactive leaves only; keep layout files server-safe.
+  **(memory)**

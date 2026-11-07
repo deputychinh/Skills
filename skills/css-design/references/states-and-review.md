@@ -1,7 +1,7 @@
 # Component states, probes and visual review
 
 Tags: **[WCAG]** Understanding docs, **[APG]**, **[MDN]**, **[RUI]** Refactoring UI (book),
-**[NN]** Nielsen Norman Group, **[house]**. **(memory)** = not re-checked online for this draft.
+**[NN]** Nielsen Norman Group, **[default]** these skills' default conventions (the repo's own win). **(memory)** = not re-checked online for this draft.
 
 ## Contents
 
@@ -16,7 +16,7 @@ Tags: **[WCAG]** Understanding docs, **[APG]**, **[MDN]**, **[RUI]** Refactoring
 
 ## 1. State matrix
 
-Every interactive component gets a story (or test page) per row that applies. **[house]**
+Every interactive component gets a story (or test page) per row that applies. **[default]**
 
 | State            | Selector / trigger                                | Must show                                                               |
 | ---------------- | ------------------------------------------------- | ----------------------------------------------------------------------- |
@@ -25,11 +25,11 @@ Every interactive component gets a story (or test page) per row that applies. **
 | Focus            | `.x:focus-visible`                                | ring per §2                                                             |
 | Active / pressed | `.x:active`, `[aria-pressed='true']`              | immediate feedback (< 100 ms) **(memory)**                              |
 | Selected/current | `[aria-selected='true']`, `[aria-current='page']` | shape/weight/indicator, not colour alone **[WCAG 1.4.1]**               |
-| Disabled         | `:disabled`, `[aria-disabled='true']`             | looks inactive; explain why nearby if not obvious **[house]**           |
+| Disabled         | `:disabled`, `[aria-disabled='true']`             | looks inactive; explain why nearby if not obvious **[default]**         |
 | Loading          | `[aria-busy='true']` or `.is-loading`             | keeps size (no layout shift), label stays for screen readers            |
 | Error / invalid  | `[aria-invalid='true']`                           | icon + text message, border ≥ 3:1                                       |
 | Empty            | component variant                                 | what it is + first action                                               |
-| Long content     | 2× copy length, Vietnamese strings                | wraps or truncates with full text available                             |
+| Long content     | 2× copy length, longest translation               | wraps or truncates with full text available                             |
 
 - Prefer `aria-disabled="true"` over `disabled` when the control must stay focusable to explain why
   it is unavailable. **[APG] (memory)**
@@ -46,11 +46,11 @@ https://www.w3.org/WAI/WCAG22/Understanding/focus-not-obscured-minimum.html
   author content (sticky header/footer, cookie banner, non-modal panel). Fix with
   `scroll-padding-block-start: <header height>` on the scroller, modal banners, or panels that push
   content. **[WCAG]**
-- 2.4.13 Focus Appearance is **AAA**, but the house target meets it: the indicator area is at least
+- 2.4.13 Focus Appearance is **AAA**, but the default ring meets it: the indicator area is at least
   a 2 CSS px perimeter of the control and changes the same pixels by ≥ 3:1 between focused and
-  unfocused states. A solid 2 px outline with an offset satisfies it. **[WCAG][house]**
-- House ring: `outline: 2px solid var(--x-color-focus); outline-offset: 2px;` on `:focus-visible`;
-  keep `outline` (not only `box-shadow`) so Windows forced-colours mode still draws it. **[house] (forced-colours from memory)**
+  unfocused states. A solid 2 px outline with an offset satisfies it. **[WCAG][default]**
+- Default ring: `outline: 2px solid var(--x-color-focus); outline-offset: 2px;` on `:focus-visible`;
+  keep `outline` (not only `box-shadow`) so Windows forced-colours mode still draws it. **[default] (forced-colours from memory)**
 - The focus colour must reach 3:1 against the surfaces it sits on in both themes. **[WCAG 1.4.11]**
 
 ## 3. Touch and pointer targets
@@ -60,17 +60,17 @@ Verified on 2026-11-07 against https://www.w3.org/WAI/WCAG22/Understanding/targe
 - 2.5.8 (AA): targets ≥ 24 × 24 CSS px, unless a 24 px circle centred on each undersized target
   touches no other target or circle (spacing), an equivalent control meets the size, the target is
   inline in text, the browser draws it unmodified, or the presentation is essential. **[WCAG]**
-- House: `--x-target-min` 24 px for every control, `--x-target-primary` 44 px for primary actions;
+- Default: `--x-target-min` 24 px for every control, `--x-target-primary` 44 px for primary actions;
   use `min-block-size`/`min-inline-size` or padding, and extend small icons with a pseudo-element hit
-  area rather than enlarging the icon. **[house]**
-- `@media (pointer: coarse)` may enlarge dense desktop controls on touch screens. **[house: AEC] (memory)**
+  area rather than enlarging the icon. **[default]**
+- `@media (pointer: coarse)` may enlarge dense desktop controls on touch screens. **[default] (memory)**
 
 ## 4. Motion
 
-- 150–300 ms; ease-out to enter, ease-in to leave; standard easing token for moves. **[house]**
+- 150–300 ms; ease-out to enter, ease-in to leave; standard easing token for moves. **[default]**
 - Animate `transform` and `opacity`; avoid layout properties. **[web.dev] (memory)**
-- `@media (prefers-reduced-motion: reduce)`: remove parallax, zooms and slides (WCAG 2.3.3 is AAA,
-  house treats it as required); keep state changes visible without movement. **[house] (SC level from memory)**
+- `@media (prefers-reduced-motion: reduce)`: remove parallax, zooms and slides (WCAG 2.3.3 is AAA;
+  treat it as required by default); keep state changes visible without movement. **[default] (SC level from memory)**
 - Nothing flashes more than three times per second (2.3.1). **(memory)**
 - Auto-moving content longer than 5 s needs pause/stop (2.2.2). **(memory)**
 
@@ -128,7 +128,8 @@ expect(small).toEqual([]); // review hits: inline links in sentences are exempt
   one OS/browser (CI's) or they flap. Update baselines in the same commit as the intended change,
   and look at the diff image first. **[Playwright docs] (memory)**
 - Documentation screenshots (390/1280, light/dark) are evidence, not assertions; refresh them with
-  the e2e run that produces them (AEC commits them as `test(e2e): refresh … screenshots`). **[house]**
+  the e2e run that produces them, in a commit of their own (e.g. `test(e2e): refresh screenshots`)
+  so image churn does not hide code changes in review. **[default]**
 - Always open the PNG: check clipped text, overlaps, stray scrollbars, focus ring visible, empty
   areas on 1280, cramped tap areas on 390.
 
@@ -155,7 +156,7 @@ From the book (Wathan & Schoger), paraphrased from memory. **[RUI] (memory)**
 The ten usability heuristics (NN/g), as review questions on the flow. **[NN] (memory)**
 
 1. Visibility of system status — is loading, saving, progress and success visible?
-2. Match with the real world — the user's words (Vietnamese UI where it applies), natural order.
+2. Match with the real world — the user's words, in the user's language, natural order.
 3. User control and freedom — back, cancel, undo for destructive actions.
 4. Consistency and standards — same component, same look and place; platform idioms.
 5. Error prevention — constraints, confirmations, sensible defaults.
