@@ -15,6 +15,7 @@ section that matches the item before step 3; the core list in `SKILL.md` applies
 
 ## Gates, commits and docs
 
+- Parallel agents (builder, reviewer, another item) must not share one test database: one run dropping or truncating it made the other's unrelated tests fail. Give each its own `*_test` database (e.g. an env override per agent) and rerun a red suite on an isolated database before believing it.
 - Chain every step that must succeed — doc-editing scripts included — into the commit command (`python3 edit.py && make ci && git commit …`): a doc script that stops early otherwise still lets the code commit go out without its docs.
 - Chain the gate and the commit so a red gate cannot commit: `make ci && git add … && git commit …` — an `echo ci=$?` between them returns 0 and lets a red run commit.
 - Gate before commit by exit code, never by eyeballing filtered output: `make lint | tail -1` hides a failure (the pipe returns tail's status), so a red lint goes out looking green. Chain `make lint && make test && git commit`, or check `$?` explicitly.
