@@ -6,6 +6,7 @@ Follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The full histo
 
 ### Added
 
+- MIT license.
 - `software-lifecycle`, a Claude Code plugin of 20 skills with one entry point, `ship`, that carries
   a request through the whole software lifecycle: build new → release → post-deploy verification
   → operate and monitor → maintain (bugs, upgrades, debt) → back to build.

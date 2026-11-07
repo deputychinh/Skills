@@ -1,7 +1,7 @@
 {
   "name": "skills",
   "private": true,
-  "description": "software-lifecycle: Claude Code skills that carry a request through the whole software lifecycle — build, release, verify, monitor and maintain.",
+  "description": "software-lifecycle: Claude Code skills that carry a request through the whole software lifecycle \u2014 build, release, verify, monitor and maintain.",
   "engines": {
     "node": ">=24"
   },
@@ -19,5 +19,6 @@
     "husky": "9.1.7",
     "lint-staged": "17.6.0",
     "prettier": "3.9.10"
-  }
+  },
+  "license": "MIT"
 }

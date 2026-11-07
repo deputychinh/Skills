@@ -232,4 +232,4 @@ a skill after every change to it.
 
 ## License
 
-License: to be chosen by the maintainer.
+[MIT](LICENSE) — use, change and share the skills freely; keep the copyright notice.

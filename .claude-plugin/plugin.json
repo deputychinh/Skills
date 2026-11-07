@@ -5,5 +5,6 @@
   "author": {
     "name": "Software lifecycle skills maintainers"
   },
-  "keywords": ["lifecycle", "delivery", "spec", "architecture", "vue", "react", "node", "python"]
+  "keywords": ["lifecycle", "delivery", "spec", "architecture", "vue", "react", "node", "python"],
+  "license": "MIT"
 }
