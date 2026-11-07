@@ -1,6 +1,6 @@
 ---
 name: init-project
-description: Bootstraps a new repo the house way — git on main, Conventional Commits with commitlint and husky, Prettier, a Makefile with help, docs (conventions, testing, ADR 0001, architecture, plan, backlog, changelog), CI, a project CLAUDE.md and a stack baseline with strict lint, types and coverage. Use when David asks for a new project ("/init-project", "dự án mới", "tạo project mới", "new project", "bootstrap a repo"), when `ship` needs a repo, or when work starts in a folder with no git history or no CLAUDE.md.
+description: Bootstraps a new repo the house way — git on main, Conventional Commits with commitlint and husky, Prettier, a Makefile with help, docs (conventions, testing, ADR 0001, architecture, plan, backlog, changelog), CI, a project CLAUDE.md and a stack baseline with strict lint, types and coverage. Use when David asks only for a bare repo or scaffold ("/init-project", "khởi tạo repo", "bootstrap a repo"), when `ship` needs a repo, or when work starts in a folder with no git history or no CLAUDE.md. Not the entry point for building an app or feature — that is `ship`, which calls this skill.
 ---
 
 # init-project
@@ -82,8 +82,9 @@ Commit: `chore(repo): bootstrap tooling, conventions and docs`.
 
 ## Phase 2b · Design review → ADR 0001 and architecture doc
 
-When called by `ship`, ADR 0001 records only the stack and layout; the `architect` skill owns the
-product's design decisions and extends the architecture doc afterwards.
+When called by `ship`: no question round here (ship settled them at triage), ADR 0001 records only the
+stack and layout, and the `architect` skill owns the product's design decisions, `docs/security.md`
+and the architecture doc; the backlog stays empty for `shape-plan`.
 
 Before scaffolding code, spend one pass on design so the skeleton is right. Work through the
 checklists in `references/` and write the answers down; a decision that is not in an ADR does not exist.
@@ -109,7 +110,7 @@ Use the official generator, then apply the house baseline. Never hand-write what
 
 - **Python** (`backend/` or `src/`): `uv init`, `pyproject.toml` with ruff (E W F I N UP B SIM RUF ANN D PL PT S C4 RET ARG C90 PTH TRY ERA), `mypy --strict`, pytest + coverage `fail_under = 90`, `filterwarnings = error`. Layout: `config/ enums.py constants.py errors.py domain/ ports repositories/ services/ routes/ schemas/ container.py`.
 - **Next.js**: `npx create-next-app@latest web --ts --eslint --app --src-dir --no-tailwind`, then `output: 'export'`, ESLint `--max-warnings 0`, Stylelint with BEM pattern + declaration-strict-value for tokens, Vitest + Testing Library cov ≥ 80, Playwright with a smoke spec. Copy strings live in `src/locales/{vi,en}.ts` with a key-parity test.
-- **Vite monorepo** (`fastapi-vite`): `npm create vite@latest apps/web -- --template react-ts --no-interactive`, then replace its oxlint with the house ESLint and drop `tsconfig.app/node.json` for one tsconfig extending `tsconfig.base.json`. Gotchas met in kiln: pin TypeScript 6.x (typescript-eslint and `openapi-typescript` peer ranges; add `overrides: {"openapi-typescript": {"typescript": "$typescript"}}`); pin the **same** `react`/`react-dom` in every workspace or the UI package loads a second React (`useEffect` of null at runtime, `npm ls react` must show one version); a shared UI package cannot use the app's `@/` alias, so give it `"imports": {"#ui/*": "./src/*"}` plus matching `paths` in both tsconfigs; `vite preview --host 127.0.0.1` or Playwright's webServer never sees it; Playwright `webServer` can start the API too (`cwd: '../..'`). Python side: `--import-mode=importlib` and no `tests/__init__.py` when two services both have `tests/`; starlette's TestClient wants `httpx2`; `HTTPStatus.UNPROCESSABLE_CONTENT` is 3.13+, use `UNPROCESSABLE_ENTITY` on 3.12. pnpm needs corepack, which Node ≥ 25 no longer ships: default to npm workspaces.
+- **Vite monorepo** (`fastapi-vite`): `npm create vite@latest apps/web -- --template react-ts --no-interactive`, then the house ESLint and one tsconfig; read `references/fastapi-vite.md` first (TypeScript pins, one React, `#ui/*` imports, Playwright host, pytest import mode).
 - **NestJS**: `nest new` per service, shared `contracts/` package, Jest.
 - **Django / Vue / Expo**: official generators, then ruff/mypy or ESLint/tsc baselines as above.
 
