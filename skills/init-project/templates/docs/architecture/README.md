@@ -13,7 +13,7 @@ flowchart LR
 
 | Boundary | Contract | Owner |
 | --- | --- | --- |
-| web → api | OpenAPI (`backend/openapi.json`, generated TS types) | api |
+| web → api | OpenAPI (`openapi.json` from the API, generated TS types) | api |
 
 ## Cross-cutting
 

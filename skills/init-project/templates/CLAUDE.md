@@ -4,64 +4,75 @@
 
 Stack: {{STACK}}. Docs language: {{DOCS_LANG}}. Everything below is binding for every session in this repo.
 
-## Nguồn sự thật (đọc trước khi sửa code)
+## Delivery profile
 
-| Việc | Đọc |
+Skills read these keys; a key left out falls back to the default in the skills README.
+
+- reply language: {{REPLY_LANG}}
+- frontend default: {{FRONTEND}}
+- backend default: {{BACKEND}}
+- autonomy: decide-and-record — ask only what nobody else can answer (secrets, money, legal, irreversible or outward-facing actions)
+- push policy: {{PUSH_POLICY}}
+- review gate: independent review, ship at ≥ 9/10 with requirements fit = 1 and security ≥ 0.5, at most 3 improve rounds
+- deploy target: {{DEPLOY_TARGET}}
+
+## Sources of truth (read before changing code)
+
+| Task | Read |
 | --- | --- |
-| Quy ước code, đặt tên, cấu trúc thư mục | `docs/conventions.md` |
-| Kiểm thử: tầng nào, chạy ở đâu, ngưỡng bao nhiêu | `docs/testing.md` |
-| Vì sao chọn stack / layout này; mọi quyết định có hệ quả | `docs/adr/` (ADR mới = file mới, không sửa ADR đã chấp nhận) |
-| Kiến trúc hiện tại | `docs/architecture/README.md` |
-| Việc đang làm, việc tiếp theo | `docs/plan.md`, `docs/backlog.md` |
-| Lệnh chạy, build, test | `make help` |
+| Code conventions, naming, folder layout | `docs/conventions.md` |
+| Testing: which layer, where it runs, which threshold | `docs/testing.md` |
+| Why this stack and layout; every decision with consequences | `docs/adr/` (a new ADR is a new file; never edit an accepted ADR) |
+| Current architecture | `docs/architecture/README.md` |
+| Work in progress and what comes next | `docs/plan.md`, `docs/backlog.md` |
+| Commands to run, build, test | `make help` |
 
-## Lệnh
+## Commands
 
 ```sh
-make install   # mọi dependency
-make lint      # format check + lint + typecheck cho mọi phần
-make test      # unit + API/component test với coverage
-make ci        # = lint + test, đúng những gì GitHub Actions chạy
+make install   # dependencies
+make dev       # infra, migrations, API and web together
+make lint      # format check + lint + typecheck for every part
+make test      # unit + API/component tests with coverage
+make ci        # = lint + test, exactly what CI runs
 ```
 
-Không chạy lệnh thay thế (npm/uv trực tiếp) khi đã có target trong Makefile, trừ khi đang gỡ lỗi target đó.
+Use the Makefile target rather than calling npm or uv directly, unless you are debugging that target:
+the target is what CI runs, so a direct call can pass where CI fails.
 
-## Định nghĩa "xong"
+## Definition of done
 
-Một việc chỉ được báo xong khi tất cả đúng:
+A task is done only when all of these hold:
 
-1. Code theo `docs/conventions.md` (lint 0 cảnh báo, typecheck sạch).
-2. Có test cho hành vi mới hoặc bug vừa sửa; coverage không giảm dưới ngưỡng trong `docs/testing.md`.
-3. `make ci` xanh, kết quả được dán vào báo cáo (số test, số pass).
-4. Docs cập nhật trong cùng thay đổi: `CHANGELOG.md` mục `[Unreleased]`, README nếu đổi cách dùng, ADR nếu đổi quyết định.
-5. Đã commit (xem routine bên dưới).
+1. Code follows `docs/conventions.md` (lint 0 warnings, typecheck clean).
+2. New behaviour or a fixed bug has a test; coverage stays at or above the thresholds in `docs/testing.md`.
+3. `make ci` is green and its result (tests run, tests passed) is pasted in the report.
+4. Docs change in the same commit: `CHANGELOG.md` under `[Unreleased]`, the README if usage changed, an ADR if a decision changed.
+5. The work is committed (routine below).
 
-## Routine mỗi turn (bắt buộc)
+## Routine for every turn that changes files
 
-Mỗi turn có thay đổi file phải kết thúc bằng commit:
+1. Run the gates of every part you touched (`make lint && make test`, or that part's equivalent).
+2. Update CHANGELOG and docs in the same change.
+3. `git add` only the files of this task (no `git add -A` when the tree holds unrelated files), then `git commit` with a Conventional Commit whose scope is in `commitlint.config.mjs`.
+   - One commit per complete unit of work (code + test + docs). Several commits in one turn are fine.
+4. Commit only when green. If the gates are red at the end of the turn, **do not commit**: say what fails and why, and leave the tree dirty on purpose.
+5. Push per the push policy above: with `push every green commit` and an `origin`, push each green commit to `origin main`; otherwise commits stay local. Never rebase or force-push `main`.
+6. End the report with the hash and message of each new commit.
 
-1. Chạy gate của mọi phần đã chạm (`make lint && make test`, hoặc target tương đương của phần đó).
-2. Cập nhật CHANGELOG / docs trong cùng thay đổi.
-3. `git add` đúng file của việc đó (không `git add -A` khi tree có file lạ), rồi `git commit` theo Conventional Commits, scope lấy từ `commitlint.config.mjs`:
-   - `feat(web): …`, `fix(api): …`, `test(e2e): …`, `docs(plan): …`, `chore(repo): …`
-   - Một commit cho một đơn vị việc hoàn chỉnh (code + test + docs). Nhiều commit trong một turn là bình thường.
-4. Chỉ commit khi xanh. Nếu gate đỏ khi hết turn: **không commit**, báo rõ cái gì đỏ và vì sao để tree bẩn.
-5. Khi repo có `origin`: push mỗi commit xanh lên `origin main`. Không bao giờ rebase/force trên `main`.
-6. Cuối báo cáo ghi hash + message của các commit vừa tạo.
+## Delivery loop
 
-## Vòng giao hàng tự động
+After bootstrap, work through the backlog with the `deliver-loop` skill: each item goes through story → design → TDD → QA → an independent 10-point review (the skill's `rubric.md`) → improve until it scores ≥ 9 → commit. Requests that are not a backlog item start with `ship`.
 
-Sau khi khởi tạo, làm việc theo skill `/deliver-loop`: mỗi item backlog đi qua BA → thiết kế → TDD → QA → reviewer độc lập chấm 10 điểm (`~/.claude/skills/deliver-loop/rubric.md`) → cải thiện tới ≥ 9/10 → commit (+ push khi có `origin`) → retro, rồi sang item tiếp theo mà không cần hỏi.
+## Working style
 
-## Phong cách làm việc
+- Finish a whole phase (see `docs/plan.md`) without stopping to ask; ask only for what only the user has (a business rule, a secret, a choice between two patterns with different consequences).
+- Make the smallest change that meets the request; no refactors outside its scope, no new library when the stack already has a way.
+- Never swallow errors; domain errors carry a stable code and are mapped to HTTP/UI exactly once at the boundary.
+- Never log personal data, secrets or tokens. `.env` never enters git; `.env.example` always lists every key.
+- Display strings live in locale files, never hard-coded in components.
+- When the change is visible, take a screenshot or run the e2e suite; do not describe the UI from memory.
 
-- Làm trọn phase (xem `docs/plan.md`) không dừng hỏi giữa chừng; chỉ hỏi khi cần thông tin chỉ người dùng có (business rule, secret, chọn giữa hai pattern đang cùng tồn tại trong repo).
-- Thay đổi nhỏ nhất đủ cho yêu cầu; không refactor ngoài phạm vi, không thêm thư viện khi stack đã có cách làm.
-- Không nuốt lỗi; lỗi domain có mã ổn định và đổi sang HTTP/UI đúng một lần ở biên.
-- Không log dữ liệu cá nhân, secret, token. `.env` không bao giờ vào git; `.env.example` luôn đủ khóa.
-- Chuỗi hiển thị nằm trong file locale, không viết cứng trong component.
-- Khi thấy UI: chụp màn hình hoặc chạy e2e, không mô tả suông.
+## Language
 
-## Ngôn ngữ
-
-Người dùng viết tiếng Việt thì trả lời tiếng Việt; tên kỹ thuật, lệnh, message commit giữ tiếng Anh. Docs trong repo viết bằng {{DOCS_LANG}}.
+Reply in the language of the delivery profile (default: the language the user writes in). Technical names, commands and commit messages stay in English. Docs in this repo are written in {{DOCS_LANG}}.

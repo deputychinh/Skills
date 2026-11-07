@@ -4,7 +4,7 @@ Aligned with OWASP Top 10:2025 and ASVS 5.0 (level 1 for every project, level 2 
 
 ## OWASP Top 10:2025 → what we do
 
-| #   | Category                                      | Control in this house                                                                                                                                                                          |
+| #   | Category                                      | Control in this repo                                                                                                                                                                           |
 | --- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A01 | Broken Access Control (incl. BOLA/BFLA, SSRF) | authorization in the service layer per object (`can(user, action, resource)`), deny by default, tests for every role; outbound fetches to allow-listed hosts only                              |
 | A02 | Security Misconfiguration                     | settings typed and validated at boot, debug off in prod, security headers (CSP, HSTS, X-Content-Type-Options, Referrer-Policy), CORS allow-list, no default credentials                        |
@@ -38,4 +38,4 @@ Aligned with OWASP Top 10:2025 and ASVS 5.0 (level 1 for every project, level 2 
 - [ ] Backups + tested restore; secret rotation procedure in runbook
 - [ ] Logging reviewed for PII
 
-Sources: OWASP Top 10:2025 (owasp.org/Top10/2025); OWASP ASVS 5.0 (May 2025); OWASP Cheat Sheet Series; Mozilla Web Security Guidelines; Vietnam Decree 13/2023 (personal data).
+Sources: OWASP Top 10:2025 (owasp.org/Top10/2025); OWASP ASVS 5.0 (May 2025); OWASP Cheat Sheet Series; Mozilla Web Security Guidelines; GDPR and the local data-protection law of each market served.

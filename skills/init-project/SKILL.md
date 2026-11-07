@@ -1,48 +1,59 @@
 ---
 name: init-project
-description: Bootstraps a new repo the house way — git on main, Conventional Commits with commitlint and husky, Prettier, a Makefile with help, docs (conventions, testing, ADR 0001, architecture, plan, backlog, changelog), CI, a project CLAUDE.md and a stack baseline with strict lint, types and coverage. Use when David asks only for a bare repo or scaffold ("/init-project", "khởi tạo repo", "bootstrap a repo"), when `ship` needs a repo, or when work starts in an empty folder with no git history. Not the entry point for building an app or feature — that is `ship`, which calls this skill.
+description: Bootstraps a new repository so every later session knows the rules — git on main, Conventional Commits enforced by commitlint and husky, Prettier, a Makefile with dev and bench targets, docs (conventions, testing, ADR 0001, architecture, plan, backlog, changelog), CI, a project CLAUDE.md with a delivery profile, and a Vue or React, Node or Python baseline with strict lint, types and coverage, proven green. Use when the user asks for a bare repo, scaffold or project setup ("/init-project", "bootstrap a repo"), when work starts in an empty folder with no git history, or when `ship` needs a repo. Not the entry point for building an app or feature — `ship` is, and calls this skill.
 ---
 
 # init-project
 
 Turn an empty (or freshly generated) folder into a repo where every later session knows the rules
 without being told: conventions in `docs/`, agent rules in `CLAUDE.md`, commit hygiene enforced by
-hooks, and a green `make ci` before the first feature.
+hooks, and a green `make ci` before the first feature. A repo that starts green stays green far more
+easily than one that is cleaned up later, because every later change is judged against the gates.
 
-**Reference repos** (read them when unsure what "good" looks like here):
-`~/Documents/David/Code/american-english-coach` (Python FastAPI + Next.js static + iOS shell, Vietnamese docs) and
-`~/Documents/David/Code/bazaar` (NestJS microservices + Next.js + React admin, English docs).
-Templates live next to this file in `templates/`; `{{PLACEHOLDERS}}` are filled in step 2.
+Templates live next to this file in `templates/`; `{{PLACEHOLDERS}}` are filled in Phase 2.
 Design knowledge lives in `references/` (start with `references/README.md`): read the relevant file
-before writing ADR 0001, the architecture doc or any API/screen, and cite it in the ADR.
+before writing ADR 0001, the architecture doc or any API or screen, and cite it in the ADR.
 
 ## Phase 0 · Intake (one round, then act)
 
-Default everything you can; ask only what you cannot derive. Use AskUserQuestion once, with these
-questions at most (skip any the user already answered in the request, or that `ship` already settled in
-`docs/delivery/*/brief.md` or `status.md`). When called by `ship`, ask nothing: take the defaults below
-(the preset that fits the request) and record each one as a ruling in `status.md`:
+Read the delivery profile first (the `## Delivery profile` section of the project's `CLAUDE.md`, else
+the user's `~/.claude/CLAUDE.md`; keys and defaults are in the repo README). Default everything you
+can; ask only what you cannot derive, in one AskUserQuestion round, skipping anything the request,
+the profile or `ship` (in `docs/delivery/*/brief.md` or `status.md`) already settled. When `ship`
+calls this skill, ask nothing: take the answers ship recorded at triage and log each default you add
+as a ruling in `status.md`.
 
-| Question                          | Default when unanswered                                                                                                                                                  |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Project name and one-line purpose | folder name; purpose from the request                                                                                                                                    |
-| Stack preset (see table below)    | infer from the request; else `fastapi-vue` (Python API) or `nest-vue` (Node API) — Vue is David's default frontend, React only when asked or when extending a React repo |
-| Docs language                     | English unless the user asks otherwise (portfolio and team repos are read by non-Vietnamese readers); rules in `CLAUDE.md` follow the same language                      |
-| Remote: create a GitHub repo now? | no; if the user gives a remote URL, `git remote add origin <url>`, check `git ls-remote` is empty, push `main` and write "push after every commit" into the routine      |
+| Question                          | Default when unanswered                                                                                                                      |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Project name and one-line purpose | folder name; purpose from the request                                                                                                        |
+| Frontend                          | profile `frontend default`; else ask once (Vue or React, both first-class); "none" for an API, CLI or library                                |
+| Backend                           | profile `backend default`; else ask once (Node/TypeScript or Python, both first-class); "none" for a static or client-only app               |
+| Docs language (`{{DOCS_LANG}}`)   | English, so any contributor can read the repo; the user may choose another. Code, commit messages and Keep a Changelog headings stay English |
+| Remote                            | none; when the user gives a URL, `git remote add origin <url>`, check `git ls-remote` is empty, and push only per the profile's push policy  |
 
-Stack presets and what each gets:
+### Choosing the preset
 
-| Preset         | Backend                                                                                                           | Frontend                                                                                                                                                                                                                                    | Baseline gates                                 |
-| -------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| `fastapi-vue`  | `backend/` (or `services/*` uv workspace) uv + FastAPI, ruff, mypy strict, pytest cov ≥ 90                        | `web/` Vite + Vue 3 (`npm create vue@latest`: TS, Router, Pinia, Vitest, Playwright, ESLint, Prettier), vue-tsc, Stylelint, Vitest cov ≥ 80                                                                                                 | both                                           |
-| `nest-vue`     | `services/*` NestJS (or Fastify) TypeScript strict, ESLint, Vitest/Jest, Testcontainers                           | `web/` Vite + Vue 3 as above                                                                                                                                                                                                                | both                                           |
-| `fastapi-next` | `backend/` uv + FastAPI, ruff, mypy strict, pytest cov ≥ 90                                                       | `web/` Next.js static export, ESLint 0 warnings, Stylelint BEM + tokens, tsc, Vitest cov ≥ 80, Playwright                                                                                                                                   | both                                           |
-| `fastapi-vite` | `services/{api,worker}` uv **workspace** (root `pyproject.toml` holds ruff/mypy/pytest, members in its dev group) | npm workspaces `apps/web` (React + Vite + TanStack Router/Query), `packages/ui` (tokens + components, `#ui/*` subpath imports), `packages/cli` (Commander); shared root `eslint.config.mjs` + `stylelint.config.mjs` + `tsconfig.base.json` | both; reference: `~/Documents/David/Code/kiln` |
-| `django-vue`   | `backend/` uv + Django, ruff, mypy, pytest                                                                        | `web/` Vite + Vue 3                                                                                                                                                                                                                         | both                                           |
-| `nest-next`    | `services/*` NestJS, ESLint, Jest                                                                                 | `web/` Next.js                                                                                                                                                                                                                              | both                                           |
-| `python`       | `src/` uv package, ruff, mypy strict, pytest                                                                      | –                                                                                                                                                                                                                                           | backend only                                   |
-| `next`         | –                                                                                                                 | Next.js app                                                                                                                                                                                                                                 | frontend only                                  |
-| `expo`         | –                                                                                                                 | Expo / React Native                                                                                                                                                                                                                         | frontend only                                  |
+The preset name is `<backend>-<frontend>`, chosen by this rule:
+
+1. An existing repo keeps its stacks; never switch frameworks inside one app.
+2. Pick the frontend: none → no web part; needs server rendering for SEO → Nuxt (Vue) or Next.js
+   (React); native mobile → Expo; otherwise a Vite SPA in the chosen framework.
+3. Pick the backend: none, `node` or `python`.
+4. Combine them from the table. Monorepo extras (several deployables, a shared UI package, a worker)
+   follow `references/vite-monorepo.md`.
+
+| Preset                     | Backend                                                                                                          | Frontend                                                     | Makefile                                       |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------- |
+| `node-vue`                 | `services/api` NestJS (TypeScript strict, ESLint, Vitest via SWC, Testcontainers); Prisma or Drizzle migrations  | `web/` Vite + Vue 3 (`npm create vue@latest`, see Phase 3)   | `templates/Makefile.node`                      |
+| `node-react`               | as `node-vue`                                                                                                    | `web/` Vite + React + TypeScript (TanStack Router and Query) | `templates/Makefile.node`                      |
+| `python-vue`               | `backend/` (or a `services/{api,worker}` uv workspace) uv + FastAPI, ruff, mypy strict, pytest cov ≥ 90, Alembic | `web/` Vite + Vue 3                                          | `templates/Makefile.python`                    |
+| `python-react`             | as `python-vue`                                                                                                  | `web/` Vite + React + TypeScript                             | `templates/Makefile.python`                    |
+| `node`                     | `services/api` NestJS, or `src/` TypeScript package for a library or CLI                                         | –                                                            | `templates/Makefile.node` (drop web targets)   |
+| `python`                   | `src/` uv package, ruff, mypy strict, pytest                                                                     | –                                                            | `templates/Makefile.python` (drop web targets) |
+| `node-next`, `python-next` | as above                                                                                                         | `web/` Next.js                                               | per backend                                    |
+| `node-nuxt`, `python-nuxt` | as above                                                                                                         | `web/` Nuxt                                                  | per backend                                    |
+| `next`, `nuxt`             | – (full-stack framework alone)                                                                                   | Next.js or Nuxt app                                          | `templates/Makefile.node`                      |
+| `expo`                     | –                                                                                                                | Expo / React Native                                          | `templates/Makefile.node`                      |
 
 Say in one line what you are about to scaffold, then proceed without further questions.
 
@@ -58,28 +69,29 @@ Copy `templates/.gitignore` and commit nothing yet: the first commit is the gove
 ## Phase 2 · Governance set (same in every project)
 
 Copy from `templates/`, filling placeholders (`{{PROJECT_NAME}}`, `{{PURPOSE}}`, `{{DATE}}`,
-`{{DOCS_LANG}}`, `{{SCOPES}}` as a quoted list, `{{STACK}}`, `{{ENV_PREFIX}}` such as `COACH`,
-`{{PREFIX}}` for backlog ids such as `AEC`). Verify with `grep -rn '{{' .` before committing. Keep the file names exactly:
+`{{DOCS_LANG}}`, `{{SCOPES}}` as a quoted list, `{{STACK}}`, `{{ENV_PREFIX}}` such as `NOTES`,
+`{{PREFIX}}` for backlog ids such as `NOTES`, and the delivery-profile values in `CLAUDE.md`). Verify
+with `grep -rn '{{' .` before committing. Keep the file names exactly:
 
-| File                                     | Role                                                                                                                                                                                                                                                  |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CLAUDE.md`                              | Agent rules: where conventions live, the commands, definition of done, the commit-after-every-turn routine (section "Routine mỗi turn").                                                                                                              |
-| `.claude/settings.json`                  | Safe allowlist (`make *`, `npm run *`, `uv run *`, `git status/diff/log`). No deny-list surprises.                                                                                                                                                    |
-| `.editorconfig`, `.prettierrc.json`      | 100 columns, single quotes, trailing commas, LF, 2 spaces (tabs in Makefile).                                                                                                                                                                         |
-| `package.json` (root)                    | Tooling only: husky, commitlint, lint-staged, prettier. Pin exact versions. `"prepare": "husky"`.                                                                                                                                                     |
-| `commitlint.config.mjs`                  | `config-conventional` + `scope-enum`. Scopes = `repo, plan, backlog, docs, infra, ci, deps` + one per deployable (`api`, `web`, `worker`, …) + `db`, `e2e`, `content` when relevant.                                                                  |
-| `.husky/pre-commit`, `.husky/commit-msg` | `lint-staged`; `commitlint --edit`.                                                                                                                                                                                                                   |
-| `Makefile`                               | `.DEFAULT_GOAL := help`; every target has a `## comment`; must include `install`, `lint`, `test`, `ci`, plus run targets per preset.                                                                                                                  |
-| `README.md`                              | Name + tagline, screenshot table placeholder, quick start (≤ 4 commands), features, architecture (mermaid), structure, quality, licence/data notes.                                                                                                   |
-| `CHANGELOG.md`                           | Keep a Changelog, `## [Unreleased]` with `### Thêm/Sửa/Đổi` (vi) or `Added/Changed/Fixed` (en).                                                                                                                                                       |
-| `docs/conventions.md`                    | Copy of the house conventions (single source for enums/constants/errors, backend = classes + SOLID, frontend = arrow functions + tokens + BEM, no swallowed errors, no PII in logs, copy via locale files, commit rules). Trim to the stacks present. |
-| `docs/testing.md`                        | Layers table: where, how to run, threshold. Add "what the tests do not prove".                                                                                                                                                                        |
-| `docs/adr/0001-stack-and-layout.md`      | Why this stack and this layout. Status, context, decision, consequences.                                                                                                                                                                              |
-| `docs/architecture/README.md`            | One mermaid diagram + prose; updated with every ADR.                                                                                                                                                                                                  |
-| `docs/plan.md`, `docs/backlog.md`        | Phases with acceptance criteria; backlog with ids (`{{PREFIX}}-001`).                                                                                                                                                                                 |
-| `.github/workflows/ci.yml`               | One job per deployable + `repo` job (prettier check, commitlint on the push range).                                                                                                                                                                   |
-| `docker-compose.yml`, `.env.example`     | Only when the preset has infra (Postgres/Redis/Kafka). `.env.example` lists every key the app reads.                                                                                                                                                  |
-| `.gitignore`, `.prettierignore`          | From templates; `data/` and `.env` never enter git.                                                                                                                                                                                                   |
+| File                                     | Role                                                                                                                                                                                                                |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CLAUDE.md`                              | Agent rules: where conventions live, the commands, definition of done, the commit routine, and a `## Delivery profile` section (copy the user's profile values; leave absent keys out).                             |
+| `.claude/settings.json`                  | Safe allowlist (`make *`, `npm run *`, `uv run *`, `git status/diff/log`). No deny-list surprises.                                                                                                                  |
+| `.editorconfig`, `.prettierrc.json`      | 100 columns, single quotes, trailing commas, LF, 2 spaces (tabs in Makefile).                                                                                                                                       |
+| `package.json` (root)                    | Tooling only: husky, commitlint, lint-staged, prettier. Pin exact versions. `"prepare": "husky"`.                                                                                                                   |
+| `commitlint.config.mjs`                  | `config-conventional` + `scope-enum`. Scopes = `repo, plan, backlog, docs, infra, ci, deps` + one per deployable (`api`, `web`, `worker`, …) + `db`, `e2e`, `content` when relevant.                                |
+| `.husky/pre-commit`, `.husky/commit-msg` | `lint-staged`; `commitlint --edit`.                                                                                                                                                                                 |
+| `Makefile`                               | From `templates/Makefile.python` or `templates/Makefile.node`. `.DEFAULT_GOAL := help`; every target has a `## comment`; `install`, `dev`, `lint`, `test`, `e2e`, `bench`, `ci`, run targets.                       |
+| `README.md`                              | Name + tagline, screenshot table placeholder, quick start (≤ 4 commands, ideally `make install && make dev`), features, architecture (mermaid), structure, quality, licence/data notes.                             |
+| `CHANGELOG.md`                           | Keep a Changelog, `## [Unreleased]` with `Added/Changed/Fixed` headings.                                                                                                                                            |
+| `docs/conventions.md`                    | The conventions (single source for enums/constants/errors, backend = classes + SOLID, frontend = functions + tokens + BEM, no swallowed errors, no PII in logs, copy via locale files). Trim to the stacks present. |
+| `docs/testing.md`                        | Layers table: where, how to run, threshold. Add "what the tests do not prove".                                                                                                                                      |
+| `docs/adr/0001-stack-and-layout.md`      | Why this stack and this layout. Status, context, decision, consequences.                                                                                                                                            |
+| `docs/architecture/README.md`            | One mermaid diagram + prose; updated with every ADR.                                                                                                                                                                |
+| `docs/plan.md`, `docs/backlog.md`        | Phases with acceptance criteria; backlog with ids (`{{PREFIX}}-001`).                                                                                                                                               |
+| `.github/workflows/ci.yml`               | One job per deployable + `repo` job (prettier check, commitlint on the push range). Swap the `backend` job for a Node job on Node presets.                                                                          |
+| `docker-compose.yml`, `.env.example`     | Only when the preset has infra (Postgres/Redis/a queue). `.env.example` lists every key the app reads.                                                                                                              |
+| `.gitignore`, `.prettierignore`          | From templates; `data/` and `.env` never enter git.                                                                                                                                                                 |
 
 Commit: `chore(repo): bootstrap tooling, conventions and docs`.
 
@@ -91,7 +103,8 @@ and the architecture doc (on paths without `architect`, write their baselines he
 stays empty for `shape-plan`.
 
 Before scaffolding code, spend one pass on design so the skeleton is right. Work through the
-checklists in `references/` and write the answers down; a decision that is not in an ADR does not exist.
+checklists in `references/` and write the answers down; a decision that is not in an ADR is
+re-litigated by every later session.
 
 | Question                                                                                                                              | Reference                                      | Lands in                                                                                               |
 | ------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -103,24 +116,29 @@ checklists in `references/` and write the answers down; a decision that is not i
 | Branching, CI order, DORA targets, docs that must exist                                                                               | `delivery.md`                                  | `CLAUDE.md`, `docs/plan.md` phase 0 acceptance                                                         |
 
 Keep ADR 0001 to one page: list the decisions and their consequences, cite the reference file and
-the primary source (book/standard) for each non-obvious choice. Anything the user must decide
+the primary source (book or standard) for each non-obvious choice. Anything the user must decide
 (business rule, budget, compliance regime) goes into one AskUserQuestion round here, not later.
 
 Commit: `docs(plan): adr 0001, architecture, security and design-system baseline`.
 
 ## Phase 3 · Stack scaffold
 
-Use the official generator, then apply the house baseline. Never hand-write what a generator gives.
+Use the official generator, then apply the baseline. A generator's output tracks the framework's
+current defaults; hand-written scaffolds drift from them.
 
-- **Python** (`backend/` or `src/`): `uv init`, `pyproject.toml` with ruff (E W F I N UP B SIM RUF ANN D PL PT S C4 RET ARG C90 PTH TRY ERA), `mypy --strict`, pytest + coverage `fail_under = 90`, `filterwarnings = error`. Layout: `config/ enums.py constants.py errors.py domain/ ports repositories/ services/ routes/ schemas/ container.py`.
-- **Vue (default frontend)**: `npm create vue@latest web -- --ts --router --pinia --vitest --playwright --eslint-with-prettier` (check the flags with `--help`; answer the prompts if a flag is missing), then ESLint `--max-warnings 0` with eslint-plugin-vue + typescript-eslint, `vue-tsc --noEmit` as the typecheck, Stylelint with `postcss-html` for `.vue` files (BEM + token rules), Vitest + @testing-library/vue cov ≥ 80, Playwright + axe; copy in `src/locales/{vi,en}.ts` with vue-i18n and a key-parity test. Details: [`../frontend/references/vue-patterns.md`](../frontend/references/vue-patterns.md).
-- **Next.js**: `npx create-next-app@latest web --ts --eslint --app --src-dir --no-tailwind`, then `output: 'export'`, ESLint `--max-warnings 0`, Stylelint with BEM pattern + declaration-strict-value for tokens, Vitest + Testing Library cov ≥ 80, Playwright with a smoke spec. Copy strings live in `src/locales/{vi,en}.ts` with a key-parity test.
-- **Vite monorepo** (`fastapi-vite`): `npm create vite@latest apps/web -- --template react-ts --no-interactive`, then the house ESLint and one tsconfig; read `references/fastapi-vite.md` first (TypeScript pins, one React, `#ui/*` imports, Playwright host, pytest import mode).
-- **NestJS**: `nest new` per service, shared `contracts/` package, Jest.
-- **Django / Vue / Expo**: official generators, then ruff/mypy or ESLint/tsc baselines as above.
+- **Python** (`backend/` or `src/`): `uv init`, `pyproject.toml` with ruff (E W F I N UP B SIM RUF ANN D PL PT S C4 RET ARG C90 PTH TRY ERA), `mypy --strict`, pytest + coverage `fail_under = 90`, `filterwarnings = error`, Alembic for migrations. Layout: `config/ enums.py constants.py errors.py domain/ ports repositories/ services/ routes/ schemas/ container.py`.
+- **Node / NestJS** (`services/api`): `npx @nestjs/cli new api --strict --package-manager npm --skip-git` (memory: check `--help`), then replace Jest with Vitest the NestJS way: `npm i -D vitest unplugin-swc @swc/core @vitest/coverage-v8`, a `vitest.config.ts` with the `unplugin-swc` plugin (decorator metadata needs SWC, which esbuild does not emit), a `vitest.config.e2e.ts` for `*.e2e-spec.ts`, scripts `test: vitest run`, `test:cov: vitest run --coverage` (verified on 2026-11-07 against https://docs.nestjs.com/recipes/swc). ESLint `--max-warnings 0`, `tsc --noEmit`, coverage ≥ 90 on domain and services, Testcontainers for the database. Migrations with Prisma (`prisma migrate`) or Drizzle (`drizzle-kit migrate`): pick one in ADR 0001 and set `ORM` in the Makefile.
+- **Vue**: `npm create vue@latest web -- --ts --router --pinia --vitest --playwright --eslint --prettier` (verified on 2026-11-07 with `npm create vue@latest -- --help`: `--eslint-with-prettier` is deprecated and oxlint now comes with `--eslint`), then ESLint `--max-warnings 0`, `vue-tsc --noEmit` as the typecheck, Stylelint with `postcss-html` for `.vue` files (BEM + token rules), Vitest + @testing-library/vue cov ≥ 80, Playwright + axe; locale files `src/locales/<lang>.ts` with vue-i18n and a key-parity test. Details: the `frontend` skill.
+- **React (Vite)**: `npm create vite@latest web -- --template react-ts --no-interactive`, then the same baseline with `tsc --noEmit`, @testing-library/react and react-i18next or the repo's i18n library. Read `references/vite-monorepo.md` before a multi-package layout.
+- **Next.js**: `npx create-next-app@latest web --ts --eslint --app --src-dir --no-tailwind`, ESLint `--max-warnings 0`, Stylelint with BEM + declaration-strict-value for tokens, Vitest + Testing Library cov ≥ 80, Playwright smoke spec. Set `WEB_PORT=3000`.
+- **Nuxt**: `npm create nuxt@latest web` (memory: check flags with `--help`), then the Vue baseline above with `nuxi typecheck`. Set `WEB_PORT=3000`.
+- **Expo**: `npx create-expo-app@latest`, then ESLint and `tsc` baselines as above.
 
-Wire everything into the Makefile (`install`, `api`, `web`, `lint`, `test`, `e2e`, `ci`) and CI.
-Commit per unit: `feat(api): scaffold FastAPI app with health endpoint`, `feat(web): scaffold Next.js app with lint, test and e2e baseline`.
+Wire everything into the Makefile (`install`, `dev`, `api`, `web`, `migrate`, `lint`, `test`, `e2e`,
+`bench`, `ci`) and CI. The `bench` target runs `bench/api.js` with k6 against a running API; the
+`benchmark` skill fills in the workloads and the baseline later, so a placeholder script that hits
+`/health` is enough now. Commit per unit: `feat(api): scaffold api with health endpoint`,
+`feat(web): scaffold web app with lint, test and e2e baseline`.
 
 ## Phase 4 · Prove it
 
@@ -134,38 +152,40 @@ git log --oneline                             # 2–4 clean Conventional Commits
 
 If an item fails, fix it before moving on; if it cannot be fixed now, say so explicitly in the report.
 
-Then prove the **owner path**, not only the gates: in a fresh shell follow the README quick start
-word for word, open the exact URL each dev server prints (Vite prints `localhost`, so the API's CORS
-default lists both `localhost` and `127.0.0.1` for every dev/preview port, with a test), and see the
-skeleton page talk to the API. The quick start must list every step the app needs (infra, migrate,
-API, worker, web) — or one `make dev` that starts them all — and nothing more. Kiln shipped v0.1 with
-polished docs and a plan, yet the first time the owner opened it the gallery said "cannot reach its
-server" (CORS on `localhost`) and the README skipped `migrate` and `worker`.
+Then prove the **user's path**, not only the gates: in a fresh shell follow the README quick start
+word for word, open the exact URL each dev server prints, and see the skeleton page talk to the API.
+Two failures are common and invisible to the gates. First, Vite prints `localhost` while the API's
+CORS list often holds only `127.0.0.1`, so the page says it cannot reach the server; list both hosts
+for every dev and preview port, with a test. Second, a quick start that skips `migrate` or the worker
+works on the author's machine, where both already ran; `make dev` should start infra, migrate and
+every process, and the README should list nothing more.
 
 ## Phase 5 · Report and remember
 
 End with a message a reader can act on alone:
 
-1. The rules now in force (bullet list copied from `CLAUDE.md`, including the commit-after-every-turn routine).
+1. The rules now in force (bullet list copied from `CLAUDE.md`, including the commit routine and push policy).
 2. Commands: `make help` output.
 3. What is scaffolded and what is deliberately not (remote, deploy, auth…).
-4. Next step: when called by `ship`, return to it (architect and shape-plan come next); otherwise `docs/plan.md` phase 1, delivered with `/deliver-loop` (start it right away unless the owner said otherwise).
+4. Next step: when called by `ship`, return to it (architect and shape-plan come next); otherwise `docs/plan.md` phase 1, delivered with `deliver-loop` (start it right away unless the profile's autonomy says to wait).
 
-Then write a `project` memory (`memory/project-<name>.md`) with the stack, presets chosen and any non-obvious constraint the user gave, and link it from `MEMORY.md`.
+If the session has a memory system, record the stack, the preset and any non-obvious constraint the
+user gave, so a later session does not ask again.
 
 ## The standing rule this skill installs (also in CLAUDE.md)
 
 **Every turn that changes files ends with a commit.** Before ending the turn: run the gates of every
-touched project (`make lint`, `make test`, or the per-project equivalent), update CHANGELOG/docs in the same
+touched part (`make lint`, `make test`, or the per-part equivalent), update CHANGELOG/docs in the same
 change, then `git commit` with a Conventional Commit whose scope is in `commitlint.config.mjs`.
 One commit per completed unit of work; several commits in one turn are fine. Commit only green.
-If the gates are red at the end of the turn, do not commit: say what fails and leave the tree dirty on purpose.
-When `origin` exists, push every green commit to it (David wants every commit pushed); with no remote, commits stay local. Never force-push or rewrite history on `main`.
+If the gates are red at the end of the turn, do not commit: say what fails and leave the tree dirty on
+purpose. Push per the delivery profile's push policy (default: commit locally; push every green
+commit only when the profile says so and `origin` exists). Never force-push or rewrite history on `main`.
 
 ## Do not
 
 - Re-run `git init` or overwrite an existing `CLAUDE.md`, `Makefile` or `docs/` without reading them first; merge instead.
-- Add a tool the house baseline does not use (no Biome instead of ESLint+Prettier, no Poetry instead of uv) unless the user asks.
+- Add a tool the baseline does not use (no Biome instead of ESLint + Prettier, no Poetry instead of uv) unless the user asks.
 - Leave placeholders (`{{…}}`) in committed files.
 - Scaffold features. The skill ends at a green, empty, documented repo plus `docs/plan.md`.
 - Skip Phase 2b because "it is a small project": a one-page ADR takes ten minutes and is what later sessions read first.

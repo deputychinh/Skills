@@ -27,7 +27,7 @@
 
 - OWASP Top 10:2025; OWASP ASVS 5.0 (2025); OWASP Cheat Sheet Series; OWASP API Security Top 10 (2023).
 - Mozilla Web Security Guidelines; NIST SP 800-63B (authentication).
-- Vietnam Decree 13/2023/ND-CP (personal data protection); GDPR for EU users.
+- GDPR for EU users, plus the data-protection law of every country the product serves (for example Vietnam Decree 13/2023/ND-CP, Brazil LGPD, California CCPA).
 
 ## Frontend, UX, accessibility
 
@@ -40,7 +40,7 @@
 ## Process and delivery
 
 - Nicole Forsgren, Jez Humble, Gene Kim, _Accelerate_ (2018); DORA reports (2024, 2025).
-- Jez Humble & David Farley, _Continuous Delivery_ (2010); Dave Farley, _Modern Software Engineering_ (2021).
+- Jez Humble & Dave Farley, _Continuous Delivery_ (2010); Dave Farley, _Modern Software Engineering_ (2021).
 - Kent Beck, _Test-Driven Development by Example_ (2002); Freeman & Pryce, _Growing Object-Oriented Software, Guided by Tests_ (2009).
 - Nygard, "Documenting Architecture Decisions" (2011); Simon Brown, C4 model; conventionalcommits.org; keepachangelog.com; semver.org.
 - Titus Winters et al., _Software Engineering at Google_ (2020) — code review, testing culture, monorepo tooling.

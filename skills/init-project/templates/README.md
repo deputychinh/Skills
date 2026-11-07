@@ -2,7 +2,7 @@
 
 **{{PURPOSE}}**
 
-_One English sentence for readers who do not speak the docs language._
+_When the docs are not in English, add one English sentence here for readers who do not speak the docs language; otherwise delete this line._
 
 | Screen 1 | Screen 2 |
 | --- | --- |
@@ -10,13 +10,11 @@ _One English sentence for readers who do not speak the docs language._
 
 ## Quick start
 
-Requires: Python 3.12 + [uv](https://docs.astral.sh/uv/), Node ≥ 24, Docker (for local infrastructure).
+Requires: Node ≥ 24, Docker (for local infrastructure), and for a Python backend Python 3.12 + [uv](https://docs.astral.sh/uv/).
 
 ```sh
 make install   # dependencies
-make up        # local infrastructure
-make api       # API with reload
-make web       # web app
+make dev       # infrastructure, migrations, API and web together
 ```
 
 `make help` lists every command.
@@ -42,7 +40,7 @@ Details: [docs/architecture/README.md](docs/architecture/README.md) · decisions
 ## Structure
 
 ```
-backend/   API (uv, ruff, mypy strict, pytest)
+backend/   API — Python: uv, ruff, mypy strict, pytest (Node: services/api, NestJS, ESLint, Vitest)
 web/       web app (TS strict, ESLint, Stylelint, Vitest, Playwright)
 docs/      plan, ADRs, architecture, conventions, testing, screenshots
 ```

@@ -8,7 +8,7 @@
 - Consistency: one aggregate per transaction; use `SELECT … FOR UPDATE` or optimistic version columns for concurrent writes; serializable only where money/stock is at stake.
 - Time: store UTC; timezone is a presentation concern; business-hours logic lives in the domain with explicit calendars.
 - Soft delete only when the business needs restore/audit; otherwise hard delete + audit log.
-- PII: classify columns; encrypt at rest where required; retention policy and delete path exist before launch (GDPR/PDPD Vietnam Decree 13/2023).
+- PII: classify columns; encrypt at rest where required; retention policy and delete path exist before launch (GDPR and the local data-protection law of each market served).
 
 ## Idempotency, retries, queues
 

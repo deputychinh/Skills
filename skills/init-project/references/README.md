@@ -11,4 +11,5 @@ review → ADR 0001 + architecture doc) and that every later session can cite. E
 | `security.md`             | every project; the checklist runs before the first deploy and on every auth/input change |
 | `frontend-and-ux.md`      | any screen: layout, navigation, accessibility, performance budgets, design tokens        |
 | `delivery.md`             | repo process: trunk-based, CI, DORA four keys, docs, ADRs, changelog, versioning         |
+| `vite-monorepo.md`        | a repo with several deployables or a shared UI package: layout, scaffold, gotchas        |
 | `reading-list.md`         | the canon, one line each, so a new ADR can cite the right source                         |

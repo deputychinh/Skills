@@ -1,11 +1,12 @@
 # {{PROJECT_NAME}} — one command per task. `make help` lists them.
+# Python API (uv + FastAPI + Alembic) and a Vite web app. Drop the web targets for a backend-only repo.
 .DEFAULT_GOAL := help
-.PHONY: help install lint format test e2e ci up down api web migrate
+.PHONY: help install dev up down api web migrate lint format test e2e bench ci
 SHELL := /bin/bash
 BACKEND := cd backend &&
 WEB := cd web &&
 API_PORT ?= 8000
-WEB_PORT ?= 3000
+WEB_PORT ?= 5173
 
 help: ## Show this help
 	@grep -E '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -17,11 +18,14 @@ install: ## Install repo tooling, backend (uv) and web (npm) dependencies
 	$(WEB) npm install
 
 # --- run ---------------------------------------------------------------------
+dev: up migrate ## Start infra, migrate, then run API and web together (Ctrl-C stops both)
+	$(MAKE) -f $(firstword $(MAKEFILE_LIST)) -j 2 api web
+
 api: ## Run the API with reload on :$(API_PORT)
 	$(BACKEND) uv run uvicorn app.main:app --reload --port $(API_PORT)
 
 web: ## Run the web app in development on :$(WEB_PORT)
-	$(WEB) npm run dev
+	$(WEB) npm run dev -- --port $(WEB_PORT) --strictPort
 
 up: ## Start local infrastructure (docker compose)
 	docker compose up -d --wait
@@ -29,7 +33,7 @@ up: ## Start local infrastructure (docker compose)
 down: ## Stop local infrastructure
 	docker compose down
 
-migrate: ## Apply database migrations
+migrate: ## Apply database migrations (Alembic)
 	$(BACKEND) uv run alembic upgrade head
 
 # --- quality -----------------------------------------------------------------
@@ -48,5 +52,8 @@ test: ## Unit and API/component tests with coverage
 
 e2e: ## Browser journeys (Playwright) against the built app
 	$(WEB) npx playwright test
+
+bench: ## Performance benchmark (k6) against a running API; see benchmarks/plan.md
+	k6 run --env BASE_URL=http://127.0.0.1:$(API_PORT) bench/api.js
 
 ci: lint test ## Everything CI runs
