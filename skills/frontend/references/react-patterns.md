@@ -1,4 +1,8 @@
-# React patterns — the house way
+# React patterns — React (secondary)
+
+> React is the secondary stack. Use this file only when the repo already uses React (David's Kiln
+> and american-english-coach); new apps follow `vue-patterns.md`. Stack-neutral rules (four states,
+> forms, a11y, testing, security) match the Vue file.
 
 Tags: **[react.dev]**, **[TQ]** TanStack Query, **[TR]** TanStack Router, **[OWASP]**, **[web.dev]**,
 **[patterns.dev]**, **[house]** David's conventions (`init-project/references/frontend-and-ux.md`,

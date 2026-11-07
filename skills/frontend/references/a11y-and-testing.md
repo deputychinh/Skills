@@ -1,7 +1,7 @@
-# Accessibility and testing for React UI
+# Accessibility and testing for Vue and React UI
 
 Tags: **[WCAG]** WCAG 2.2 Understanding docs, **[APG]** WAI-ARIA Authoring Practices, **[TL]**
-Testing Library, **[house]**, **[PW]** Playwright. **(memory)** = not re-checked online for this draft.
+Testing Library, **[VTL]** Vue Testing Library, **[house]**, **[PW]** Playwright. **(memory)** = not re-checked online for this draft.
 Visual criteria (contrast, focus appearance, target size, motion) live in `css-design`.
 
 ## Contents
@@ -45,7 +45,8 @@ Verified on 2026-11-07 against https://www.w3.org/WAI/ARIA/apg/practices/keyboar
 - Focus is never lost to `body`: after closing a dialog return focus to the trigger; after deleting
   an item move it to the next item or the list heading. **[APG]**
 - Modal: native `<dialog>` with `showModal()` gives inert background and Escape; set initial focus to
-  the first meaningful control. **(memory)**
+  the first meaningful control. **(memory)** Vue: reach the element with `useTemplateRef` and render
+  it inside `<Teleport to="body">`; React: a `ref`.
 - Pointer and keyboard must update the same focus/selection state. **[APG]**
 
 ## 3. Live regions and status
@@ -94,8 +95,25 @@ https://testing-library.com/docs/user-event/intro
   `beforeEach`. `user-event` fires the full event sequence and refuses hidden or disabled targets;
   use `fireEvent` only for what `user-event` cannot do. **[TL]**
 - `findBy*` for things that appear asynchronously; `queryBy*` only to assert absence. **[TL] (memory)**
-- Wrap renders in the repo helper that provides `QueryClientProvider` (fresh client per test,
-  `retry: false`), router and locale. **[TQ docs on testing] (memory)**
+
+**Vue (primary).** Verified on 2026-11-07 against
+https://testing-library.com/docs/vue-testing-library/intro and …/vue-testing-library/api
+
+- `@testing-library/vue` (v8 for Vue 3) wraps `@vue/test-utils` and re-exports the DOM Testing
+  Library queries. `render(Component, { props, slots, global: { plugins } })`; `emitted()` checks
+  emitted events, `await rerender(props)` changes props. **[VTL]** (`global.plugins` passthrough: memory)
+- Wrap `render` in a repo helper that installs a fresh Pinia (`createTestingPinia` from
+  `@pinia/testing`, or `createPinia()`), `VueQueryPlugin` with a new `QueryClient` (`retry: false`),
+  an in-memory router (`createMemoryHistory`, `await router.isReady()`) and vue-i18n. **(memory)**
+- Use `@vue/test-utils` directly only for what VTL hides (e.g. stubbing a heavy child, testing a
+  composable inside a host component); never assert on `wrapper.vm`. **(memory)**
+- Composables without components: test through a tiny host component, or call pure ones directly.
+  **(memory)**
+
+**React (secondary).**
+
+- `@testing-library/react`; wrap renders in the repo helper that provides `QueryClientProvider`
+  (fresh client per test, `retry: false`), router and locale. **[TQ docs on testing] (memory)**
 - Name tests as sentences of behaviour ("shows a retry button when the list fails to load"). **[house]**
 - Coverage gates: Kiln web ≥ 80 % lines; keep the repo's threshold. **[house]**
 
@@ -104,12 +122,12 @@ https://testing-library.com/docs/user-event/intro
 - Fake at the boundary the app owns: MSW handlers for `fetch`, or the repo's fake API client
   (`src/test-utils/api-mock.ts` in AEC). One handler per state: success, empty list, 500 problem
   details, slow response. **[house] (memory for MSW API)**
-- Never mock the hook under test or TanStack Query itself. **(memory)**
+- Never mock the composable/hook under test, Pinia, or TanStack Query itself. **(memory)**
 
 ## 7. Playwright + axe
 
-- Run against the production build, not the dev server (AEC: build, serve the export on 8765).
-  **[house]**
+- Run against the production build, not the dev server (Vue + Vite: `npm run build` then
+  `vite preview` as Playwright's `webServer`; AEC: serve the export on 8765). **[house]**
 - Locate with `page.getByRole(...)`/`getByLabel(...)`; web-first assertions (`await
 expect(locator).toBeVisible()`); no fixed sleeps. **[PW] (memory)**
 - Axe: `new AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze()`;
@@ -121,8 +139,8 @@ expect(locator).toBeVisible()`); no fixed sleeps. **[PW] (memory)**
 
 ## 8. What not to test
 
-- Implementation details: state values, hook call counts, class names, component instance methods.
-  **[TL] (memory)**
-- Third-party libraries' own behaviour (router matching, query caching).
+- Implementation details: state values, `wrapper.vm`, store internals, hook or composable call counts,
+  class names, component instance methods. **[TL] (memory)**
+- Third-party libraries' own behaviour (router matching, query caching, Pinia reactivity).
 - Whole-page DOM snapshots — they break on every copy change and prove nothing.
 - Styles in jsdom (no layout engine); check visuals with screenshots and Storybook instead.

@@ -10,6 +10,7 @@ const SKILL_MAX_LINES = 500;
 // Backticked paths into a skill's own folders, e.g. `templates/story.md` or `references/`.
 // Markdown links: [text](target).
 const MARKDOWN_LINK = /\]\(([^)\s]+)\)/g;
+const PLACEHOLDER = /\{\{[A-Z][A-Z0-9_]*\}\}/;
 const LOCAL_PATH = /`((?:templates|references)\/[\w./-]*)`/g;
 
 const errors = [];
@@ -71,7 +72,9 @@ for (const skill of skills) {
     const body = readFileSync(file, 'utf8');
     // SKILL.md may talk about placeholders; reference files must not carry unfilled ones.
     if (file !== skillFile) {
-      if (body.includes('{{')) fail(relative(ROOT, file), 'placeholder {{…}} outside templates/');
+      // Template placeholders look like {{PROJECT_NAME}}; Vue's {{ expr }} in examples is fine.
+      if (PLACEHOLDER.test(body))
+        fail(relative(ROOT, file), 'placeholder {{…}} outside templates/');
       continue;
     }
     for (const [, path] of body.matchAll(LOCAL_PATH)) {
