@@ -8,7 +8,7 @@ Each item is a paraphrase written as an instruction and tagged with its source. 
 
 1. [Discover](#1-discover-intake-problem-framing) · 2. [Define / Spec](#2-define--spec) · 3. [Plan & estimate](#3-plan--estimate) · 4. [Architect](#4-architect) · 5. [Build](#5-build) · 6. [Test](#6-test) · 7. [Review](#7-review) · 8. [Release](#8-release) · 9. [Operate](#9-operate) · 10. [Learn / Retro](#10-learn--retro) · 11. [Demo](#11-demo--communicate-results) · [Minimal process](#minimal-viable-process-for-a-solo-developer--ai-agent)
 
-Phase owners in this repo: Discover → `discover`; Define → `spec`; Plan → `shape-plan`; Architect → `architect`; Build, Test, Review → `deliver-loop`; Release → `shape-plan` (deploy in the walking skeleton) and `deliver-loop` (release cut); Operate → not covered yet (SLOs, alerting, incident response are out of scope until a project runs in production); Learn → `improve-skills`; Demo → `demo`.
+Phase owners in this repo (`ship` runs them all): Discover → `discover`; Define → `spec`; Plan → `shape-plan`; Architect → `architect` (+ `system-design`); Build, Test, Review → `deliver-loop`; performance targets and baselines → `benchmark`; Release → `release`; Operate → `monitor`; bugs → `fix-bug`; Learn → `improve-skills`; Demo → `demo`.
 
 Verification: Shape Up, the DORA metrics, the Scrum Guide 2020 and Working Backwards items were checked against primary sources on 2026-11-07; every other line is a paraphrase from memory. Brooks' "throw one away" was dropped: he retracted it in the 1995 edition (ch. 19).
 

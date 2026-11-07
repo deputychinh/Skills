@@ -8,7 +8,7 @@ Paraphrased from sources fetched 2026-11-07; _(secondary)_ marks third-party cov
 
 Versions and task sizes (superpowers' 2–5 minute tasks, BMad v6/V7) were current on 2026-11-07; recheck before relying on them.
 
-> **How this repo uses it.** Adopted: trigger-plus-what descriptions, progressive disclosure, ledgers in files, fresh-evidence verification, capped review loops. **Not adopted:** human approval as a hard gate before code (superpowers brainstorming, the spec row below) — David asked for autonomy, so `ship` records rulings instead and asks only owner-only questions, once, at triage.
+> **How this repo uses it.** Adopted: trigger-plus-what descriptions, progressive disclosure, ledgers in files, fresh-evidence verification, capped review loops. **Not adopted:** human approval as a hard gate before code (superpowers brainstorming, the spec row below) — the delivery profile's default autonomy is decide-and-record, so `ship` records rulings instead and asks only owner-only questions, once, at triage.
 
 ## 1. Anthropic: Agent Skills guidance
 

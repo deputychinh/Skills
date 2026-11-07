@@ -1,137 +1,196 @@
 ---
 name: ship
-description: Use when David asks to build, make or fix anything — "làm cho tôi…", "tôi cần một app…", "sửa lỗi…", "bị lỗi", "không chạy", "X does nothing", "build…", "/ship" — in a new or an existing repo, or to resume a delivery that has `docs/delivery/*/status.md`. Carries the request from intake to a demo David can open, deciding everything that does not need him.
+description: The single entry point for the whole software lifecycle — build new, release, verify after deploy, monitor, maintain — in a new or existing repo. Use whenever the user asks to build, make, add, change, fix, speed up or look after software, even when the request names a specialist area: "build me an app", "add a feature", "it's broken", "bug", "X does nothing", "error rate went up after the deploy", "incident", "alert firing", "it's slow", "optimise", "upgrade dependencies", "security patch", "compare A and B", "deploy", "release", "/ship", or to resume a delivery with `docs/delivery/*/status.md`. Triages the request, keeps a ledger, calls the other skills itself (discover, spec, benchmark, architect, shape-plan, deliver-loop, verify-app, demo, release, monitor, fix-bug, and more) and finishes with evidence the user can open. Prefer it over any specialist skill for a whole request; specialists are for one step inside it.
 ---
 
-# ship — from one request to a demo David can open
+# ship — one entry point for the whole lifecycle
 
-You are the **controller**: pick the process size, keep the ledger, run the phase skills, check their
-evidence, finish with a demo. You do not grade your own work and you do not ask "should I continue?".
+`ship` is the one skill the user needs to invoke. It covers every stage of a product's life —
+**Build new → Release → Post-deploy verification → Operate/Monitor → Maintain (bugs, upgrades,
+security patches, debt) → back to Build** — and calls the other 19 skills itself; the user never has
+to name them. You are the **controller**: pick the path, keep the ledger, run the stage skills, check
+their evidence, finish with something the user can open. You do not grade your own work and you do
+not ask "should I continue?".
+
+## Lifecycle at a glance
+
+| Stage                    | What happens                                                        | Skills `ship` calls                                                        | Artefact left                                              |
+| ------------------------ | ------------------------------------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Build new                | brief, spec, design, plan, items built and reviewed ≥ 9             | `discover`, `spec`, `benchmark`, `architect`, `shape-plan`, `deliver-loop` | `docs/delivery/<slug>/` brief, spec, design, plan; commits |
+| Release                  | version, changelog, deploy (or "local only"), smoke, rollback ready | `release`                                                                  | tag, CHANGELOG section, release note                       |
+| Post-deploy verification | every AC checked on the target, benchmark diff, results page        | `verify-app`, `benchmark`, `demo`                                          | evidence per AC, `demo.md` + a page                        |
+| Operate / Monitor        | SLOs, symptom alerts, dashboards; incident path when one fires      | `monitor`                                                                  | SLO file, alert rules, incident notes                      |
+| Maintain                 | bugs, upgrades, security patches, performance, debt                 | `fix-bug`, `cache-optimize`, `deliver-loop`                                | regression tests, backlog items, commits                   |
+| Learn                    | retro on every path; lessons into the skills                        | `improve-skills`                                                           | Retro section in `status.md`, skill edits                  |
+
+## Where am I? (every invocation)
+
+Before anything else, decide which stage and loop you are in. Read the newest
+`docs/delivery/*/status.md` whose status is not `done`: its **Next action** is what you do now. With no
+open ledger, read the repo state — `docs/backlog.md` items in `doing`, a failing CI run, an open
+release note, a `blocked` item — and only then treat the message as a new request for triage. This is
+what lets a fresh session or a compacted context pick up exactly where the last one stopped.
 
 ## Core rules
 
 1. **Ledger first.** State lives in `docs/delivery/<NNN-slug>/status.md` (copy `templates/status.md`),
-   not in memory. Update it at every phase change, including its **Next action** line; statuses never go
-   backwards. After a compaction or in a new session: re-invoke `ship`, read `status.md`, continue at
-   Next action.
+   not in memory. Update it at every stage change, including **Next action**, the **Progress log**
+   (one line per item or slice) and **Spent: x of appetite**. Statuses never go backwards.
 2. **Ask only what nobody else can answer** — secrets and API keys, paid accounts, hosting, business or
-   legal rules, irreversible or outward-facing actions. First look for the answer yourself (environment
-   variables, `.env`, the macOS keychain, the repo, memory). Ask with one AskUserQuestion (≤ 4
-   questions, all of them, at triage) only when an answer blocks the next phase; otherwise write the
-   question in `status.md`, take a safe default (e.g. a fake adapter for a missing key), mention it at
-   the end of the turn and keep going. Everything else: decide, write it under "Rulings" with the
-   reason, move on. David: "cứ thế
-   làm, không cần chờ tôi approve".
+   legal rules, irreversible or outward-facing actions. Look for the answer yourself first (environment
+   variables, `.env`, the OS keychain, the repo). Ask once, at triage, with all such questions together
+   (≤ 4) and only when an answer blocks the next stage; otherwise write the question in `status.md`,
+   take a safe default (a fake adapter for a missing key), mention it and keep going. Everything else:
+   decide, write it under "Rulings" with the reason, move on.
 3. **No claim without fresh evidence**: a command run now, its output read, a screenshot looked at.
 4. **Working software over paperwork**: artefacts as short as the work allows; a walking skeleton runs
    from the README before any feature work.
-5. **Appetite is fixed, scope varies**: when the appetite is spent, cut scope (record what and why);
-   never extend silently.
-6. Answer David in Vietnamese; repo files, code and commits in English unless the repo says otherwise.
+5. **Appetite is fixed, scope varies**: when the appetite is spent, cut scope and record what and why;
+   never extend silently. Release findings beyond the appetite go to the backlog; they do not start a
+   new slice on their own.
+6. **Stop conditions**: a gate that cannot go green after 3 honest attempts → status `blocked`, stop,
+   report exactly what fails (command and output). An answer only the owner can give that blocks every
+   path → `blocked` too. Nothing else stops the loop.
+7. **Notify once per slice**: one short message per finished slice (what changed, where to see it,
+   what is next) — and a push notification when the environment offers one. No feedback from the user
+   by the next slice → take the next slice and record "no feedback" in the slice row.
+8. Reply in the language from the delivery profile; repo files, code and commits in English unless the
+   repo says otherwise.
+
+## Delivery profile
+
+Read a `## Delivery profile` section from the project's `CLAUDE.md`, else from `~/.claude/CLAUDE.md`
+(the delivery profile, see the repo README). Use the default for any key that is absent:
+
+| Key              | Default when absent                                                                                                     |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| reply language   | the language the user writes in                                                                                         |
+| frontend default | the repo's existing framework; new project: ask once at triage (Vue or React both supported)                            |
+| backend default  | the repo's existing stack; new project: ask once at triage (Node/TypeScript or Python both supported)                   |
+| autonomy         | decide-and-record: ask only what nobody else can answer (secrets, money, legal, irreversible or outward-facing actions) |
+| push policy      | commit locally; push only when the profile says `push every green commit` and a remote exists                           |
+| review gate      | independent review, ship at ≥ 9/10 with requirements fit = 1 and security ≥ 0.5, at most 3 improve rounds               |
+| deploy target    | none ("local only") until the user names one                                                                            |
+| projects folder  | the current working directory's parent, or ask once                                                                     |
+
+Write every answer to a triage question back into the project's `CLAUDE.md` profile section, so it is
+never asked again, and copy the keys you used into the ledger's "Delivery profile used" block.
 
 ## Step 0 · Triage
 
-| Request looks like                        | Path                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Bug                                       | **Bug**: `status.md` with current, expected and _unchanged_ behaviour → a backlog item `<PREFIX>-<n>` → reproduce as a failing test in the environment the report names (browser engine, OS, data) → fix → `deliver-loop` steps 1 and 4–7 for that item (its story `docs/stories/<PREFIX>-<n>.md` links `status.md`; its ACs are the expected and unchanged behaviour) (review ≥ 9, commit, push) → `verify-app` → ≤ 5-line report. |
-| One-file fix, copy or config change       | **Quick**: test → change → `verify-app` → short report. No delivery folder.                                                                                                                                                                                                                                                                                                                                                         |
-| One clear feature in an existing repo     | **Small**: `spec` (stories, ACs, non-goals only) → `shape-plan` (one or two backlog items) → `deliver-loop` → `verify-app` → `demo`                                                                                                                                                                                                                                                                                                 |
-| Small new tool or app for David himself   | **Small new**: light `discover` (headline, five questions, appetite; no FAQ or impact map) → `spec` → `init-project` (smallest preset that fits) → `shape-plan` → `deliver-loop` → `verify-app` → `demo`                                                                                                                                                                                                                            |
-| New product, vague idea, several features | **Full**: every phase below                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Request looks like                              | Path                                                                                                                                                                                                       |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| New product, vague idea, several features       | **Full**: every stage below                                                                                                                                                                                |
+| Small new tool or app                           | **Small new**: light `discover` (headline, five questions, appetite) → `spec` → `init-project` (smallest preset) → `shape-plan` → `deliver-loop` → `verify-app` → `demo`                                   |
+| One clear new feature in an existing repo       | **Small**: `spec` (stories, ACs, non-goals) → `shape-plan` (one or two items) → `deliver-loop` → `verify-app` → `demo`                                                                                     |
+| Change to an existing feature                   | **Small**, plus `architect` when the change touches a decision recorded in an ADR (update or supersede it first)                                                                                           |
+| Bug                                             | **Bug**: `fix-bug` (reproduce → root cause → failing regression test → fix → verify, and after the next deploy) with `deliver-loop` steps 1 and 4–7 for the item → short retro                             |
+| Incident or production alert                    | **Incident**: `monitor` incident path (mitigate first: roll back or flag off, then stabilise) → `fix-bug` for the cause → `release` → blameless note → retro                                               |
+| Slow or heavy                                   | **Performance**: `benchmark` B baseline on seeded, realistic data (recorded before any code change) → `cache-optimize` → `deliver-loop` steps 1 and 4–7 → CI guard on the workload → `verify-app` → `demo` |
+| Dependency upgrade, security patch, maintenance | **Quick + audit**: audit (advisories, changelogs, breaking changes) → test → change → full CI → `verify-app` → short retro                                                                                 |
+| One-file fix, copy or config change             | **Quick**: test → change → `verify-app` → short retro. No delivery folder.                                                                                                                                 |
+| Research or comparison only                     | **Research**: `benchmark` A or `discover` → a results page via `demo`. No code.                                                                                                                            |
 
-On any path, when the product calls an AI model: run `architect` step 6 (AI calls, eval set,
-fallback, budget) and load the `claude-api` skill before choosing how to call the model (e.g. native
-PDF or image input instead of a hand-made extraction pipeline).
+On any path, when the product calls an AI model: run `architect`'s AI-call step (eval set, fallback,
+budget) and load the `claude-api` skill before choosing how to call the model.
 
 Also in triage:
 
-- **Where**: a new repo goes in `~/Documents/David/Code/<slug>`. Create the folder and `git init`
-  first (init-project Phase 1) so `docs/delivery/` has a home; the rest of `init-project` runs at phase 3.
-- **Existing repo without `CLAUDE.md`, Makefile or backlog**: read it, map its real lint/test/run
-  commands, write a minimal `docs/backlog.md` and a `CLAUDE.md` with those commands before building.
-- **Owner-only questions** (rule 2), e.g. "an `ANTHROPIC_API_KEY` for the app?", "deploy anywhere?".
+- **Where**: a new repo goes in `<projects folder>/<slug>` per the profile. Create it and `git init`
+  first so `docs/delivery/` has a home; the rest of `init-project` runs at the Set up stage.
+- **Existing repo without `CLAUDE.md`, Makefile or backlog**: map its real lint, test and run commands,
+  write a minimal `docs/backlog.md` and a `CLAUDE.md` with those commands before building.
 - **Numbering**: `NNN` is the next free three-digit number under `docs/delivery/`.
 - Write the path, the reason and the appetite into `status.md`. Upgrade the path when the work turns
   out bigger; never downgrade to skip a gate.
 
-## Phases (Full path)
+## Stages (Full path)
 
-| #   | Phase     | Skill                                                              | Output                                            | Gate to leave                                                                             |
-| --- | --------- | ------------------------------------------------------------------ | ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| 1   | Discover  | `discover` (+ `benchmark` A: 2–3 reference products)               | `brief.md`, product-benchmark table               | a credible press release, or the idea is killed with a reason                             |
-| 2   | Specify   | `spec` (+ `benchmark` B: workloads and targets)                    | `spec.md`, `benchmarks/plan.md`                   | no `[NEEDS CLARIFICATION]`; every quality target has a workload and a number              |
-| 3   | Set up    | `init-project` (new repo)                                          | green, documented repo                            | `make ci` green; README quick start runs                                                  |
-| 4   | Architect | `architect` (+ `system-design`, `database`)                        | `design.md` + ADRs                                | every driving characteristic has a decision and a fitness check                           |
-| 5   | Plan      | `shape-plan`                                                       | `plan.md` + backlog items                         | skeleton first, benchmark harness second; every AC covered; first slice fits the appetite |
-| 6   | Build     | `deliver-loop` (+ `backend`, `frontend`, `css-design`, `database`) | reviewed commits per item                         | each item shipped (≥ 9/10) or filed as debt                                               |
-| 7   | Verify    | `verify-app` (+ `benchmark` vs baseline, `cache-optimize`)         | evidence per AC, benchmark diff                   | every AC has evidence; no unexplained regression                                          |
-| 8   | Demo      | `demo`                                                             | `demo.md` + a page                                | David has a link, the app URL and the run command                                         |
-| 9   | Release   | `release` (at a release boundary)                                  | tag, deploy or "local only", smoke, SLOs          | smoke green on the target; findings in the backlog                                        |
-| 10  | Learn     | `improve-skills` (+ retro)                                         | lessons in the skills repo, next slice re-planned | committed and pushed                                                                      |
+| #   | Stage     | Skill                                                              | Output                               | Gate to leave                                                                             |
+| --- | --------- | ------------------------------------------------------------------ | ------------------------------------ | ----------------------------------------------------------------------------------------- |
+| 1   | Discover  | `discover` (+ `benchmark` A: 2–3 reference products)               | `brief.md`, product-benchmark table  | a credible press release, or the idea is killed with a reason                             |
+| 2   | Specify   | `spec` (+ `benchmark` B: workloads and targets)                    | `spec.md`, `benchmarks/plan.md`      | no `[NEEDS CLARIFICATION]`; every quality target has a workload and a number              |
+| 3   | Set up    | `init-project` (new repo)                                          | green, documented repo               | `make ci` green; README quick start runs                                                  |
+| 4   | Architect | `architect` (+ `system-design`, `database`)                        | `design.md` + ADRs                   | every driving characteristic has a decision and a fitness check                           |
+| 5   | Plan      | `shape-plan`                                                       | `plan.md` + backlog items            | skeleton first, benchmark harness second; every AC covered; first slice fits the appetite |
+| 6   | Build     | `deliver-loop` (+ `backend`, `frontend`, `css-design`, `database`) | reviewed commits per item            | each item shipped per the review gate, filed as debt, or `blocked`                        |
+| 7   | Verify    | `verify-app` (+ `benchmark` vs baseline, `cache-optimize`)         | evidence per AC, benchmark diff      | every AC has evidence; no unexplained regression                                          |
+| 8   | Demo      | `demo`                                                             | `demo.md` + a page                   | the user has a link, the app URL and the run command                                      |
+| 9   | Release   | `release` (at a release boundary)                                  | tag, deploy or "local only", smoke   | smoke green on the target; findings in the backlog                                        |
+| 10  | Operate   | `monitor` (once there is a deploy target)                          | SLOs, symptom alerts, runbook        | every user-facing SLO has an alert that was fired once on purpose                         |
+| 11  | Learn     | retro + `improve-skills`                                           | Retro section, lessons in the skills | retro written; lessons committed                                                          |
 
-A brief is credible when the five customer questions are answered from facts David gave or that you
-can cite; numbers you cannot source are marked `HYPOTHESIS`.
+A brief is credible when the five customer questions are answered from facts the user gave or that
+you can cite; numbers you cannot source are marked `HYPOTHESIS`.
 
-## The loops (this is not a straight line)
+## The loops
 
 ```
-Request → triage ─┬─> discover → spec → [init] → architect → shape-plan ─┐
-                  │                                                       v
-                  │   ┌──────────── Slice loop (one appetite-sized slice) ───────────┐
-                  │   │  plan slice → Item loop × N → verify-app → demo → feedback   │
-                  │   │       ^                                            │         │
-                  │   │       └──── re-plan: spec / plan updated, cut scope ┘         │
-                  │   └───────────────────────────────┬──────────────────────────────┘
-                  │                                   v  release boundary
-                  │                    release → observe → findings → backlog ──> next slice
-                  └─ Bug / Quick paths join at the Item loop
-Item loop (deliver-loop): story → design → TDD → verify → review → improve (≤ 3) → ship item
-Learn loop: every slice and release → retro → improve-skills → the next run uses better skills
+Request → Where am I? → triage ─┬─> discover → spec → [init] → architect → shape-plan ─┐
+                                │                                                     v
+                                │  ┌──────── Slice loop (one appetite-sized slice) ────────┐
+                                │  │ Item loop × N → verify-app → demo → notify → feedback │
+                                │  │      ^                                    │           │
+                                │  │      └── re-plan: spec / plan updated, scope cut ┘     │
+                                │  └──────────────────────────┬────────────────────────────┘
+                                │                             v  release boundary
+                                │        release → post-deploy verify → monitor → findings
+                                │                                                 │
+                                │        Maintain: bugs (fix-bug), upgrades, debt <┘ → backlog
+                                └─ Bug / Incident / Performance / Quick paths join at the Item loop
+Item loop (deliver-loop): story → design → TDD → verify → review → improve (≤ 3) → ship | debt | blocked
+Learn loop: every path ends with a retro → improve-skills
 ```
 
-1. **Item loop** — `deliver-loop`, one backlog item: build, verify, independent review, improve at
-   most 3 rounds, ship or file debt. Repeats until the slice's items are done.
-2. **Slice loop** — after each slice: `verify-app` (with the benchmark diff), `demo`, then read the
-   feedback (David's, the hypothesis metric, the benchmark) and **re-plan**: update `spec.md` and
-   `plan.md`, cut scope by the circuit breaker, pick the next slice. Write it in `status.md`.
-3. **Release loop** — at a release boundary (`plan.md` says which slice), `release`: tag, deploy,
-   smoke, observe; every finding becomes a backlog item that the next slice can take.
-4. **Learn loop** — every slice and release ends with a retro: what slowed us, what reviews caught
-   late; `improve-skills` puts it into the skills so the next request runs better.
-5. **Running unattended** — for anything longer than one sitting, start `/loop /deliver-loop`
-   (or re-invoke `ship`): each wake-up reads `status.md` and continues the current loop at its
-   Next action; a monitor or the review's completion wakes it, a 20–30 min heartbeat is the fallback.
+1. **Item loop** — `deliver-loop`, one backlog item at a time, under the review gate from the profile.
+2. **Slice loop** — after each slice: `verify-app` (with the benchmark diff), `demo`, notify the user
+   once, read the feedback (the user's, the hypothesis metric, the benchmark) and re-plan: update
+   `spec.md` and `plan.md`, cut scope by the circuit breaker, pick the next slice. No feedback → next
+   slice, recorded as "no feedback".
+3. **Release loop** — `ship` decides release boundaries (`plan.md` says which slice). `release` tags and
+   deploys, then post-deploy verification runs on the target, then `monitor` watches it. Every finding
+   becomes a backlog item; those beyond the appetite wait for the next planning round.
+4. **Maintain loop** — bugs go through `fix-bug`, incidents through `monitor` then `fix-bug`, upgrades and
+   patches through the Quick + audit path; each re-enters Build as backlog items.
+5. **Learn loop** — every path ends with a retro in `status.md` (two lines for Quick and Bug): what slowed
+   us, what reviews caught late, what to change. `improve-skills` folds lessons that hold for any
+   project into the skills.
+6. **Running unattended** — for anything longer than one sitting, start `/loop /ship` (or re-invoke
+   `ship`): each wake-up runs "Where am I?" and continues at Next action.
 
 ## Specialist skills (load the ones the work touches)
 
-| Phase                | When the work involves                                                     | Skill                                               |
+| Stage                | When the work involves                                                     | Skill                                               |
 | -------------------- | -------------------------------------------------------------------------- | --------------------------------------------------- |
 | 4 Architect          | a new system or a part that must scale, estimates, storage choice          | `system-design` (then `architect` records the ADRs) |
 | 4 Architect, 6 Build | tables, migrations, indexes, queries, transactions                         | `database`                                          |
 | 6 Build              | routes, services, domain, jobs, integrations                               | `backend`                                           |
-| 6 Build              | screens, components, hooks, forms, data fetching                           | `frontend`                                          |
+| 6 Build              | screens, components, forms, data fetching                                  | `frontend`                                          |
 | 6 Build              | tokens, layout, colour, typography, component states                       | `css-design`                                        |
-| 7 Verify             | a performance target, something slow, caching                              | `cache-optimize`                                    |
+| 7 Verify, Maintain   | a performance target, something slow, caching                              | `cache-optimize`                                    |
 | 1, 2, 5, 7           | comparing with other products; performance targets, baselines, regressions | `benchmark`                                         |
-| 9 Release            | tagging, deploying, smoke checks, rollback, monitoring                     | `release`                                           |
+| 9 Release            | tagging, deploying, smoke checks, rollback                                 | `release`                                           |
+| 10 Operate           | SLOs, alerts, dashboards, incidents                                        | `monitor`                                           |
+| Maintain             | a defect, in development or in production                                  | `fix-bug`                                           |
 
-## Build (phase 6)
+## Build (stage 6)
 
 `shape-plan` already wrote the backlog. The build and review rules are `deliver-loop`'s: run it in this
-conversation (it spawns the independent reviewer, which a subagent cannot), or start `/loop
-/deliver-loop` for long plans. Your job as controller between items: check each shipped item against
-`spec.md`, keep `status.md` current, and cut scope when the appetite runs out.
+conversation (it spawns the independent reviewer, which a subagent cannot). Between items: check each
+shipped item against `spec.md`, keep `status.md` current, cut scope when the appetite runs out.
 
 ## Finishing
 
-`verify-app`, then `demo`, then — at a release boundary — `release`, then the retro and `improve-skills`; then the next slice (the slice loop above) until the plan is done or the appetite is spent. The last message to David (Vietnamese, ≤ 12 lines):
-what he can open now (link, app URL, run command), what works by AC, what was cut and why, what is next.
+Every path ends the same way: evidence (`verify-app`), a results page (`demo`) where the path has one,
+a release at a release boundary, the retro, then `improve-skills`. The last message (≤ 12 lines): what
+the user can open now (link, app URL, run command), what works by AC, what was cut and why, what is
+next — or, when `blocked`, exactly what fails and what is needed.
 
 ## References
 
-- `references/sdlc-checklists.md` — per-phase checklists from the canonical SDLC books; most lines are
+- `references/sdlc-checklists.md` — per-stage checklists from the canonical SDLC books; most lines are
   paraphrases from memory, so check the book before quoting.
 - `references/agent-workflows.md` — what Anthropic's skill guidance, superpowers, spec-kit, BMad, Kiro
-  and Working Backwards skills do per phase, with URLs; items that contradict David's autonomy rule
-  are marked "not adopted".
+  and Working Backwards skills do per phase, with URLs; items that contradict the decide-and-record
+  autonomy default are marked "not adopted".
 - `templates/status.md` — the ledger.

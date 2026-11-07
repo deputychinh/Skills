@@ -1,6 +1,6 @@
 # deliver-loop gotchas
 
-Lessons from real cycles (mostly Kiln), one line each with the item that taught it. Read the
+Lessons from real cycles, one line each with the reason it matters. Read the
 section that matches the item before step 3; the core list in `SKILL.md` applies to every item.
 
 ## Contents
@@ -15,49 +15,49 @@ section that matches the item before step 3; the core list in `SKILL.md` applies
 
 ## Gates, commits and docs
 
-- Chain every step that must succeed — doc-editing scripts included — into the commit command (`python3 edit.py && make ci && git commit …`); in KILN-4 a doc script that stopped early still let the code commit go out without its docs.
-- Chain the gate and the commit so a red gate cannot commit: `make ci && git add … && git commit …` (in KILN-4 an `echo ci=$?` between them let a red run commit; the tree happened to be green after lint-staged formatted it).
-- Gate before commit by exit code, never by eyeballing filtered output: `make lint | tail -1` hides a failure (the pipe returns tail's status), and KILN-26 pushed a red lint that way. Chain `make lint && make test && git commit`, or check `$?` explicitly.
-- Every fix round that changes behaviour updates the CHANGELOG entry and the story QA table in the same commit (KILN-21 lost a point when only a "review changes" section was added).
+- Chain every step that must succeed — doc-editing scripts included — into the commit command (`python3 edit.py && make ci && git commit …`): a doc script that stops early otherwise still lets the code commit go out without its docs.
+- Chain the gate and the commit so a red gate cannot commit: `make ci && git add … && git commit …` — an `echo ci=$?` between them returns 0 and lets a red run commit.
+- Gate before commit by exit code, never by eyeballing filtered output: `make lint | tail -1` hides a failure (the pipe returns tail's status), so a red lint goes out looking green. Chain `make lint && make test && git commit`, or check `$?` explicitly.
+- Every fix round that changes behaviour updates the CHANGELOG entry and the story QA table in the same commit ; a separate "review changes" section leaves the main record stale and costs the docs point.
 - CHANGELOG `[Unreleased]` has an entry for this item; the story's Design and QA sections match the code that was actually written (names, paths, counts).
-- Every commit carries its own tests and doc updates (CHANGELOG, story, architecture). Splitting code and docs into later commits cost a delivery half-point on two items in a row.
+- Every commit carries its own tests and doc updates (CHANGELOG, story, architecture). Splitting code and docs into later commits leaves commits that are wrong on their own, and reviewers mark it down.
 - Docs that mention the touched area (README, architecture, security, testing, conventions) were re-read and updated. Markdown tables are re-aligned by Prettier (cells padded with spaces), so patch them by line prefix plus a distinctive substring, with `\s*` around `|`, never by exact string.
 - Every claim in the story ("all 16 pairs", "N tests") is backed by a test that asserts it.
 - Build the story's QA table from the real test names (grep them), never from memory: renamed and deleted tests made a reviewer drop the docs point.
 - Take test counts for the story from `pytest --collect-only` / the runner, never by hand.
-- Scripted doc/code edits must assert that every replacement matched (a silent no-op shipped a false test count in KILN-2).
+- Scripted doc/code edits must assert that every replacement matched — a silent no-op ships a false claim, such as a stale test count.
 - `git ls-files` has no generated or binary artefacts (`.coverage`, `dist/`, screenshots outside `docs/`).
-- Split the first commit of a cycle by part (ui components / app feature / e2e / docs): a 91-file first commit cost a delivery half-point that no later commit can win back, because `main` is never rewritten.
-- Run Prettier (and other formatters) from the repo root: from a subfolder it does not find the root `.prettierignore` and reformats generated files (an OpenAPI client grew a 1,900-line diff). Before committing, check `git diff --cached --stat` for files the task did not touch. Prettier reads `.prettierignore` from the working directory, so formatting inside `apps/web` rewrote the generated API schema twice (or give each app its own `.prettierignore`).
+- Split the first commit of a cycle by part (ui components / app feature / e2e / docs): a huge first commit cannot be reviewed, and no later commit can fix it because `main` is never rewritten.
+- Run Prettier (and other formatters) from the repo root: from a subfolder it does not find the root `.prettierignore` and reformats generated files such as an API client into a diff of thousands of lines. Before committing, check `git diff --cached --stat` for files the task did not touch (or give each app its own `.prettierignore`).
 
 ## Testing technique
 
 - A test derived from the table it checks proves nothing: pin expected tables literally and run one mutation by hand.
 - Run Python mutants with `PYTHONDONTWRITEBYTECODE=1` (or clear `__pycache__`): an edit restored within the same second can leave a stale `.pyc` that fakes a kill.
 - Mutation runners need a per-mutant timeout and must restore the file in `finally`: a mutant that makes a test hang otherwise leaves the mutated file in the tree. Give the suite a per-test timeout too (`pytest-timeout`).
-- Logging and error-mapping code is code: test handlers with the real exception classes of each dependency (botocore timeouts carry `response=None`), and keep library details out of the boundary (attach a `cause_code` in the adapter).
+- Logging and error-mapping code is code: test handlers with the real exception classes of each dependency (an SDK's timeout error may carry no response object at all), and keep library details out of the boundary (attach a `cause_code` in the adapter).
 - Test an entry point the way it is really started (`python -m pkg` as a subprocess), not only by importing `main`: a `spawn` child cannot import from `__main__`, and only the e2e caught it.
-- Before changing a shared component to fix a symptom seen in a story or test, reproduce the root cause in a real browser; KILN-7 shipped and then reverted an "image failed before React listened" fix whose symptom came from a bad sample (data URL). Make test fixtures behave like production inputs.
+- Before changing a shared component to fix a symptom seen in a story or test, reproduce the root cause in a real browser: a symptom produced by an unrealistic fixture (an inline data URL instead of a served file) leads to a fix that must later be reverted. Make test fixtures behave like production inputs.
 
 ## Concurrency and reliability
 
 - Concurrency: every read-modify-write is a lock or a compare-and-set, with a two-thread test.
-- Fakes hide concurrency bugs: every race claim needs one run against the real dependency (KILN-3: 14.5 % of concurrent completions failed on SeaweedFS, 0 % on the fake).
-- Prove a race fix with a deterministic interleaving (open transactions, or a wrapper that holds the window open after the write), never with sleep-then-check. Before relying on a database guard during a lock wait, test it: Postgres re-checks a waiting UPDATE only when the row changed.
+- Fakes hide concurrency bugs: every race claim needs one run against the real dependency — a race that fails a noticeable share of runs against a real object store can pass every time against an in-memory fake.
+- Prove a race fix with a deterministic interleaving (open transactions, or a wrapper that holds the window open after the write), never with sleep-then-check. Before relying on a database guard during a lock wait, test it: PostgreSQL re-checks a waiting UPDATE's condition only when the row changed.
 - Every write that acts on something it read earlier (reaping "exhausted" jobs, expiring "stale" uploads) must re-check that condition in the guarded write itself; a read-then-write gap is a race even when each statement is guarded.
 - Cleanup racing in-flight work (an expiry vs a server-side copy): make whichever side finishes last remove the garbage, and test both orders. Fakes must be able to land a copy after its source was deleted, as real S3 can; a fake that copies atomically hides the leak.
 - A sweep's batch must count only the items it acts on, plus a separate scan cap: counting skipped items toward the batch lets a run stall forever behind keys it must keep.
 - Stability wrappers (circuit breakers, rate limits) must judge the unit that does I/O (a page fetch), never the items read from it, and must ignore verdicts from calls that started before the state last changed (tickets with a generation). Test them with many threads, not only a fake clock.
-- Anything that reuses or caches (kept signed URLs, memoised data) needs a failure path that is never reused, and a test that fails the cached thing once: the "keep the still-valid URL" optimisation kept the URL that had just failed.
-- Throttle or batch per shared resource, not per item: a per-card refresh multiplied into cards × pages requests in an outage. A refresh asked for while a fetch is in flight must wait, not use up the window.
-- Timing and liveness work (watchdogs, leases, supervisors): before coding, write the invariant as arithmetic over the constants (every backstop < what the lease has left when the heartbeat freezes at _any_ moment: during work, a claim, a stop) and list every freeze point; test the production wiring end to end (supervisor → child → worker → watchdog), not only the parts. KILN-28 took five reviews because each round found one more window (GIL, frozen heartbeat, stop path, claim → watch).
+- Anything that reuses or caches (kept signed URLs, memoised data) needs a failure path that is never reused, and a test that fails the cached thing once: a "keep the still-valid URL" optimisation will otherwise keep the URL that just failed.
+- Throttle or batch per shared resource, not per item: a per-card refresh multiplies into cards × pages requests during an outage. A refresh asked for while a fetch is in flight must wait, not use up the window.
+- Timing and liveness work (watchdogs, leases, supervisors): before coding, write the invariant as arithmetic over the constants (every backstop < what the lease has left when the heartbeat freezes at _any_ moment: during work, a claim, a stop) and list every freeze point; test the production wiring end to end (supervisor → child → worker → watchdog), not only the parts. Without the arithmetic, each review round finds one more window (a lock held by the runtime, a frozen heartbeat, the stop path, the gap between claim and watch).
 
 ## Input, media and security
 
 - Text input: reject Unicode Cc, Cs (lone surrogates crash the DB driver), Zl, Zp and all of Cf except ZWNJ/ZWJ (Persian, Indic, emoji need them), plus invisible fillers (U+034F, U+115F, U+1160, U+2800, U+3164, U+FFA0); reject dot-only file names; cap every decoded token's length. Accept-tests in several scripts are mandatory; tag characters matter because names reach AI prompts.
 - Untrusted media: measure peak memory per accepted format at its limit in a fresh subprocess (ru_maxrss of a warm process lies), and bound both pixels and file size (Pillow reads whole WebP/animated files); pin it with a subprocess regression test.
-- Parsing untrusted complex files (3D models, archives, documents): design the sandbox first — a spawned child with a wall-clock kill, its own CPU limit, an address-space limit (Linux), exit on parent death — then add bounds checks for speed. Bounds checks alone were whack-a-mole: KILN-5 took six reviews, each finding a new bomb class (node DAGs, vertex amplification, chunk counts, primitive lists). Record it in an ADR in the same commit.
-- Never hand-write crypto or a signature scheme to get one missing knob (KILN-27: SigV4 at a chosen time): subclass the library's implementation and override the narrowest hook, cross-check against the library, and record it in an ADR. Hand-written SigV4 diverged silently for endpoint shapes the library accepts.
+- Parsing untrusted complex files (3D models, archives, documents): design the sandbox first — a spawned child with a wall-clock kill, its own CPU limit, an address-space limit (Linux), exit on parent death — then add bounds checks for speed. Bounds checks alone are whack-a-mole: each review finds a new bomb class (shared-node graphs, vertex amplification, chunk counts, nested lists). Record it in an ADR in the same commit.
+- Never hand-write crypto or a signature scheme to get one missing knob (such as request signing at a chosen time): subclass the library's implementation and override the narrowest hook, cross-check against the library, and record it in an ADR. A hand-written signer diverges silently for inputs the library handles.
 
 ## Workers and processes
 
@@ -66,10 +66,9 @@ section that matches the item before step 3; the core list in `SKILL.md` applies
 
 ## Browser, UI and e2e
 
-- A browser-specific bug is reproduced in that engine: Kiln's Playwright config had only Chromium projects, so a Safari report could not fail a test until a `webkit` project was added (skills review, 2026-11-07).
-
-- Run the app the way the owner will before every review and at every release: README quick start in a fresh shell, the printed dev URL (`localhost`, not only `127.0.0.1`), the new feature clicked through. e2e on `127.0.0.1:4173` passed for all of v0.1 while `make web`'s `localhost:5173` could not reach the API (CORS).
-- Browser features that call the API cross-origin: run the real-browser e2e before the first review — curl and the CLI never send a CORS preflight, so a missing allowed header (KILN-26: `Idempotency-Key`) only shows up there. Live regions must queue outcomes, not replace them, or a batch of failures announces only the last.
+- A browser-specific bug is reproduced in that engine: with only Chromium projects in the Playwright config, a Safari report cannot fail a test until a `webkit` project is added.
+- Run the app the way the user will before every review and at every release: README quick start in a fresh shell, the printed dev URL (`localhost`, not only `127.0.0.1`), the new feature clicked through. e2e against a preview server on `127.0.0.1` can pass for a whole release while the dev server on `localhost` cannot reach the API, because the origins differ and CORS blocks it.
+- Browser features that call the API cross-origin: run the real-browser e2e before the first review — curl and the CLI never send a CORS preflight, so a missing allowed header (a custom `Idempotency-Key`, say) only shows up there. Live regions must queue outcomes, not replace them, or a batch of failures announces only the last.
 - UI e2e must cover every state's way out on every size class: a CSS rule that hid the back link on wide screens left the not-found state with no action, and only the desktop e2e run caught it.
 - Cache-hit evidence in e2e: resource timing `transferSize` is always 0 for cross-origin resources without `Timing-Allow-Origin`; ask the DevTools protocol (`Network.requestServedFromCache`) and prove the test can fail by disabling the cache.
 - Storybook e2e: `storyFinished.status` reflects only reporters (a11y), not `play`; listen for `playFunctionThrewException`. Docgen (`react-docgen-typescript`) skips undocumented `children` and inherited native props, so set `skipChildrenPropWithoutDoc: false` plus a prop filter, and assert that every docs table row has a description. Never `reuseExistingServer` against a build the run did not make, and bound every per-story wait.
