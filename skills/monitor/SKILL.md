@@ -1,6 +1,6 @@
 ---
 name: monitor
-description: Use when a service runs somewhere real and someone must know when it breaks — adding logs, metrics, traces, error tracking, uptime checks, dashboards, SLOs or alerts; when an alert fires or "the site is down"; for a postmortem; or for a weekly health review — even if the user only says "add monitoring". Produces structured logs with request ids, RED/USE metrics, OpenTelemetry traces (Node or Python), error tracking, synthetic checks, 1–3 SLOs with burn-rate alerts and runbook lines, an incident path (declare, mitigate first, communicate, blameless postmortem) and backlog items from trends. Cheap defaults fit a solo project. `ship` routes incidents here; `release` uses its signals; defects go to `fix-bug`.
+description: Use when a service runs somewhere real and someone must know when it breaks — adding logs, metrics, traces, error tracking, uptime checks, dashboards, SLOs or alerts; when an alert fires or "the site is down"; for a postmortem; or for a weekly health review — even if the user only says "add monitoring". Produces structured logs with request ids, RED/USE metrics, OpenTelemetry traces (Node or Python), error tracking, synthetic checks, crash and ANR monitoring for iOS and Android apps (Crashlytics or Sentry, MetricKit, Android vitals), 1–3 SLOs with burn-rate alerts and runbook lines, an incident path (declare, mitigate first, communicate, blameless postmortem) and backlog items from trends. Cheap defaults fit a solo project. `ship` routes incidents here; `release` uses its signals; defects go to `fix-bug`.
 ---
 
 # monitor — know before users tell you, mitigate first, learn every time
@@ -60,6 +60,23 @@ Start small and add a signal when an incident or review shows it was missing.
 10. **Prove it.** Fire a test alert end to end (break the synthetic check's target in staging, or use
     the alert manager's test notification) and confirm someone receives it. _Evidence:_ the
     notification and the dashboard screenshot.
+
+## Mobile apps (iOS and Android)
+
+A native app needs client-side signals the server cannot see; details in `references/mobile.md`.
+
+1. **Crash and ANR reporting**: Crashlytics or Sentry in each app, tagged with version, build
+   number, OS and device; symbol files (dSYMs, R8 mapping) uploaded by CI. Add MetricKit on iOS
+   (launch, hangs, hitches, crashes, memory from real users) and read Android vitals in the Play
+   Console (user-perceived crash and ANR rate, startup, memory).
+2. **Mobile SLOs** per app, next to the API's: crash-free sessions ≥ 99.5 % per production version,
+   Android user-perceived ANR rate < 0.47 % (the Play visibility threshold), and cold start p90 within
+   the `benchmark` target.
+3. **Alerts**: new and regressed crash signatures and crash spikes from the crash tool page the
+   person releasing during a rollout, because `release` halts it; Play Console vitals emails go to
+   the team. Field metrics (MetricKit, vitals) arrive daily, so they feed the weekly review, not pages.
+4. **Mitigation** cannot roll back a binary: flag off, halt or pause the rollout, expedited fix, or a
+   minimum-supported-version check for harmful defects.
 
 ## Workflow — incident path
 
@@ -129,5 +146,7 @@ log and postmortem with backlog item ids.
 - `references/slo-and-alerts.md` — SLIs, SLO choice, error-budget policy, burn-rate maths and
   Prometheus rules, low-traffic services.
 - `references/incidents.md` — roles, declaring, mitigations, communication, postmortems, weekly review.
+- `references/mobile.md` — crash and ANR monitoring (Crashlytics, Sentry, MetricKit, Android
+  vitals), mobile SLOs, alerts and mitigations for iOS and Android apps.
 - `templates/operations.md` — journeys, SLOs, alerts with runbook lines, health-review log.
 - `templates/postmortem.md` — blameless postmortem.

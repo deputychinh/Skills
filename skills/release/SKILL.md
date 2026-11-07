@@ -1,6 +1,6 @@
 ---
 name: release
-description: Use when work is ready to leave the developer's machine or a release boundary is reached — cutting a version, tagging, deploying, rolling back, or checking a deploy is healthy ("release", "deploy", "push it live", "rollback", "is the deploy OK?"). Produces a ready check (CI, dependency audit, secret scan, migration compatibility), a SemVer tag and changelog, one build promoted unchanged, a verification plan written before the deploy, checkpoints at +5 min, +1 h and +24 h against a baseline with numeric rollback triggers and a one-command rollback, and a release note whose findings become backlog items. No deploy target: tag, fresh-clone smoke, bench vs the previous tag. `ship` and `deliver-loop` call this skill; ongoing watching is `monitor`, defects go to `fix-bug`.
+description: Use when work is ready to leave the developer's machine or a release boundary is reached — cutting a version, tagging, deploying, rolling back, or checking a deploy is healthy ("release", "deploy", "push it live", "rollback", "is the deploy OK?"). Produces a ready check (CI, dependency audit, secret scan, migration compatibility), a SemVer tag and changelog, one build promoted unchanged, a verification plan written before the deploy, checkpoints at +5 min, +1 h and +24 h against a baseline with numeric rollback triggers and a one-command rollback, and a release note whose findings become backlog items. No deploy target: tag, fresh-clone smoke, bench vs the previous tag. iOS and Android apps: TestFlight or Play tracks, phased or staged rollout, halt instead of rollback. `ship` and `deliver-loop` call this skill; ongoing watching is `monitor`, defects go to `fix-bug`.
 ---
 
 # release — ship the same build, prove it healthy, and roll back without debate
@@ -14,6 +14,15 @@ Read the delivery profile (see the repo README) first: `deploy target` (default:
 `push policy` and `autonomy`. A production deploy is outward-facing: run it when the profile names a
 target and allows it, otherwise ask once. A rollback that the verification plan pre-authorises needs no
 question — mitigation comes first.
+
+**Mobile apps take the store path.** For a native iOS or Android app the workflow below still holds
+(ready check, version, verification plan written first, checkpoints, release note), but the deploy
+is a store upload and the rollback is not a command: follow `references/app-stores.md` — marketing
+version + build number (iOS) or `versionName` + `versionCode` (Android); TestFlight and App Review,
+then a phased release; Play internal → closed → production with a staged rollout; checkpoints per
+rollout step on crash-free sessions and users and the ANR rate. A store cannot roll back a binary,
+so "rollback" means flag off, halt the rollout or pause the phased release, and an expedited fix.
+Each app releases on its own; the backend must keep serving every app version still installed.
 
 ## Workflow
 
@@ -99,7 +108,8 @@ Still prove the tag works where nobody has your shell history:
 
 ## Core checklist
 
-1. Tag, changelog section and package versions agree.
+1. Tag, changelog section and package versions agree (for apps: marketing version / `versionName`
+   and a new build number / `versionCode`).
 2. The deployed artefact is the one CI built and tested; nothing is rebuilt per environment.
 3. Audit and secret scan ran on this release; findings are fixed or accepted with an expiry.
 4. The previous app version was run against the new schema.
@@ -132,5 +142,8 @@ id (or "local only" with the fresh-clone smoke and bench diff), the verification
   strategies, DORA metrics, with sources.
 - `references/post-deploy-verification.md` — baselines, checkpoint queries, canary analysis,
   rollback mechanics per platform, new-error-signature checks.
+- `references/app-stores.md` — the store path for iOS and Android apps: versioning, TestFlight and
+  App Review, phased release, Play tracks and staged rollout, crash-free and ANR triggers, halting
+  and expedited fixes.
 - `templates/verification-plan.md` — the plan and results table written before each deploy.
 - `templates/release-note.md` — the release note.

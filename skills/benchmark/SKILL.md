@@ -1,6 +1,6 @@
 ---
 name: benchmark
-description: Measures a request against something real — a product benchmark (how 2–3 leading products solve the same job, written to `docs/delivery/<slug>/benchmark.md` with the decisions it drives) and a performance benchmark (`benchmarks/plan.md` with workloads, data, percentiles, environment and targets, a harness run by `make bench`, a committed baseline and a CI guard against regressions). Use when the user says "benchmark", "compare with competitors", "load test", "how fast", "baseline", "did it get slower", or asks for speed, size or cost without a number. Fixing a slow path is `cache-optimize`'s job. Inside a delivery, `discover`, `spec`, `shape-plan` and `verify-app` call this skill for `ship`.
+description: Measures a request against something real — a product benchmark (how 2–3 leading products solve the same job, written to `docs/delivery/<slug>/benchmark.md` with the decisions it drives) and a performance benchmark (`benchmarks/plan.md` with workloads, data, percentiles, environment and targets, a harness run by `make bench` (including app start, jank, size and memory for iOS and Android apps), a committed baseline and a CI guard against regressions). Use when the user says "benchmark", "compare with competitors", "load test", "how fast", "baseline", "did it get slower", or asks for speed, size or cost without a number. Fixing a slow path is `cache-optimize`'s job. Inside a delivery, `discover`, `spec`, `shape-plan` and `verify-app` call this skill for `ship`.
 ---
 
 # benchmark — decide what "good" is against something real, then keep measuring it
@@ -33,6 +33,7 @@ measurement is a wish.
    `k6` (HTTP, thresholds fail the run), `pytest-benchmark` / `vitest bench` / `hyperfine` (code
    paths), Lighthouse CI (pages), `size-limit` or the bundler report (bytes), `pgbench` or
    `EXPLAIN (ANALYZE, BUFFERS)` (queries). One `make bench` runs all of them.
+   Native apps add their own workloads — see "Mobile workloads" below.
 4. **Method** (`references/methodology.md`): pinned environment, warm-up, ≥ 10 runs or a fixed
    duration, report median and p95 with spread, change one thing at a time, keep raw results.
 5. **Baseline**: run on the skeleton and commit `benchmarks/baseline.json` (numbers + commit + machine).
@@ -41,6 +42,18 @@ measurement is a wish.
    or when a hard target is broken. Too noisy for CI → run nightly and post the diff.
 7. **Report**: before/after table in the story or `verify-app` evidence; a regression is fixed (with
    `cache-optimize`) or accepted in writing with the reason.
+
+## Mobile workloads (iOS and Android apps)
+
+For each native app, add to `benchmarks/plan.md`: cold and warm start (time to initial and full
+display, p50/p90), frame time and jank on the main scroll, app size, peak memory on the main
+journey, and battery when the app uses location, audio or background sync. Measure with XCTest
+metrics (`XCTApplicationLaunchMetric`, `XCTOSSignpostMetric`) and Instruments on iOS, and
+Macrobenchmark (`StartupTimingMetric`, `FrameTimingMetric`, `PowerMetric`) on Android, on a release
+build on a physical mid-range device; simulators and emulators only catch large regressions.
+Targets start from Android vitals' limits (cold start ≥ 5 s, warm ≥ 2 s, hot ≥ 1.5 s are
+"excessive") and tighten from there. Guard app size on every PR and device benchmarks nightly.
+Details, targets and harness code: `references/mobile.md`.
 
 ## Core checklist
 
@@ -69,4 +82,6 @@ setup; a benchmark table copied into the brief with no decision.
 ## References
 
 - `references/methodology.md` — measurement method, tools per layer, noise and regression bands.
+- `references/mobile.md` — iOS and Android workloads, targets, XCTest metrics, Macrobenchmark,
+  MetricKit, and how to guard them.
 - `templates/benchmark-plan.md`, `templates/product-benchmark.md`.

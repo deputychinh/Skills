@@ -1,13 +1,29 @@
 ---
 name: css-design
-description: Use when creating or changing how a screen or component looks or lays out in a Vue or React app, adding tokens, a theme or dark mode, or when the user says "CSS", "colours", "font", "responsive", "layout", "spacing" or "it looks ugly" — even for one component. Produces token-based CSS (primitive → semantic → component, light and dark, reduced motion), intrinsic layouts with grid, flex and container queries, Material 3 adaptive layouts, WCAG 2.2 AA contrast and 24/44 px targets, every component state styled, BEM that passes Stylelint and a screenshot review. Behaviour, state and tests belong to `frontend`. Inside a delivery, `ship` and `deliver-loop` call this skill.
+description: Styles web UI. Use when creating or changing how a screen or component looks or lays out in a Vue or React app, adding tokens, a theme or dark mode, or when the user says "CSS", "colours", "font", "responsive", "layout", "spacing" or "it looks ugly" — even for one component. Produces token-based CSS (primitive → semantic → component, light and dark, reduced motion), intrinsic layouts with grid, flex and container queries, Material 3 adaptive layouts, WCAG 2.2 AA contrast and 24/44 px targets, every component state styled, BEM that passes Stylelint and a screenshot review. Behaviour, state and tests belong to `frontend`; native iOS and Android screens to `ios` and `android`. Inside a delivery, `ship` and `deliver-loop` call this skill.
 ---
 
 # css-design — calm, consistent screens built from tokens, readable at 390 px and 1280 px
 
+**Scope: web UI** — CSS for Vue and React apps. Native iOS screens (SwiftUI) belong to the `ios`
+skill and native Android screens (Jetpack Compose) to the `android` skill; when a product has web and
+mobile apps, share the brand tokens (colour roles, type scale, spacing) and let each platform keep
+its own components and navigation.
+
 Follow the repo's `docs/design-system.md`, its tokens file and `stylelint.config.mjs` first; this
 skill fills gaps. Component behaviour and tests belong to `frontend`; the final run-it-as-the-user check
 belongs to `verify-app`.
+
+## Platform UI guidelines
+
+Check the guideline for the platform being styled, at the version in
+`references/platform-guidelines.md` (which also lists the rules that most often fail review):
+
+| Platform | Source                                                                                   | Version / date checked                                   |
+| -------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Web      | WCAG 2.2 + Material 3 for web, or the repo's design system                               | WCAG 2.2 Recommendation, 12 Dec 2024 edition; 2026-11-07 |
+| iOS      | `ios` skill: [hig-ui.md](../ios/references/hig-ui.md) (Apple Human Interface Guidelines) | HIG is unversioned; checked 2026-11-07                   |
+| Android  | `android` skill: [material3-ui.md](../android/references/material3-ui.md) (Material 3)   | Compose Material 3 1.4.0 stable, 1.5.0-rc01; 2026-11-07  |
 
 ## Workflow
 
@@ -98,5 +114,7 @@ belongs to `verify-app`.
 - `references/tokens-and-layout.md` — token tiers and theming, spacing and type scales, typography,
   colour, layout primitives, container queries, Material 3 adaptive layouts, CSS architecture
   (BEM, `@layer`, specificity) and the default Stylelint rules.
+- `references/platform-guidelines.md` — the guideline per platform (web, iOS, Android) with the
+  version checked, and the 8–10 rules per platform that most often fail review.
 - `references/states-and-review.md` — component state matrix, focus and target-size rules, contrast
   and target probes, motion, visual regression, Refactoring UI and Nielsen review lists.

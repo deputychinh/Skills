@@ -1,27 +1,28 @@
 ---
 name: ship
-description: The single entry point for the whole software lifecycle — build new, release, verify after deploy, monitor, maintain — in a new or existing repo. Use whenever the user asks to build, make, add, change, fix, speed up or look after software, even when the request names a specialist area: "build me an app", "add a feature", "it's broken", "bug", "X does nothing", "error rate went up after the deploy", "incident", "alert firing", "it's slow", "optimise", "upgrade dependencies", "security patch", "compare A and B", "deploy", "release", "/ship", or to resume a delivery with `docs/delivery/*/status.md`. Triages the request, keeps a ledger, calls the other skills itself (discover, spec, benchmark, architect, shape-plan, deliver-loop, verify-app, demo, release, monitor, fix-bug, and more) and finishes with evidence the user can open. Prefer it over any specialist skill for a whole request; specialists are for one step inside it.
+description: The single entry point for the whole software lifecycle — build new, release, verify after deploy, monitor, maintain — for web and native mobile apps, in a new or existing repo. Use whenever the user asks to build, make, add, change, fix, speed up or look after software, even when the request names a specialist area: "build me an app", "iOS app", "Android app", "mobile app", "App Store", "Play Store", "add a feature", "it's broken", "X does nothing", "error rate went up after the deploy", "incident", "it's slow", "upgrade dependencies", "security patch", "compare A and B", "deploy", "release", "/ship", or to resume a delivery with `docs/delivery/*/status.md`. Triages the request, keeps a ledger, calls the other skills itself (discover, spec, benchmark, architect, shape-plan, deliver-loop, ios, android, verify-app, demo, release, monitor, fix-bug, and more) and finishes with evidence the user can open. Prefer it over any specialist skill for a whole request; specialists are for one step inside it.
 ---
 
 # ship — one entry point for the whole lifecycle
 
 `ship` is the one skill the user needs to invoke. It covers every stage of a product's life —
 **Build new → Release → Post-deploy verification → Operate/Monitor → Maintain (bugs, upgrades,
-security patches, debt) → back to Build** — and calls the other 19 skills itself; the user never has
-to name them. You are the **controller**: pick the path, keep the ledger, run the stage skills, check
+security patches, debt) → back to Build** — and calls the other 21 skills itself; the user never has
+to name them. A product with mobile apps keeps **one native codebase per store** (`ios` in Swift/SwiftUI,
+`android` in Kotlin/Jetpack Compose), each talking to the same backend API as the web app. You are the **controller**: pick the path, keep the ledger, run the stage skills, check
 their evidence, finish with something the user can open. You do not grade your own work and you do
 not ask "should I continue?".
 
 ## Lifecycle at a glance
 
-| Stage                    | What happens                                                        | Skills `ship` calls                                                        | Artefact left                                              |
-| ------------------------ | ------------------------------------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| Build new                | brief, spec, design, plan, items built and reviewed ≥ 9             | `discover`, `spec`, `benchmark`, `architect`, `shape-plan`, `deliver-loop` | `docs/delivery/<slug>/` brief, spec, design, plan; commits |
-| Release                  | version, changelog, deploy (or "local only"), smoke, rollback ready | `release`                                                                  | tag, CHANGELOG section, release note                       |
-| Post-deploy verification | every AC checked on the target, benchmark diff, results page        | `verify-app`, `benchmark`, `demo`                                          | evidence per AC, `demo.md` + a page                        |
-| Operate / Monitor        | SLOs, symptom alerts, dashboards; incident path when one fires      | `monitor`                                                                  | SLO file, alert rules, incident notes                      |
-| Maintain                 | bugs, upgrades, security patches, performance, debt                 | `fix-bug`, `cache-optimize`, `deliver-loop`                                | regression tests, backlog items, commits                   |
-| Learn                    | retro on every path; lessons into the skills                        | `improve-skills`                                                           | Retro section in `status.md`, skill edits                  |
+| Stage                    | What happens                                                                                                    | Skills `ship` calls                                                                                            | Artefact left                                              |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Build new                | brief, spec, design, plan, items built and reviewed ≥ 9                                                         | `discover`, `spec`, `benchmark`, `architect`, `shape-plan`, `deliver-loop` (+ `ios`, `android` per native app) | `docs/delivery/<slug>/` brief, spec, design, plan; commits |
+| Release                  | version, changelog, deploy (or "local only"), smoke, rollback ready; store tracks and staged rollout for mobile | `release` (store path for `ios`, `android`)                                                                    | tag, CHANGELOG section, release note                       |
+| Post-deploy verification | every AC checked on the target, benchmark diff, results page                                                    | `verify-app`, `benchmark`, `demo`                                                                              | evidence per AC, `demo.md` + a page                        |
+| Operate / Monitor        | SLOs, symptom alerts, dashboards; crash-free and ANR rates for mobile; incident path when one fires             | `monitor`                                                                                                      | SLO file, alert rules, incident notes                      |
+| Maintain                 | bugs, upgrades, security patches, performance, debt                                                             | `fix-bug`, `cache-optimize`, `deliver-loop`                                                                    | regression tests, backlog items, commits                   |
+| Learn                    | retro on every path; lessons into the skills                                                                    | `improve-skills`                                                                                               | Retro section in `status.md`, skill edits                  |
 
 ## Where am I? (every invocation)
 
@@ -62,40 +63,48 @@ what lets a fresh session or a compacted context pick up exactly where the last 
 Read a `## Delivery profile` section from the project's `CLAUDE.md`, else from `~/.claude/CLAUDE.md`
 (the delivery profile, see the repo README). Use the default for any key that is absent:
 
-| Key              | Default when absent                                                                                                     |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| reply language   | the language the user writes in                                                                                         |
-| frontend default | the repo's existing framework; new project: ask once at triage (Vue or React both supported)                            |
-| backend default  | the repo's existing stack; new project: ask once at triage (Node/TypeScript or Python both supported)                   |
-| autonomy         | decide-and-record: ask only what nobody else can answer (secrets, money, legal, irreversible or outward-facing actions) |
-| push policy      | commit locally; push only when the profile says `push every green commit` and a remote exists                           |
-| review gate      | independent review, ship at ≥ 9/10 with requirements fit = 1 and security ≥ 0.5, at most 3 improve rounds               |
-| deploy target    | none ("local only") until the user names one                                                                            |
-| projects folder  | the current working directory's parent, or ask once                                                                     |
+| Key              | Default when absent                                                                                                                                        |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| reply language   | the language the user writes in                                                                                                                            |
+| frontend default | the repo's existing framework; new project: ask once at triage (Vue or React both supported)                                                               |
+| backend default  | the repo's existing stack; new project: ask once at triage (Node/TypeScript or Python both supported)                                                      |
+| autonomy         | decide-and-record: ask only what nobody else can answer (secrets, money, legal, irreversible or outward-facing actions)                                    |
+| push policy      | commit locally; push only when the profile says `push every green commit` and a remote exists                                                              |
+| review gate      | independent review, ship at ≥ 9/10 with requirements fit = 1 and security ≥ 0.5, at most 3 improve rounds                                                  |
+| deploy target    | none ("local only") until the user names one                                                                                                               |
+| projects folder  | the current working directory's parent, or ask once                                                                                                        |
+| mobile           | the repo's existing apps; new product: ask once at triage — web only, iOS, Android, or several; layout `monorepo` (`ios/`, `android/`) or `separate repos` |
 
 Write every answer to a triage question back into the project's `CLAUDE.md` profile section, so it is
 never asked again, and copy the keys you used into the ledger's "Delivery profile used" block.
 
 ## Step 0 · Triage
 
-| Request looks like                              | Path                                                                                                                                                                                                       |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| New product, vague idea, several features       | **Full**: every stage below                                                                                                                                                                                |
-| Small new tool or app                           | **Small new**: light `discover` (headline, five questions, appetite) → `spec` → `init-project` (smallest preset) → `shape-plan` → `deliver-loop` → `verify-app` → `demo`                                   |
-| One clear new feature in an existing repo       | **Small**: `spec` (stories, ACs, non-goals) → `shape-plan` (one or two items) → `deliver-loop` → `verify-app` → `demo`                                                                                     |
-| Change to an existing feature                   | **Small**, plus `architect` when the change touches a decision recorded in an ADR (update or supersede it first)                                                                                           |
-| Bug                                             | **Bug**: `fix-bug` (reproduce → root cause → failing regression test → fix → verify, and after the next deploy) with `deliver-loop` steps 1 and 4–7 for the item → short retro                             |
-| Incident or production alert                    | **Incident**: `monitor` incident path (mitigate first: roll back or flag off, then stabilise) → `fix-bug` for the cause → `release` → blameless note → retro                                               |
-| Slow or heavy                                   | **Performance**: `benchmark` B baseline on seeded, realistic data (recorded before any code change) → `cache-optimize` → `deliver-loop` steps 1 and 4–7 → CI guard on the workload → `verify-app` → `demo` |
-| Dependency upgrade, security patch, maintenance | **Quick + audit**: audit (advisories, changelogs, breaking changes) → test → change → full CI → `verify-app` → short retro                                                                                 |
-| One-file fix, copy or config change             | **Quick**: test → change → `verify-app` → short retro. No delivery folder.                                                                                                                                 |
-| Research or comparison only                     | **Research**: `benchmark` A or `discover` → a results page via `demo`. No code.                                                                                                                            |
+| Request looks like                                      | Path                                                                                                                                                                                                       |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| New product, vague idea, several features               | **Full**: every stage below                                                                                                                                                                                |
+| Small new tool or app                                   | **Small new**: light `discover` (headline, five questions, appetite) → `spec` → `init-project` (smallest preset) → `shape-plan` → `deliver-loop` → `verify-app` → `demo`                                   |
+| iOS app, Android app, mobile app, App Store, Play Store | **Full** or **Small new** as the size says, with the mobile stack question below; `ios` and/or `android` build the apps, `backend` the shared API; `release` takes the store path                          |
+| One clear new feature in an existing repo               | **Small**: `spec` (stories, ACs, non-goals) → `shape-plan` (one or two items) → `deliver-loop` → `verify-app` → `demo`                                                                                     |
+| Change to an existing feature                           | **Small**, plus `architect` when the change touches a decision recorded in an ADR (update or supersede it first)                                                                                           |
+| Bug                                                     | **Bug**: `fix-bug` (reproduce → root cause → failing regression test → fix → verify, and after the next deploy) with `deliver-loop` steps 1 and 4–7 for the item → short retro                             |
+| Incident or production alert                            | **Incident**: `monitor` incident path (mitigate first: roll back or flag off, then stabilise) → `fix-bug` for the cause → `release` → blameless note → retro                                               |
+| Slow or heavy                                           | **Performance**: `benchmark` B baseline on seeded, realistic data (recorded before any code change) → `cache-optimize` → `deliver-loop` steps 1 and 4–7 → CI guard on the workload → `verify-app` → `demo` |
+| Dependency upgrade, security patch, maintenance         | **Quick + audit**: audit (advisories, changelogs, breaking changes) → test → change → full CI → `verify-app` → short retro                                                                                 |
+| One-file fix, copy or config change                     | **Quick**: test → change → `verify-app` → short retro. No delivery folder.                                                                                                                                 |
+| Research or comparison only                             | **Research**: `benchmark` A or `discover` → a results page via `demo`. No code.                                                                                                                            |
 
 On any path, when the product calls an AI model: run `architect`'s AI-call step (eval set, fallback,
 budget) and load the `claude-api` skill before choosing how to call the model.
 
 Also in triage:
 
+- **Mobile stack question** (new product, or a mobile request in a web-only repo, and the profile has
+  no `mobile` key): ask once, with the other triage questions — web only, iOS, Android, or several?
+  Each native app is its own codebase (`ios/` Swift/SwiftUI, `android/` Kotlin/Compose, in one
+  monorepo or separate repos per the answer) and all of them call the same backend API, so the API
+  contract (`backend`, OpenAPI) is designed once before either app. "Cross-platform" or "React
+  Native" is honoured only when the user says it explicitly; record it as a ruling.
 - **Where**: a new repo goes in `<projects folder>/<slug>` per the profile. Create it and `git init`
   first so `docs/delivery/` has a home; the rest of `init-project` runs at the Set up stage.
 - **Existing repo without `CLAUDE.md`, Makefile or backlog**: map its real lint, test and run commands,
@@ -106,19 +115,19 @@ Also in triage:
 
 ## Stages (Full path)
 
-| #   | Stage     | Skill                                                              | Output                               | Gate to leave                                                                             |
-| --- | --------- | ------------------------------------------------------------------ | ------------------------------------ | ----------------------------------------------------------------------------------------- |
-| 1   | Discover  | `discover` (+ `benchmark` A: 2–3 reference products)               | `brief.md`, product-benchmark table  | a credible press release, or the idea is killed with a reason                             |
-| 2   | Specify   | `spec` (+ `benchmark` B: workloads and targets)                    | `spec.md`, `benchmarks/plan.md`      | no `[NEEDS CLARIFICATION]`; every quality target has a workload and a number              |
-| 3   | Set up    | `init-project` (new repo)                                          | green, documented repo               | `make ci` green; README quick start runs                                                  |
-| 4   | Architect | `architect` (+ `system-design`, `database`)                        | `design.md` + ADRs                   | every driving characteristic has a decision and a fitness check                           |
-| 5   | Plan      | `shape-plan`                                                       | `plan.md` + backlog items            | skeleton first, benchmark harness second; every AC covered; first slice fits the appetite |
-| 6   | Build     | `deliver-loop` (+ `backend`, `frontend`, `css-design`, `database`) | reviewed commits per item            | each item shipped per the review gate, filed as debt, or `blocked`                        |
-| 7   | Verify    | `verify-app` (+ `benchmark` vs baseline, `cache-optimize`)         | evidence per AC, benchmark diff      | every AC has evidence; no unexplained regression                                          |
-| 8   | Demo      | `demo`                                                             | `demo.md` + a page                   | the user has a link, the app URL and the run command                                      |
-| 9   | Release   | `release` (at a release boundary)                                  | tag, deploy or "local only", smoke   | smoke green on the target; findings in the backlog                                        |
-| 10  | Operate   | `monitor` (once there is a deploy target)                          | SLOs, symptom alerts, runbook        | every user-facing SLO has an alert that was fired once on purpose                         |
-| 11  | Learn     | retro + `improve-skills`                                           | Retro section, lessons in the skills | retro written; lessons committed                                                          |
+| #   | Stage     | Skill                                                                                | Output                               | Gate to leave                                                                             |
+| --- | --------- | ------------------------------------------------------------------------------------ | ------------------------------------ | ----------------------------------------------------------------------------------------- |
+| 1   | Discover  | `discover` (+ `benchmark` A: 2–3 reference products)                                 | `brief.md`, product-benchmark table  | a credible press release, or the idea is killed with a reason                             |
+| 2   | Specify   | `spec` (+ `benchmark` B: workloads and targets)                                      | `spec.md`, `benchmarks/plan.md`      | no `[NEEDS CLARIFICATION]`; every quality target has a workload and a number              |
+| 3   | Set up    | `init-project` (new repo)                                                            | green, documented repo               | `make ci` green; README quick start runs                                                  |
+| 4   | Architect | `architect` (+ `system-design`, `database`)                                          | `design.md` + ADRs                   | every driving characteristic has a decision and a fitness check                           |
+| 5   | Plan      | `shape-plan`                                                                         | `plan.md` + backlog items            | skeleton first, benchmark harness second; every AC covered; first slice fits the appetite |
+| 6   | Build     | `deliver-loop` (+ `backend`, `frontend`, `css-design`, `database`, `ios`, `android`) | reviewed commits per item            | each item shipped per the review gate, filed as debt, or `blocked`                        |
+| 7   | Verify    | `verify-app` (+ `benchmark` vs baseline, `cache-optimize`)                           | evidence per AC, benchmark diff      | every AC has evidence; no unexplained regression                                          |
+| 8   | Demo      | `demo`                                                                               | `demo.md` + a page                   | the user has a link, the app URL and the run command                                      |
+| 9   | Release   | `release` (at a release boundary)                                                    | tag, deploy or "local only", smoke   | smoke green on the target; findings in the backlog                                        |
+| 10  | Operate   | `monitor` (once there is a deploy target)                                            | SLOs, symptom alerts, runbook        | every user-facing SLO has an alert that was fired once on purpose                         |
+| 11  | Learn     | retro + `improve-skills`                                                             | Retro section, lessons in the skills | retro written; lessons committed                                                          |
 
 A brief is credible when the five customer questions are answered from facts the user gave or that
 you can cite; numbers you cannot source are marked `HYPOTHESIS`.
@@ -160,18 +169,20 @@ Learn loop: every path ends with a retro → improve-skills
 
 ## Specialist skills (load the ones the work touches)
 
-| Stage                | When the work involves                                                     | Skill                                               |
-| -------------------- | -------------------------------------------------------------------------- | --------------------------------------------------- |
-| 4 Architect          | a new system or a part that must scale, estimates, storage choice          | `system-design` (then `architect` records the ADRs) |
-| 4 Architect, 6 Build | tables, migrations, indexes, queries, transactions                         | `database`                                          |
-| 6 Build              | routes, services, domain, jobs, integrations                               | `backend`                                           |
-| 6 Build              | screens, components, forms, data fetching                                  | `frontend`                                          |
-| 6 Build              | tokens, layout, colour, typography, component states                       | `css-design`                                        |
-| 7 Verify, Maintain   | a performance target, something slow, caching                              | `cache-optimize`                                    |
-| 1, 2, 5, 7           | comparing with other products; performance targets, baselines, regressions | `benchmark`                                         |
-| 9 Release            | tagging, deploying, smoke checks, rollback                                 | `release`                                           |
-| 10 Operate           | SLOs, alerts, dashboards, incidents                                        | `monitor`                                           |
-| Maintain             | a defect, in development or in production                                  | `fix-bug`                                           |
+| Stage                | When the work involves                                                              | Skill                                               |
+| -------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------- |
+| 4 Architect          | a new system or a part that must scale, estimates, storage choice                   | `system-design` (then `architect` records the ADRs) |
+| 4 Architect, 6 Build | tables, migrations, indexes, queries, transactions                                  | `database`                                          |
+| 6 Build              | routes, services, domain, jobs, integrations                                        | `backend`                                           |
+| 6 Build              | screens, components, forms, data fetching                                           | `frontend`                                          |
+| 6 Build              | tokens, layout, colour, typography, component states (web UI)                       | `css-design`                                        |
+| 6 Build              | a native iPhone or iPad app: SwiftUI screens, HIG, XCTest, App Store build          | `ios`                                               |
+| 6 Build              | a native Android app: Compose screens, Material 3, tests, Play build                | `android`                                           |
+| 7 Verify, Maintain   | a performance target, something slow, caching                                       | `cache-optimize`                                    |
+| 1, 2, 5, 7           | comparing with other products; performance targets, baselines, regressions          | `benchmark`                                         |
+| 9 Release            | tagging, deploying, smoke checks, rollback; TestFlight, Play tracks, staged rollout | `release`                                           |
+| 10 Operate           | SLOs, alerts, dashboards, incidents; crash-free sessions, ANR rate                  | `monitor`                                           |
+| Maintain             | a defect, in development or in production                                           | `fix-bug`                                           |
 
 ## Build (stage 6)
 

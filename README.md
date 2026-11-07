@@ -4,8 +4,9 @@ A set of [Claude Code skills](https://code.claude.com/docs/en/skills) that carry
 the whole software lifecycle: from a vague idea or a bug report to a spec, a design, a plan, reviewed
 code, a verified demo, a release with post-deploy checks, monitoring, and maintenance. One skill,
 `ship`, is the entry point; it triages the request, keeps a ledger in `docs/delivery/<slug>/status.md`,
-decides everything that does not need you, and calls the other 19 skills as specialists. Vue and
-React, Node and Python are supported as equals, and your preferences live in a small delivery profile
+decides everything that does not need you, and calls the other 21 skills as specialists. Vue and
+React, Node and Python are supported as equals; mobile apps are native, with one native codebase per
+store (Swift/SwiftUI for iOS, Kotlin/Jetpack Compose for Android) sharing the same backend API, and your preferences live in a small delivery profile
 instead of being baked into the skills.
 
 ## One command, the whole lifecycle
@@ -42,6 +43,7 @@ flowchart TD
       plan --> item
       subgraph itemloop ["Item loop: deliver-loop"]
         item["story → design → TDD"] --> review["checks + independent review"]
+        item -.->|native app| mobile["ios / android: one native codebase per store"] -.-> review
         review -->|below 9, round ≤ 3| improve["improve"] --> review
         review -->|≥ 9| done["commit item"]
       end
@@ -56,6 +58,8 @@ flowchart TD
     direction TB
     release["release: tag, deploy, smoke"] --> cp5["check +5 min"] --> cp60["check +1 h"] --> cp24["check +24 h"]
     cp5 & cp60 & cp24 -.->|trigger breached| rollback["roll back"]
+    release -.->|mobile app| store["store path: TestFlight / Play tracks, staged rollout"]
+    store -.->|crash-free or ANR trigger| halt["halt rollout, expedited fix"]
   end
 
   cp24 --> slo
@@ -67,6 +71,7 @@ flowchart TD
 
   incident --> fixbug
   rollback --> fixbug
+  halt --> fixbug
   subgraph maintain ["Maintain"]
     direction TB
     fixbug["fix-bug"]
@@ -86,11 +91,17 @@ flowchart TD
   retro --> learn["improve-skills"] -.->|better skills next run| triage
 ```
 
+- **Mobile**: when the product has apps, `ship` asks once at triage — web only, iOS, Android, or
+  several — and keeps one native codebase per store (`ios`, `android`), all calling the same backend
+  API; `verify-app` runs them on simulators and emulators, and `monitor` watches crash-free sessions
+  and ANR rates.
 - **Build new**: discover → spec → architect → shape-plan, then the **slice loop** (items → verify →
   demo → feedback → re-plan) around the **item loop** (build → independent review → improve, at most
   three rounds, ship at ≥ 9/10).
 - **Release**: a SemVer tag, one build promoted unchanged, a smoke check, and post-deploy checkpoints
-  at +5 min, +1 h and +24 h with explicit rollback triggers.
+  at +5 min, +1 h and +24 h with explicit rollback triggers. Mobile apps take the store path
+  (TestFlight and App Review, Play tracks, phased or staged rollout); a store cannot roll back a
+  binary, so a bad build is halted and replaced by an expedited fix.
 - **Operate / Monitor**: user-facing SLOs, alerts on symptoms, and an incident path that mitigates
   first.
 - **Maintain**: bugs through `fix-bug`, upgrades, patches, performance and debt; everything returns to
@@ -113,7 +124,9 @@ flowchart TD
 | [`deliver-loop`](skills/deliver-loop/SKILL.md)     | Build            | builds backlog items one by one, each through an independent review scored ≥ 9/10                | a backlog exists                                                |
 | [`backend`](skills/backend/SKILL.md)               | Build            | layered Node or Python server code, RFC 9457 errors, idempotency, timeouts, tests on a real DB   | an endpoint, job or integration changes                         |
 | [`frontend`](skills/frontend/SKILL.md)             | Build            | Vue or React UI with four states per view, accessible forms, role-based tests, Playwright + axe  | a screen, component or data fetch changes                       |
-| [`css-design`](skills/css-design/SKILL.md)         | Build            | tokens, intrinsic layouts, contrast, component states, BEM, screenshot review                    | how something looks or lays out changes                         |
+| [`css-design`](skills/css-design/SKILL.md)         | Build            | web UI: tokens, intrinsic layouts, contrast, component states, BEM, screenshot review            | how something looks or lays out on the web changes              |
+| [`ios`](skills/ios/SKILL.md)                       | Build            | native iPhone and iPad app in Swift/SwiftUI, Human Interface Guidelines, XCTest, App Store build | the product has an iOS app                                      |
+| [`android`](skills/android/SKILL.md)               | Build            | native Android app in Kotlin/Jetpack Compose, Material 3, tests, Play build                      | the product has an Android app                                  |
 | [`database`](skills/database/SKILL.md)             | Build, Maintain  | constraints in the database, zero-downtime migrations, EXPLAIN evidence, tested restore          | a table, index, query or transaction changes                    |
 | [`cache-optimize`](skills/cache-optimize/SKILL.md) | Verify, Maintain | a budget, profiling to the bottleneck, the smallest fix, HTTP and app caching, regression guards | something is slow or a budget applies                           |
 | [`verify-app`](skills/verify-app/SKILL.md)         | Verify           | runs the app as the user will and collects evidence per acceptance criterion                     | before anything is called done, and after a deploy              |
@@ -167,16 +180,17 @@ every skill loads twice.
 Preferences are never baked into the skills. Skills read a `## Delivery profile` section from the
 project's `CLAUDE.md`, else from your `~/.claude/CLAUDE.md`. Every key is optional:
 
-| Key              | Default when absent                                                                                                     |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| reply language   | the language the user writes in                                                                                         |
-| frontend default | the repo's existing framework; new project: ask once at triage (Vue or React both supported)                            |
-| backend default  | the repo's existing stack; new project: ask once at triage (Node/TypeScript or Python both supported)                   |
-| autonomy         | decide-and-record: ask only what nobody else can answer (secrets, money, legal, irreversible or outward-facing actions) |
-| push policy      | commit locally; push only when the profile says `push every green commit` and a remote exists                           |
-| review gate      | independent review, ship at ≥ 9/10 with requirements fit = 1 and security ≥ 0.5, at most 3 improve rounds               |
-| deploy target    | none ("local only") until the user names one                                                                            |
-| projects folder  | the current working directory's parent, or ask once                                                                     |
+| Key              | Default when absent                                                                                                            |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| reply language   | the language the user writes in                                                                                                |
+| mobile           | the repo's existing apps; new product: ask once at triage (web only, iOS, Android, or several; `monorepo` or `separate repos`) |
+| frontend default | the repo's existing framework; new project: ask once at triage (Vue or React both supported)                                   |
+| backend default  | the repo's existing stack; new project: ask once at triage (Node/TypeScript or Python both supported)                          |
+| autonomy         | decide-and-record: ask only what nobody else can answer (secrets, money, legal, irreversible or outward-facing actions)        |
+| push policy      | commit locally; push only when the profile says `push every green commit` and a remote exists                                  |
+| review gate      | independent review, ship at ≥ 9/10 with requirements fit = 1 and security ≥ 0.5, at most 3 improve rounds                      |
+| deploy target    | none ("local only") until the user names one                                                                                   |
+| projects folder  | the current working directory's parent, or ask once                                                                            |
 
 Copy, paste and edit:
 
@@ -186,6 +200,7 @@ Copy, paste and edit:
 - reply language: English
 - frontend default: Vue
 - backend default: Python
+- mobile: iOS + Android, monorepo
 - autonomy: decide-and-record
 - push policy: push every green commit
 - review gate: ship at ≥ 9/10, requirements fit = 1, security ≥ 0.5, at most 3 improve rounds

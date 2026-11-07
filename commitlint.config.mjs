@@ -1,7 +1,7 @@
 export default {
   extends: ['@commitlint/config-conventional'],
   rules: {
-    // One scope per skill (20), plus repo-wide scopes. Add a scope when a skill is added.
+    // One scope per skill (22), plus repo-wide scopes. Add a scope when a skill is added.
     'scope-enum': [
       2,
       'always',
@@ -24,6 +24,8 @@ export default {
         'backend',
         'frontend',
         'css-design',
+        'ios',
+        'android',
         'database',
         'cache-optimize',
         'verify-app',

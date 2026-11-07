@@ -1,6 +1,6 @@
 ---
 name: init-project
-description: Bootstraps a new repository so every later session knows the rules — git on main, Conventional Commits enforced by commitlint and husky, Prettier, a Makefile with dev and bench targets, docs (conventions, testing, ADR 0001, architecture, plan, backlog, changelog), CI, a project CLAUDE.md with a delivery profile, and a Vue or React, Node or Python baseline with strict lint, types and coverage, proven green. Use when the user asks for a bare repo, scaffold or project setup ("/init-project", "bootstrap a repo"), when work starts in an empty folder with no git history, or when `ship` needs a repo. Not the entry point for building an app or feature — `ship` is, and calls this skill.
+description: Bootstraps a new repository so every later session knows the rules — git on main, Conventional Commits enforced by commitlint and husky, Prettier, a Makefile with dev and bench targets, docs (conventions, testing, ADR 0001, architecture, plan, backlog, changelog), CI, a project CLAUDE.md with a delivery profile, and a Vue or React, Node or Python baseline — plus native iOS (SwiftUI) and Android (Compose) apps, one codebase per store — with strict lint, types and coverage, proven green. Use when the user asks for a bare repo, scaffold or project setup ("/init-project", "bootstrap a repo"), when work starts in an empty folder with no git history, or when `ship` needs a repo. Not the entry point for building an app or feature — `ship` is, and calls this skill.
 ---
 
 # init-project
@@ -28,6 +28,7 @@ as a ruling in `status.md`.
 | Project name and one-line purpose | folder name; purpose from the request                                                                                                        |
 | Frontend                          | profile `frontend default`; else ask once (Vue or React, both first-class); "none" for an API, CLI or library                                |
 | Backend                           | profile `backend default`; else ask once (Node/TypeScript or Python, both first-class); "none" for a static or client-only app               |
+| Mobile apps                       | profile `mobile`; else ask once: none, iOS, Android or both, and `monorepo` (`ios/`, `android/`) or `separate repos`; no answer → monorepo   |
 | Docs language (`{{DOCS_LANG}}`)   | English, so any contributor can read the repo; the user may choose another. Code, commit messages and Keep a Changelog headings stay English |
 | Remote                            | none; when the user gives a URL, `git remote add origin <url>`, check `git ls-remote` is empty, and push only per the profile's push policy  |
 
@@ -37,23 +38,29 @@ The preset name is `<backend>-<frontend>`, chosen by this rule:
 
 1. An existing repo keeps its stacks; never switch frameworks inside one app.
 2. Pick the frontend: none → no web part; needs server rendering for SEO → Nuxt (Vue) or Next.js
-   (React); native mobile → Expo; otherwise a Vite SPA in the chosen framework.
+   (React); otherwise a Vite SPA in the chosen framework.
 3. Pick the backend: none, `node` or `python`.
-4. Combine them from the table. Monorepo extras (several deployables, a shared UI package, a worker)
+4. Pick the mobile apps from the profile's `mobile` key: one native codebase per store —
+   `ios-swiftui` in `ios/` and `android-compose` in `android/` — added next to the web and backend
+   parts (monorepo) or bootstrapped as their own repos, each calling the same backend API. Expo
+   (one React Native codebase) only when the user asks for it by name.
+5. Combine them from the table. Monorepo extras (several deployables, a shared UI package, a worker)
    follow `references/vite-monorepo.md`.
 
-| Preset                     | Backend                                                                                                          | Frontend                                                     | Makefile                                       |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------- |
-| `node-vue`                 | `services/api` NestJS (TypeScript strict, ESLint, Vitest via SWC, Testcontainers); Prisma or Drizzle migrations  | `web/` Vite + Vue 3 (`npm create vue@latest`, see Phase 3)   | `templates/Makefile.node`                      |
-| `node-react`               | as `node-vue`                                                                                                    | `web/` Vite + React + TypeScript (TanStack Router and Query) | `templates/Makefile.node`                      |
-| `python-vue`               | `backend/` (or a `services/{api,worker}` uv workspace) uv + FastAPI, ruff, mypy strict, pytest cov ≥ 90, Alembic | `web/` Vite + Vue 3                                          | `templates/Makefile.python`                    |
-| `python-react`             | as `python-vue`                                                                                                  | `web/` Vite + React + TypeScript                             | `templates/Makefile.python`                    |
-| `node`                     | `services/api` NestJS, or `src/` TypeScript package for a library or CLI                                         | –                                                            | `templates/Makefile.node` (drop web targets)   |
-| `python`                   | `src/` uv package, ruff, mypy strict, pytest                                                                     | –                                                            | `templates/Makefile.python` (drop web targets) |
-| `node-next`, `python-next` | as above                                                                                                         | `web/` Next.js                                               | per backend                                    |
-| `node-nuxt`, `python-nuxt` | as above                                                                                                         | `web/` Nuxt                                                  | per backend                                    |
-| `next`, `nuxt`             | – (full-stack framework alone)                                                                                   | Next.js or Nuxt app                                          | `templates/Makefile.node`                      |
-| `expo`                     | –                                                                                                                | Expo / React Native                                          | `templates/Makefile.node`                      |
+| Preset                     | Backend                                                                                                          | Frontend                                                                               | Makefile                                                        |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `node-vue`                 | `services/api` NestJS (TypeScript strict, ESLint, Vitest via SWC, Testcontainers); Prisma or Drizzle migrations  | `web/` Vite + Vue 3 (`npm create vue@latest`, see Phase 3)                             | `templates/Makefile.node`                                       |
+| `node-react`               | as `node-vue`                                                                                                    | `web/` Vite + React + TypeScript (TanStack Router and Query)                           | `templates/Makefile.node`                                       |
+| `python-vue`               | `backend/` (or a `services/{api,worker}` uv workspace) uv + FastAPI, ruff, mypy strict, pytest cov ≥ 90, Alembic | `web/` Vite + Vue 3                                                                    | `templates/Makefile.python`                                     |
+| `python-react`             | as `python-vue`                                                                                                  | `web/` Vite + React + TypeScript                                                       | `templates/Makefile.python`                                     |
+| `node`                     | `services/api` NestJS, or `src/` TypeScript package for a library or CLI                                         | –                                                                                      | `templates/Makefile.node` (drop web targets)                    |
+| `python`                   | `src/` uv package, ruff, mypy strict, pytest                                                                     | –                                                                                      | `templates/Makefile.python` (drop web targets)                  |
+| `node-next`, `python-next` | as above                                                                                                         | `web/` Next.js                                                                         | per backend                                                     |
+| `node-nuxt`, `python-nuxt` | as above                                                                                                         | `web/` Nuxt                                                                            | per backend                                                     |
+| `next`, `nuxt`             | – (full-stack framework alone)                                                                                   | Next.js or Nuxt app                                                                    | `templates/Makefile.node`                                       |
+| `ios-swiftui`              | the shared API (any preset above, or an existing one)                                                            | `ios/` Swift + SwiftUI, swift-format + SwiftLint, `xcodebuild test`                    | `ios-lint`, `ios-test` targets (`references/mobile.md`)         |
+| `android-compose`          | the shared API (any preset above, or an existing one)                                                            | `android/` Kotlin + Jetpack Compose, ktlint or detekt + Android Lint, `./gradlew test` | `android-lint`, `android-test` targets (`references/mobile.md`) |
+| `expo`                     | –                                                                                                                | Expo / React Native (only on explicit request)                                         | `templates/Makefile.node`                                       |
 
 Say in one line what you are about to scaffold, then proceed without further questions.
 
@@ -70,28 +77,28 @@ Copy `templates/.gitignore` and commit nothing yet: the first commit is the gove
 
 Copy from `templates/`, filling placeholders (`{{PROJECT_NAME}}`, `{{PURPOSE}}`, `{{DATE}}`,
 `{{DOCS_LANG}}`, `{{SCOPES}}` as a quoted list, `{{STACK}}`, `{{ENV_PREFIX}}` such as `NOTES`,
-`{{PREFIX}}` for backlog ids such as `NOTES`, and the delivery-profile values in `CLAUDE.md`). Verify
+`{{PREFIX}}` for backlog ids such as `NOTES`, `{{MOBILE}}` for the mobile apps and layout, and the delivery-profile values in `CLAUDE.md`). Verify
 with `grep -rn '{{' .` before committing. Keep the file names exactly:
 
-| File                                     | Role                                                                                                                                                                                                                |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CLAUDE.md`                              | Agent rules: where conventions live, the commands, definition of done, the commit routine, and a `## Delivery profile` section (copy the user's profile values; leave absent keys out).                             |
-| `.claude/settings.json`                  | Safe allowlist (`make *`, `npm run *`, `uv run *`, `git status/diff/log`). No deny-list surprises.                                                                                                                  |
-| `.editorconfig`, `.prettierrc.json`      | 100 columns, single quotes, trailing commas, LF, 2 spaces (tabs in Makefile).                                                                                                                                       |
-| `package.json` (root)                    | Tooling only: husky, commitlint, lint-staged, prettier. Pin exact versions. `"prepare": "husky"`.                                                                                                                   |
-| `commitlint.config.mjs`                  | `config-conventional` + `scope-enum`. Scopes = `repo, plan, backlog, docs, infra, ci, deps` + one per deployable (`api`, `web`, `worker`, …) + `db`, `e2e`, `content` when relevant.                                |
-| `.husky/pre-commit`, `.husky/commit-msg` | `lint-staged`; `commitlint --edit`.                                                                                                                                                                                 |
-| `Makefile`                               | From `templates/Makefile.python` or `templates/Makefile.node`. `.DEFAULT_GOAL := help`; every target has a `## comment`; `install`, `dev`, `lint`, `test`, `e2e`, `bench`, `ci`, run targets.                       |
-| `README.md`                              | Name + tagline, screenshot table placeholder, quick start (≤ 4 commands, ideally `make install && make dev`), features, architecture (mermaid), structure, quality, licence/data notes.                             |
-| `CHANGELOG.md`                           | Keep a Changelog, `## [Unreleased]` with `Added/Changed/Fixed` headings.                                                                                                                                            |
-| `docs/conventions.md`                    | The conventions (single source for enums/constants/errors, backend = classes + SOLID, frontend = functions + tokens + BEM, no swallowed errors, no PII in logs, copy via locale files). Trim to the stacks present. |
-| `docs/testing.md`                        | Layers table: where, how to run, threshold. Add "what the tests do not prove".                                                                                                                                      |
-| `docs/adr/0001-stack-and-layout.md`      | Why this stack and this layout. Status, context, decision, consequences.                                                                                                                                            |
-| `docs/architecture/README.md`            | One mermaid diagram + prose; updated with every ADR.                                                                                                                                                                |
-| `docs/plan.md`, `docs/backlog.md`        | Phases with acceptance criteria; backlog with ids (`{{PREFIX}}-001`).                                                                                                                                               |
-| `.github/workflows/ci.yml`               | One job per deployable + `repo` job (prettier check, commitlint on the push range). Swap the `backend` job for a Node job on Node presets.                                                                          |
-| `docker-compose.yml`, `.env.example`     | Only when the preset has infra (Postgres/Redis/a queue). `.env.example` lists every key the app reads.                                                                                                              |
-| `.gitignore`, `.prettierignore`          | From templates; `data/` and `.env` never enter git.                                                                                                                                                                 |
+| File                                     | Role                                                                                                                                                                                                                                            |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CLAUDE.md`                              | Agent rules: where conventions live, the commands, definition of done, the commit routine, and a `## Delivery profile` section (copy the user's profile values; leave absent keys out).                                                         |
+| `.claude/settings.json`                  | Safe allowlist (`make *`, `npm run *`, `uv run *`, `git status/diff/log`). No deny-list surprises.                                                                                                                                              |
+| `.editorconfig`, `.prettierrc.json`      | 100 columns, single quotes, trailing commas, LF, 2 spaces (tabs in Makefile).                                                                                                                                                                   |
+| `package.json` (root)                    | Tooling only: husky, commitlint, lint-staged, prettier. Pin exact versions. `"prepare": "husky"`.                                                                                                                                               |
+| `commitlint.config.mjs`                  | `config-conventional` + `scope-enum`. Scopes = `repo, plan, backlog, docs, infra, ci, deps` + one per deployable (`api`, `web`, `worker`, `ios`, `android`, …) + `db`, `e2e`, `content` when relevant.                                          |
+| `.husky/pre-commit`, `.husky/commit-msg` | `lint-staged`; `commitlint --edit`.                                                                                                                                                                                                             |
+| `Makefile`                               | From `templates/Makefile.python` or `templates/Makefile.node`. `.DEFAULT_GOAL := help`; every target has a `## comment`; `install`, `dev`, `lint`, `test`, `e2e`, `bench`, `ci`, run targets.                                                   |
+| `README.md`                              | Name + tagline, screenshot table placeholder, quick start (≤ 4 commands, ideally `make install && make dev`), features, architecture (mermaid), structure, quality, licence/data notes.                                                         |
+| `CHANGELOG.md`                           | Keep a Changelog, `## [Unreleased]` with `Added/Changed/Fixed` headings.                                                                                                                                                                        |
+| `docs/conventions.md`                    | The conventions (single source for enums/constants/errors, backend = classes + SOLID, frontend = functions + tokens + BEM, no swallowed errors, no PII in logs, copy via locale files). Trim to the stacks present.                             |
+| `docs/testing.md`                        | Layers table: where, how to run, threshold. Add "what the tests do not prove".                                                                                                                                                                  |
+| `docs/adr/0001-stack-and-layout.md`      | Why this stack and this layout. Status, context, decision, consequences.                                                                                                                                                                        |
+| `docs/architecture/README.md`            | One mermaid diagram + prose; updated with every ADR.                                                                                                                                                                                            |
+| `docs/plan.md`, `docs/backlog.md`        | Phases with acceptance criteria; backlog with ids (`{{PREFIX}}-001`).                                                                                                                                                                           |
+| `.github/workflows/ci.yml`               | One job per deployable + `repo` job (prettier check, commitlint on the push range). Swap the `backend` job for a Node job on Node presets; add the `ios` (macOS runner) and `android` jobs from `references/mobile.md` for the apps that exist. |
+| `docker-compose.yml`, `.env.example`     | Only when the preset has infra (Postgres/Redis/a queue). `.env.example` lists every key the app reads.                                                                                                                                          |
+| `.gitignore`, `.prettierignore`          | From templates; `data/`, `.env` and signing material (keystores, `.p12`, `.p8`, provisioning profiles) never enter git.                                                                                                                         |
 
 Commit: `chore(repo): bootstrap tooling, conventions and docs`.
 
@@ -132,7 +139,14 @@ current defaults; hand-written scaffolds drift from them.
 - **React (Vite)**: `npm create vite@latest web -- --template react-ts --no-interactive`, then the same baseline with `tsc --noEmit`, @testing-library/react and react-i18next or the repo's i18n library. Read `references/vite-monorepo.md` before a multi-package layout.
 - **Next.js**: `npx create-next-app@latest web --ts --eslint --app --src-dir --no-tailwind`, ESLint `--max-warnings 0`, Stylelint with BEM + declaration-strict-value for tokens, Vitest + Testing Library cov ≥ 80, Playwright smoke spec. Set `WEB_PORT=3000`.
 - **Nuxt**: `npm create nuxt@latest web` (memory: check flags with `--help`), then the Vue baseline above with `nuxi typecheck`. Set `WEB_PORT=3000`.
-- **Expo**: `npx create-expo-app@latest`, then ESLint and `tsc` baselines as above.
+- **iOS (`ios-swiftui`)** and **Android (`android-compose`)**: follow `references/mobile.md` — project
+  created by Xcode or Android Studio's Compose template; for iOS `swift format lint --strict`,
+  `swiftlint lint --strict` and `xcodebuild test`; for Android ktlint or detekt, Android Lint and
+  `./gradlew test`;
+  per-app Makefile targets and CI jobs (macOS runner for iOS). Signing certificates, keystores and
+  store API keys never enter the repo: CI gets them as encrypted secrets. Screens and platform rules
+  come later from the `ios` and `android` skills.
+- **Expo** (only when asked for by name): `npx create-expo-app@latest`, then ESLint and `tsc` baselines as above.
 
 Wire everything into the Makefile (`install`, `dev`, `api`, `web`, `migrate`, `lint`, `test`, `e2e`,
 `bench`, `ci`) and CI. The `bench` target runs `bench/api.js` with k6 against a running API; the
@@ -145,7 +159,7 @@ Wire everything into the Makefile (`install`, `dev`, `api`, `web`, `migrate`, `l
 Do not report done on a description. Run and paste the results:
 
 ```bash
-make install && make lint && make test && make ci
+make install && make lint && make test && make ci   # includes ios-* / android-* targets when the apps exist
 git commit --allow-empty -m "bad message"   # must be REJECTED by commitlint
 git log --oneline                             # 2–4 clean Conventional Commits
 ```

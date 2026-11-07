@@ -13,6 +13,7 @@ Owner: {{OWNER}} · Environments: {{ENVIRONMENTS}} · Dashboards: {{LINKS}} · E
 | Id    | SLI (good / valid events)                        | Target | Measured at        | Rationale, approver, review date |
 | ----- | ------------------------------------------------ | ------ | ------------------ | -------------------------------- |
 | SLO-1 | {{non-5xx responses / all responses, POST /orders}} | {{99.5 %}} | {{load balancer}} |                                  |
+| SLO-M1 | {{mobile apps only: crash-free sessions, iOS and Android, per production version}} | {{99.5 %}} | {{Crashlytics or Sentry}} |  |
 
 **Error-budget policy:** {{When a budget is spent: reliability work first, risky deploys frozen until
 back within SLO. Decided by: OWNER. Disputes go to: …}}
@@ -38,6 +39,7 @@ Last test alert received: {{DATE, channel}}
 
 - Error budget left: {{SLO-1: x %}} · trend: {{…}}
 - Creep vs baseline: {{p95, bundle, query, memory}}
+- Mobile (per app and version): {{crash-free sessions, ANR rate, cold start p90, vitals warnings}}
 - New / top error signatures: {{…}}
 - Alerts: fired {{n}}, actionable {{n}}, noisy {{…}}, missed {{…}}
 - Cost: {{per day / per active user}} · Expiries: {{cert, domain}} · Advisories: {{…}}

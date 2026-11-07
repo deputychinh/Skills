@@ -1,6 +1,6 @@
 ---
 name: verify-app
-description: Runs the app exactly as the user will — README quick start in a fresh shell, the URL the dev server prints, a real browser — and collects evidence for every acceptance criterion and UI state before anything is called done; in post-deploy mode it runs the same checks against the deployed URL. Use before saying a feature, fix or release works, whenever the user is about to open the app, after a deploy, or when they say "test it", "check it works" or "is it really fixed" — even for a one-line change. Inside a delivery, `ship` and `deliver-loop` call this skill before `demo`, and `release` calls its post-deploy mode.
+description: Runs the app exactly as the user will — README quick start in a fresh shell, the URL the dev server prints, a real browser, or simulators and emulators for native iOS and Android apps — and collects evidence for every acceptance criterion and UI state before anything is called done; in post-deploy mode it runs the same checks against the deployed URL. Use before saying a feature, fix or release works, whenever the user is about to open the app, after a deploy, or when they say "test it", "check it works" or "is it really fixed" — even for a one-line change. Inside a delivery, `ship` and `deliver-loop` call this skill before `demo`, and `release` calls its post-deploy mode.
 ---
 
 # verify-app — run it the way the user will, then claim
@@ -19,6 +19,52 @@ pass every automated gate for a whole release while the URL the dev server print
   Never write test data a real user could see; use a test account or read-only flows, and say which.
   Save evidence under `docs/delivery/<slug>/evidence/post-deploy/` and hand the verdict back to
   `release`, which decides on rollback.
+- **Mobile**: for a native iOS or Android app (the `ios` and `android` skills), run the Mobile mode
+  steps below on simulators and emulators instead of a browser; the ACs, states,
+  evidence and verdict table (Steps 4–9) stay the same. After a store upload, run it again on the TestFlight or Play internal
+  build, because that is the binary users will get.
+
+## Mobile mode
+
+1. **Install and launch from the README**, in a fresh shell, the way a contributor would:
+   - iOS: `xcrun simctl boot "<iPhone model>"` (list with `xcrun simctl list devices available`),
+     `xcodebuild build -scheme <App> -destination 'platform=iOS Simulator,name=<iPhone model>'`, then
+     `xcrun simctl install booted <path>/<App>.app` and `xcrun simctl launch booted <bundle id>`.
+   - Android: `emulator -avd <name>` (create one with `avdmanager` for a phone and a tablet),
+     `./gradlew assembleDebug`, `adb install -r app/build/outputs/apk/debug/app-debug.apk`, then
+     `adb shell am start -W -n <package>/.MainActivity` (prints the launch time).
+
+   The debug build must reach the local API (`localhost` from the iOS simulator, `10.0.2.2` from the
+   Android emulator); a first screen that cannot load data is the mobile version of the CORS bug.
+
+2. **Drive every journey** with the repo's UI tests — XCUITest (`xcodebuild test`), Compose UI tests
+   (`./gradlew connectedCheck`) — or Maestro YAML flows (`maestro test flows/`) when the same journey
+   must run on both platforms. Include offline (airplane mode or the API stopped), slow network,
+   background and resume, rotation, and a denied permission.
+3. **Screenshots** of each changed screen on a small and a large device (smallest supported iPhone
+   and an iPad; a compact phone and a tablet or foldable), light and dark, and at the largest text
+   size:
+   - iOS: `xcrun simctl ui booted appearance dark`,
+     `xcrun simctl ui booted content_size accessibility-extra-extra-extra-large`,
+     `xcrun simctl io booted screenshot <file>.png`.
+   - Android: `adb shell cmd uimode night yes`, `adb shell settings put system font_scale 2.0`,
+     `adb exec-out screencap -p > <file>.png`.
+
+   Save to `docs/delivery/<slug>/evidence/<screen>-<device>-<theme>[-xl].png` and open each one:
+   clipped or overlapping text at the largest size is a defect, not a cosmetic note.
+
+4. **Screen reader spot check**: walk the main journey with VoiceOver (iOS) and TalkBack (Android)
+   — every control has a meaningful label, focus order follows reading order, nothing important is
+   unreachable by swiping — plus Accessibility Inspector or Accessibility Scanner on changed
+   screens. Record what was checked; this is a spot check, not a full audit.
+5. **Performance**: cold start and the main scroll against `benchmarks/plan.md` (`benchmark` has the
+   mobile workloads), on a release build, not a debug build.
+
+`simctl` options verified on 2026-11-07 against `xcrun simctl help` in Xcode 27.0; `am start -W`
+verified on 2026-11-07 against https://developer.android.com/topic/performance/vitals/launch-time;
+TalkBack and Accessibility Scanner checks against
+https://developer.android.com/guide/topics/ui/accessibility/testing; the other `adb` and `emulator`
+commands and Maestro's CLI are from memory.
 
 ## Steps
 

@@ -24,5 +24,6 @@ Follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The full histo
 - A delivery profile (reply language, stack defaults, autonomy, push policy, review gate, deploy
   target) read from the project's or the user's `CLAUDE.md`, so nothing personal is baked into
   the skills.
+- Native mobile across the suite: `ship` asks at triage for web only, iOS, Android or several (one native codebase per store, sharing the backend API) and calls `ios` and `android`; `init-project` gains `ios-swiftui` and `android-compose` presets, `verify-app` a simulator/emulator mode, `benchmark` mobile workloads, `release` the store path (`references/app-stores.md`), `monitor` crash and ANR SLOs, and `css-design` a platform-guidelines map.
 - Evals in the skill-creator case format (`evals/`), a validator (`make check`), and plugin
   marketplace packaging (`.claude-plugin/`).

@@ -11,6 +11,7 @@ Skills read these keys; a key left out falls back to the default in the skills R
 - reply language: {{REPLY_LANG}}
 - frontend default: {{FRONTEND}}
 - backend default: {{BACKEND}}
+- mobile: {{MOBILE}}
 - autonomy: decide-and-record — ask only what nobody else can answer (secrets, money, legal, irreversible or outward-facing actions)
 - push policy: {{PUSH_POLICY}}
 - review gate: independent review, ship at ≥ 9/10 with requirements fit = 1 and security ≥ 0.5, at most 3 improve rounds

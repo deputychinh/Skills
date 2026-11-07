@@ -22,6 +22,23 @@ __pycache__/
 .pytest_cache/
 htmlcov/
 
+# mobile build output (iOS, Android)
+xcuserdata/
+DerivedData/
+*.xcresult
+.gradle/
+local.properties
+*.apk
+*.aab
+
+# signing material: never in git; CI gets it from encrypted secrets
+*.p12
+*.p8
+*.mobileprovision
+*.jks
+*.keystore
+keystore.properties
+
 # data and local state (never commit datasets, models, databases)
 data/
 

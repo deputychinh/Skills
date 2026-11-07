@@ -13,6 +13,7 @@ Resume: re-invoke `ship`; "Where am I?" reads this file and does the Next action
 
 - reply language: <value> (<from project CLAUDE.md | ~/.claude/CLAUDE.md | default>)
 - frontend / backend: <value> (<source>)
+- mobile: <web only | iOS | Android | iOS + Android>, <monorepo | separate repos> (<source>)
 - autonomy: <value> (<source>)
 - push policy: <value> (<source>)
 - review gate: <value> (<source>)
@@ -30,8 +31,8 @@ Resume: re-invoke `ship`; "Where am I?" reads this file and does the Next action
 | Build | todo | |
 | Verify | todo | |
 | Demo | todo | |
-| Release | todo / n.a. | <tag, target or "local only", smoke result> |
-| Operate | todo / n.a. | <SLOs, alerts> |
+| Release | todo / n.a. | <tag, target or "local only", smoke result; store track and rollout % per app> |
+| Operate | todo / n.a. | <SLOs, alerts; crash-free sessions and ANR rate per app> |
 | Learn | todo | |
 
 Statuses: todo → doing → done (or cut, or blocked). Never move back; reopen as a new row with a reason.
