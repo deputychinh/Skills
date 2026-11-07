@@ -4,6 +4,14 @@ Each item is a paraphrase written as an instruction and tagged with its source. 
 
 ---
 
+## Contents
+
+1. [Discover](#1-discover-intake-problem-framing) · 2. [Define / Spec](#2-define--spec) · 3. [Plan & estimate](#3-plan--estimate) · 4. [Architect](#4-architect) · 5. [Build](#5-build) · 6. [Test](#6-test) · 7. [Review](#7-review) · 8. [Release](#8-release) · 9. [Operate](#9-operate) · 10. [Learn / Retro](#10-learn--retro) · 11. [Demo](#11-demo--communicate-results) · [Minimal process](#minimal-viable-process-for-a-solo-developer--ai-agent)
+
+Phase owners in this repo: Discover → `discover`; Define → `spec`; Plan → `shape-plan`; Architect → `architect`; Build, Test, Review → `deliver-loop`; Release → `shape-plan` (deploy in the walking skeleton) and `deliver-loop` (release cut); Operate → not covered yet (SLOs, alerting, incident response are out of scope until a project runs in production); Learn → `improve-skills`; Demo → `demo`.
+
+Verification: Shape Up, the DORA metrics, the Scrum Guide 2020 and Working Backwards items were checked against primary sources on 2026-11-07; every other line is a paraphrase from memory. Brooks' "throw one away" was dropped: he retracted it in the 1995 edition (ch. 19).
+
 ## 1. Discover (intake, problem framing)
 
 - [ ] Restate the request as a customer problem and an outcome to change, not as a list of features. [Cagan, _Inspired_]
@@ -92,7 +100,7 @@ Each item is a paraphrase written as an instruction and tagged with its source. 
 - [ ] Confirm that the Definition of Done is met: tests, docs, deployable. [Scrum Guide 2020]
 - [ ] Prefer fast peer review to heavyweight change-approval boards. [Forsgren et al., _Accelerate_]
 
-**Anti-patterns:** external change-approval boards, which Accelerate links to lower stability as well as lower speed [Forsgren et al.]. Giant diffs, and rubber-stamp reviews [Winters et al.].
+**Anti-patterns:** external change-approval boards, which Accelerate found correlated with longer lead times, fewer deployments and slower recovery, and with no improvement in change fail rate [Forsgren et al.]. Giant diffs, and rubber-stamp reviews [Winters et al.].
 
 ## 8. Release
 
@@ -126,7 +134,6 @@ Each item is a paraphrase written as an instruction and tagged with its source. 
 - [ ] Use flow metrics (lead time, throughput, WIP) and evolve the process step by step. [Anderson, _Kanban_]
 - [ ] Use DORA capabilities (CI, trunk-based development, loose coupling, generative culture) as the improvement backlog. [Forsgren et al., _Accelerate_]
 - [ ] Feed postmortem actions back into the backlog and track them to done. [Beyer et al., _SRE_]
-- [ ] Throw the first version away on purpose, as a pilot to learn from. [Brooks, _MMM_]
 
 **Anti-patterns:** the "second-system effect", which over-engineers the next version [Brooks]. Retros with no action items. Measuring individual productivity instead of system outcomes [Forsgren et al.].
 

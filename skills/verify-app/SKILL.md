@@ -1,6 +1,6 @@
 ---
 name: verify-app
-description: Use before saying any feature, fix or release is done, working or ready — and whenever David is about to open the app — to run it exactly as he will (README quick start, the URL the dev server prints) and collect evidence per acceptance criterion.
+description: Runs the app exactly as David will — README quick start in a fresh shell, the URL the dev server prints, a real browser — and collects evidence for every acceptance criterion and state before anything is called done. Use before saying a feature, fix or release works, and whenever David is about to open the app.
 ---
 
 # verify-app — run it the way David will, then claim

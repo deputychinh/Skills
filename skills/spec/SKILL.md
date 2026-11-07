@@ -1,6 +1,6 @@
 ---
 name: spec
-description: Use when a brief or a clear request exists and the next step is deciding exactly what "done" means — writing acceptance criteria, story maps, quality targets and non-goals before planning or code; also when a spec must be checked for ambiguity or gaps.
+description: Defines what "done" means for a brief or a clear request — story map, acceptance criteria in EARS or Given/When/Then with negative and boundary cases, measurable quality targets, non-goals — and checks the spec for ambiguity, gaps and contradictions. Use before planning or code, or to review an existing spec. Not the entry point for a request to build something — `ship` calls this skill.
 ---
 
 # spec — what and why, testable, never how

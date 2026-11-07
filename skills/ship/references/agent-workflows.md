@@ -2,6 +2,8 @@
 
 Paraphrased from sources fetched 2026-11-07; _(secondary)_ marks third-party coverage.
 
+> **How this repo uses it.** Adopted: trigger-plus-what descriptions, progressive disclosure, ledgers in files, fresh-evidence verification, capped review loops. **Not adopted:** human approval as a hard gate before code (superpowers brainstorming, the spec row below) — David asked for autonomy, so `ship` records rulings instead and asks only owner-only questions, once, at triage.
+
 ## 1. Anthropic: Agent Skills guidance
 
 URLs: https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices · https://code.claude.com/docs/en/skills · https://github.com/anthropics/skills
@@ -9,6 +11,7 @@ URLs: https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-pra
 
 - **Frontmatter.** `name`: ≤64 chars, lowercase, digits and hyphens, no "anthropic" or "claude". `description`: ≤1,024 chars, third person, says what the skill does and when to use it. Claude Code cuts `description` + `when_to_use` at 1,536 chars, so lead with the trigger.
 - **Claude Code fields.** `disable-model-invocation: true` for phases only you start (deploy, demo); `context: fork` + `agent` to run a phase in a subagent; per-phase `model`/`effort`; `allowed-tools`, `paths`, `$ARGUMENTS`; `` !`cmd` `` injects live state such as the plan file (append `|| true`, since a failing command aborts the skill).
+- **Compaction budget.** After a compaction Claude Code re-attaches at most the first 5k tokens of each invoked skill, within about 25k tokens for all skills, filled from the most recently invoked one — the first skill of a long run (the controller) is dropped first, so its state must live in a file it re-reads.
 - **Progressive disclosure.** Body under 500 lines; references one level deep, with a table of contents if over 100 lines; scripts are run, not read, so they cost no context. Compaction re-attaches only a skill's first 5k tokens, so put the key rules first.
 - **Workflows.** A checklist the agent copies and ticks off; validate → fix → repeat loops; plan file → validate → execute → verify for risky batch work.
 - **Evaluations first.** Baseline 3+ scenarios without the skill, write the minimal skill, iterate with an author Claude and a tester Claude, on every model tier you use.
@@ -58,7 +61,7 @@ URLs: https://github.com/bmad-code-org/BMAD-METHOD · https://docs.bmad-method.o
 - **Scale-adaptive entry.** A vague idea starts at Clarify, a big clear idea at Plan, and a small change goes straight to Build and verify, followed by Learn and adjust. Pick how much process to use at intake.
 - **Persona hand-offs, each producing an artifact:** Analyst → brief, PM → PRD, Architect → architecture/ADRs, SM → self-contained story files, Dev → code, QA → tests _(roster partly secondary)_.
 - **Readiness gate before coding**, now part of sprint planning; `sprint-status.yaml` is the single progress record and statuses never regress.
-  **Avoid:** persona and menu sprawl, YAML ceremony, and an unstable roster (SM and QA reportedly folded into Dev; V7 has breaking changes).
+  **Avoid:** persona and menu sprawl, YAML ceremony, and an unstable roster (SM and QA reportedly folded into Dev; V7 has breaking changes — _unverified, third-party guides disagree_).
 
 ## 6. Kiro specs
 
@@ -66,12 +69,12 @@ URLs: https://kiro.dev/docs/specs/ · https://kiro.dev/docs/specs/feature-specs/
 **Adopt**
 
 - **Three files:** `requirements.md` (stories + EARS criteria: "WHEN <event> THE SYSTEM SHALL <response>"), `design.md` (architecture, sequences, errors, test strategy), `tasks.md` (tracked).
-- **Choice of path:** requirements-first or design-first, plus a gate-free Quick Spec for well-understood work.
+- **Choice of path:** requirements-first or design-first, plus a gate-free Quick Spec for well-understood work _(not confirmed in the official docs)_.
 - **"Analyze requirements"** checks for ambiguity, conflict and gaps before design starts.
-- **Bugfix specs** record current, expected and _unchanged_ behaviour, which serves as a regression guard.
+- **Bugfix specs** _(not confirmed in the official docs; adopted as `ship`'s Bug path)_ record current, expected and _unchanged_ behaviour, which serves as a regression guard.
   **Avoid:** IDE lock-in, and EARS for aesthetic wishes it expresses poorly.
 
-## 7. Amazon "Working Backwards" PR/FAQ as agent skills
+## 7. Amazon "Working Backwards" PR/FAQ as agent skills (community sources only — ideas, not citations)
 
 URLs: https://claudskills.com/skills/prfaq/ (borghei/Claude-Skills) · https://claudeskills.info/skills/pmprompt/claude-plugin-product-management/working-backwards/ · https://zff.dev/ric_harvey/ai-skills _(community; no official Anthropic or Amazon skill found)_
 **Adopt**

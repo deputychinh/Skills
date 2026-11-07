@@ -1,6 +1,6 @@
 ---
 name: architect
-description: Use when a spec is ready and the system's shape must be decided — module boundaries, data model, integrations, AI/LLM calls, hosting — or when a change touches an architectural decision recorded in an ADR; before planning tasks.
+description: Decides and records a system's shape — driving quality characteristics, bounded contexts, data flows, integration timeouts and fallbacks, AI-call rules, fitness functions, threat model and ADRs. Use when a spec is ready and the design must be settled before planning, or when a change touches a decision recorded in an ADR.
 ---
 
 # architect — the least-worst design that meets the spec, written down
@@ -25,7 +25,7 @@ extend it, do not repeat it.
    where idempotent, circuit breaker, bulkhead, bounded result sets. Write each in the design table.
 6. **AI features** (when the product calls a model): pick the model by task and cost; structured
    outputs with a schema; a fallback when the model is wrong, slow or down; prompt and model version
-   recorded with each result; an eval set (≥ 20 real examples) with a pass threshold; prompt-injection
+   recorded with each result; an eval set of ≥ 20 examples (real ones if David supplies them, otherwise collected or synthetic and labelled as such) judged by a scripted check or an LLM-judge rubric, with a pass threshold; prompt-injection
    boundary (untrusted text never reaches tools or system prompts unescaped); cost and latency budget.
    Load the `claude-api` skill before writing Claude API code.
 7. **Fitness functions**: for each driving characteristic, an automated check (test, lint rule,

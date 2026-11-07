@@ -1,6 +1,6 @@
 ---
 name: demo
-description: Use when a request, release or milestone is finished and verified and David should see the result — to build a short results page with the running app, screenshots, what works, what was cut and how to run it, then hand him the link.
+description: Builds a short results page for finished, verified work — what David can open now, evidence per acceptance criterion, what was cut and why, how to run it — publishes or opens it and starts the app. Use when a request, release or milestone is done and David should see the result.
 ---
 
 # demo — show working software against the brief

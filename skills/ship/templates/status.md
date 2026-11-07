@@ -1,8 +1,12 @@
 # <NNN-slug> — status
 
 Request (verbatim): "<what David asked>"
-Path: Quick | Small | Full — because <reason>
+Path: Bug | Quick | Small | Small new | Full — because <reason>
 Appetite: <e.g. 2 days of agent work> · started <YYYY-MM-DD>
+
+**Next action:** <the one thing to do next, specific enough to resume cold>
+
+Resume: re-invoke `ship`, read this file, do the Next action.
 
 | Phase | Status | Evidence / link |
 | --- | --- | --- |

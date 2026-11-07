@@ -1,6 +1,6 @@
 ---
 name: discover
-description: Use when a request is still an idea or a wish ("tôi muốn một app…", "ý tưởng là…", a new product or a big feature) and nobody has yet written down who it is for, what problem it solves and how success is measured — before any spec or code.
+description: Turns an idea into a one-page brief — press release and FAQ, the five customer questions, an impact map, the riskiest hypothesis and an appetite — or kills it with a reason. Use when a request is still a wish or a vague product idea and nobody has written down who it is for, what problem it solves and how success is measured. Not the entry point for a request to build something — `ship` calls this skill.
 ---
 
 # discover — turn a request into a brief worth building
