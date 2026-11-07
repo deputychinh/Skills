@@ -66,6 +66,25 @@ Check the guideline for the platform being styled, at the version in
    and the target-size probe from the reference. _Evidence:_ spec output.
 10. **Hand over** to `frontend` gates and `verify-app`; do not restate their steps.
 
+## Visual quality bar (does it look professional?)
+
+Accessible and correct is not enough: users judge a product in seconds. Before calling UI work done,
+put the 1440 px and 390 px screenshots next to 2–3 reference products from `benchmark` part A and
+remove these amateur signals:
+
+- no app shell (a bare title bar, no navigation, no brand mark), or controls scattered without a toolbar;
+- frames inside frames (a padded grey box inside a bordered card), previews that are not edge to edge;
+- one oversized element dominating the page (a page-wide dropzone, a giant empty state) — prefer a
+  primary button plus a drop overlay;
+- default system type with weak hierarchy, cramped or uneven spacing that is off the scale;
+- a washed-out palette for content-heavy apps (art, photos, video, 3D read better on a neutral dark
+  surface), more than one accent, colour without meaning;
+- text-only controls where an icon plus label is the convention; outline pills used for everything;
+- truncated names with no full-name tooltip; meaningless metadata noise.
+
+Ask a fresh reviewer, "would this pass as a shipped product next to the references?" — and treat
+"no" as a defect, not taste.
+
 ## Core checklist
 
 1. No raw colour, spacing, font size, radius, shadow, z-index or duration outside the tokens file.
