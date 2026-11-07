@@ -15,6 +15,7 @@ section that matches the item before step 3; the core list in `SKILL.md` applies
 
 ## Gates, commits and docs
 
+- Never edit an accepted ADR, even one written earlier in the same item once a reviewer has seen it: record the changed decision in a new ADR that supersedes it, and update the links (a reviewer flags the edit as a repo-rule violation).
 - Parallel agents (builder, reviewer, another item) must not share one test database: one run dropping or truncating it made the other's unrelated tests fail. Give each its own `*_test` database (e.g. an env override per agent) and rerun a red suite on an isolated database before believing it.
 - Chain every step that must succeed — doc-editing scripts included — into the commit command (`python3 edit.py && make ci && git commit …`): a doc script that stops early otherwise still lets the code commit go out without its docs.
 - Chain the gate and the commit so a red gate cannot commit: `make ci && git add … && git commit …` — an `echo ci=$?` between them returns 0 and lets a red run commit.
@@ -42,6 +43,7 @@ section that matches the item before step 3; the core list in `SKILL.md` applies
 
 ## Concurrency and reliability
 
+- Throttles (sign-in, rate limits): reserve the attempt before the expensive check, in one transaction under an advisory lock per key (`pg_advisory_xact_lock`, keys taken in a fixed order), then release; counting first and recording after let 30 parallel attempts make 27 checks against a limit of 10. Prove it with N threads on their own connections behind a barrier.
 - Concurrency: every read-modify-write is a lock or a compare-and-set, with a two-thread test.
 - Fakes hide concurrency bugs: every race claim needs one run against the real dependency — a race that fails a noticeable share of runs against a real object store can pass every time against an in-memory fake.
 - Prove a race fix with a deterministic interleaving (open transactions, or a wrapper that holds the window open after the write), never with sleep-then-check. Before relying on a database guard during a lock wait, test it: PostgreSQL re-checks a waiting UPDATE's condition only when the row changed.
@@ -55,6 +57,7 @@ section that matches the item before step 3; the core list in `SKILL.md` applies
 
 ## Input, media and security
 
+- uvicorn reads `X-Forwarded-For` by default and believes it from 127.0.0.1, so anything reaching the app over loopback (a dev proxy, a same-host reverse proxy) chooses the client IP rate limits see; start the server with proxy headers off unless an explicit trusted-proxy list is set, have dev proxies overwrite the header with their real peer, and test it by starting the real server process with a forged header.
 - Budget every allocation an untrusted file **declares**, not only what your own reader uses: a 3D file whose renderer skipped one accessor still crashed the browser viewer, because the client parser allocated every accessor the file declared (a 768-byte file asked for 3 GB). Apply the same bounds in every reader (server and client) and keep them equal with a test.
 - Text input: reject Unicode Cc, Cs (lone surrogates crash the DB driver), Zl, Zp and all of Cf except ZWNJ/ZWJ (Persian, Indic, emoji need them), plus invisible fillers (U+034F, U+115F, U+1160, U+2800, U+3164, U+FFA0); reject dot-only file names; cap every decoded token's length. Accept-tests in several scripts are mandatory; tag characters matter because names reach AI prompts.
 - Untrusted media: measure peak memory per accepted format at its limit in a fresh subprocess (ru_maxrss of a warm process lies), and bound both pixels and file size (Pillow reads whole WebP/animated files); pin it with a subprocess regression test.
