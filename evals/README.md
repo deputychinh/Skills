@@ -10,3 +10,5 @@ in the table below.
 | [pdf-summary-app](pdf-summary-app.md)       | ship, discover, spec, init-project, architect, shape-plan, deliver-loop, verify-app, demo | –        | –      |
 | [safari-upload-bug](safari-upload-bug.md)   | ship (Bug path), verify-app, deliver-loop                                                 | –        | –      |
 | [resume-from-ledger](resume-from-ledger.md) | ship                                                                                      | –        | –      |
+
+Reviews of the suite so far: 6.5 → 7.0 → 8.0 (independent reviewers, 2026-11-07). The next step to 9 is running these scenarios, not another text review.

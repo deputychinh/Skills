@@ -14,6 +14,8 @@ Follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `evals/`: three scenarios (a PDF-summary app, a Safari bug in Kiln, resuming from the ledger) with must / must-not checklists.
 - `make check` follows relative markdown links between skills.
 
+- Third review (8.0/10, the last round under the cap): `deliver-loop` resumes an open `ship` delivery from its Next action and only cuts releases outside one; the Bug path writes a story for the reviewer; `discover` has a light mode for Small new; `init-project` asks nothing when `ship` calls it and writes baseline docs when `architect` will not run; the triage table is whole again. Open: run the three evals in fresh sessions and record the results.
+
 ### Fixed
 
 - Commit `76e93eb` ("docs(repo): state what and when…") also carries the `ship` triage and reference fixes: their own commit was rejected by commitlint (header too long) and the chained command did not stop.
