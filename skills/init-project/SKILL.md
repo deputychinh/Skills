@@ -1,6 +1,6 @@
 ---
 name: init-project
-description: Bootstraps a new repo the house way — git on main, Conventional Commits with commitlint and husky, Prettier, a Makefile with help, docs (conventions, testing, ADR 0001, architecture, plan, backlog, changelog), CI, a project CLAUDE.md and a stack baseline with strict lint, types and coverage. Use when David asks only for a bare repo or scaffold ("/init-project", "khởi tạo repo", "bootstrap a repo"), when `ship` needs a repo, or when work starts in a folder with no git history or no CLAUDE.md. Not the entry point for building an app or feature — that is `ship`, which calls this skill.
+description: Bootstraps a new repo the house way — git on main, Conventional Commits with commitlint and husky, Prettier, a Makefile with help, docs (conventions, testing, ADR 0001, architecture, plan, backlog, changelog), CI, a project CLAUDE.md and a stack baseline with strict lint, types and coverage. Use when David asks only for a bare repo or scaffold ("/init-project", "khởi tạo repo", "bootstrap a repo"), when `ship` needs a repo, or when work starts in an empty folder with no git history. Not the entry point for building an app or feature — that is `ship`, which calls this skill.
 ---
 
 # init-project
@@ -20,7 +20,8 @@ before writing ADR 0001, the architecture doc or any API/screen, and cite it in 
 
 Default everything you can; ask only what you cannot derive. Use AskUserQuestion once, with these
 questions at most (skip any the user already answered in the request, or that `ship` already settled in
-`docs/delivery/*/brief.md` or `status.md` — when called by `ship`, usually none are left):
+`docs/delivery/*/brief.md` or `status.md`). When called by `ship`, ask nothing: take the defaults below
+(the preset that fits the request) and record each one as a ruling in `status.md`:
 
 | Question                          | Default when unanswered                                                                                                                                             |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -84,7 +85,8 @@ Commit: `chore(repo): bootstrap tooling, conventions and docs`.
 
 When called by `ship`: no question round here (ship settled them at triage), ADR 0001 records only the
 stack and layout, and the `architect` skill owns the product's design decisions, `docs/security.md`
-and the architecture doc; the backlog stays empty for `shape-plan`.
+and the architecture doc (on paths without `architect`, write their baselines here); the backlog
+stays empty for `shape-plan`.
 
 Before scaffolding code, spend one pass on design so the skeleton is right. Work through the
 checklists in `references/` and write the answers down; a decision that is not in an ADR does not exist.
