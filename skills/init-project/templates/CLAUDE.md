@@ -46,12 +46,12 @@ Mỗi turn có thay đổi file phải kết thúc bằng commit:
    - `feat(web): …`, `fix(api): …`, `test(e2e): …`, `docs(plan): …`, `chore(repo): …`
    - Một commit cho một đơn vị việc hoàn chỉnh (code + test + docs). Nhiều commit trong một turn là bình thường.
 4. Chỉ commit khi xanh. Nếu gate đỏ khi hết turn: **không commit**, báo rõ cái gì đỏ và vì sao để tree bẩn.
-5. Không `git push`, không rebase/force trên `main` trừ khi người dùng yêu cầu.
+5. Khi repo có `origin`: push mỗi commit xanh lên `origin main`. Không bao giờ rebase/force trên `main`.
 6. Cuối báo cáo ghi hash + message của các commit vừa tạo.
 
 ## Vòng giao hàng tự động
 
-Sau khi khởi tạo, làm việc theo skill `/deliver-loop`: mỗi item backlog đi qua BA → thiết kế → TDD → QA → reviewer độc lập chấm 10 điểm (`~/.claude/skills/deliver-loop/rubric.md`) → cải thiện tới ≥ 9/10 → commit + push → retro, rồi sang item tiếp theo mà không cần hỏi.
+Sau khi khởi tạo, làm việc theo skill `/deliver-loop`: mỗi item backlog đi qua BA → thiết kế → TDD → QA → reviewer độc lập chấm 10 điểm (`~/.claude/skills/deliver-loop/rubric.md`) → cải thiện tới ≥ 9/10 → commit (+ push khi có `origin`) → retro, rồi sang item tiếp theo mà không cần hỏi.
 
 ## Phong cách làm việc
 

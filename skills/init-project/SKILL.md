@@ -1,6 +1,6 @@
 ---
 name: init-project
-description: Bootstrap a new project the way David's best-kept repos (american-english-coach, bazaar) are set up — git on main, Conventional Commits enforced by commitlint + husky, Prettier/EditorConfig, Makefile with `help`, docs (conventions, testing, ADR 0001, architecture, plan, backlog, CHANGELOG), CI workflow, a project CLAUDE.md that states the rules and the commit-after-every-turn routine, a stack baseline (ruff/mypy strict/pytest ≥90 % or ESLint 0 warnings/tsc/Vitest ≥80 % + Playwright), and a design review against the house references (Clean Architecture/DDD, Zalando API rules + RFC 9457, DDIA/Release It! reliability, OWASP Top 10:2025 + ASVS 5.0, Material 3 adaptive + WCAG 2.2 + Core Web Vitals, DORA/Accelerate delivery) captured in ADR 0001. Trigger on "/init-project", "dự án mới", "khởi tạo dự án", "tạo project mới", "new project", "bootstrap a repo", "set up a new repo", or when asked to start work in a folder that has no git history or no CLAUDE.md.
+description: Bootstraps a new repo the house way — git on main, Conventional Commits with commitlint and husky, Prettier, a Makefile with help, docs (conventions, testing, ADR 0001, architecture, plan, backlog, changelog), CI, a project CLAUDE.md and a stack baseline with strict lint, types and coverage. Use when David asks for a new project ("/init-project", "dự án mới", "tạo project mới", "new project", "bootstrap a repo"), when `ship` needs a repo, or when work starts in a folder with no git history or no CLAUDE.md.
 ---
 
 # init-project
@@ -19,7 +19,8 @@ before writing ADR 0001, the architecture doc or any API/screen, and cite it in 
 ## Phase 0 · Intake (one round, then act)
 
 Default everything you can; ask only what you cannot derive. Use AskUserQuestion once, with these
-questions at most (skip any the user already answered in the request):
+questions at most (skip any the user already answered in the request, or that `ship` already settled in
+`docs/delivery/*/brief.md` or `status.md` — when called by `ship`, usually none are left):
 
 | Question                          | Default when unanswered                                                                                                                                             |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -81,6 +82,9 @@ Commit: `chore(repo): bootstrap tooling, conventions and docs`.
 
 ## Phase 2b · Design review → ADR 0001 and architecture doc
 
+When called by `ship`, ADR 0001 records only the stack and layout; the `architect` skill owns the
+product's design decisions and extends the architecture doc afterwards.
+
 Before scaffolding code, spend one pass on design so the skeleton is right. Work through the
 checklists in `references/` and write the answers down; a decision that is not in an ADR does not exist.
 
@@ -139,7 +143,7 @@ End with a message a reader can act on alone:
 1. The rules now in force (bullet list copied from `CLAUDE.md`, including the commit-after-every-turn routine).
 2. Commands: `make help` output.
 3. What is scaffolded and what is deliberately not (remote, deploy, auth…).
-4. Next step: `docs/plan.md` phase 1, delivered with `/deliver-loop` (start it right away unless the owner said otherwise).
+4. Next step: when called by `ship`, return to it (architect and shape-plan come next); otherwise `docs/plan.md` phase 1, delivered with `/deliver-loop` (start it right away unless the owner said otherwise).
 
 Then write a `project` memory (`memory/project-<name>.md`) with the stack, presets chosen and any non-obvious constraint the user gave, and link it from `MEMORY.md`.
 
@@ -150,7 +154,7 @@ touched project (`make lint`, `make test`, or the per-project equivalent), updat
 change, then `git commit` with a Conventional Commit whose scope is in `commitlint.config.mjs`.
 One commit per completed unit of work; several commits in one turn are fine. Commit only green.
 If the gates are red at the end of the turn, do not commit: say what fails and leave the tree dirty on purpose.
-Never `git push` unless the user asks. Never rewrite history on `main`.
+When `origin` exists, push every green commit to it (David wants every commit pushed); with no remote, commits stay local. Never force-push or rewrite history on `main`.
 
 ## Do not
 
