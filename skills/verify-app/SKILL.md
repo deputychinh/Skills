@@ -26,11 +26,13 @@ webkit`, write the failing test there; if WebKit does not reproduce it, drive re
 5. **States**: loading, empty, error (stop the API or storage and reload), success; keyboard only;
    dark and light theme if the app has both; slow network (DevTools throttling) for anything that uploads
    or streams.
-6. **AI features**: run the eval set; record pass rate, latency p50/p95, cost per call; try one prompt
+6. **Performance targets** in the spec, or anything that feels slow: measure with `cache-optimize`
+   (Lighthouse / Core Web Vitals, k6, EXPLAIN) and record the numbers next to the target.
+7. **AI features**: run the eval set; record pass rate, latency p50/p95, cost per call; try one prompt
    injection and one model-unavailable case.
-7. **Gates**: the repo's full CI (`make ci` or equivalent) and e2e, chained by exit code — never judge a
+8. **Gates**: the repo's full CI (`make ci` or equivalent) and e2e, chained by exit code — never judge a
    gate from filtered output (`| tail` hides failures).
-8. **Verdict table**: AC → evidence → pass/fail. Anything failing is fixed now (with a regression test)
+9. **Verdict table**: AC → evidence → pass/fail. Anything failing is fixed now (with a regression test)
    or filed and listed as a known issue. Only then may you say "done".
 
 ## Red flags

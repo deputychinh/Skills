@@ -71,6 +71,17 @@ Also in triage:
 A brief is credible when the five customer questions are answered from facts David gave or that you
 can cite; numbers you cannot source are marked `HYPOTHESIS`.
 
+## Specialist skills (load the ones the work touches)
+
+| Phase                | When the work involves                                            | Skill                                               |
+| -------------------- | ----------------------------------------------------------------- | --------------------------------------------------- |
+| 4 Architect          | a new system or a part that must scale, estimates, storage choice | `system-design` (then `architect` records the ADRs) |
+| 4 Architect, 6 Build | tables, migrations, indexes, queries, transactions                | `database`                                          |
+| 6 Build              | routes, services, domain, jobs, integrations                      | `backend`                                           |
+| 6 Build              | screens, components, hooks, forms, data fetching                  | `frontend`                                          |
+| 6 Build              | tokens, layout, colour, typography, component states              | `css-design`                                        |
+| 7 Verify             | a performance target, something slow, caching                     | `cache-optimize`                                    |
+
 ## Build (phase 6)
 
 `shape-plan` already wrote the backlog. The build and review rules are `deliver-loop`'s: run it in this

@@ -12,6 +12,10 @@ extend it, do not repeat it.
 
 ## Steps
 
+For a new system, or a part that must scale, run `system-design` first (requirements, estimates,
+storage choice, trade-offs) and turn its decisions into ADRs here; for the data model and migration
+plan use `database`.
+
 1. **Driving characteristics**: from the spec's quality targets, pick the 3–7 that shape the design
    (e.g. latency, cost, data privacy, availability, evolvability). Ignore the rest on purpose.
 2. **Domain**: name the subdomains — core (where the product wins; model carefully), supporting,
