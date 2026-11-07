@@ -68,6 +68,7 @@ findings as claims: verify each before acting; reject with a reason when wrong.
 
 ## Loop control
 
+- Inside a `ship` delivery, stop when its plan's items are done and hand back to `ship` (verify, demo); do not cut a release or start the next plan on your own.
 - Keep cycling until the current release is done — `docs/delivery/<NNN-slug>/plan.md` when a `ship` delivery is open, else `docs/plan.md` — then cut the release and continue with the next.
 - Stop and report only when: a blocker needs the owner, a gate cannot go green after 3 honest attempts (say exactly what fails), or the plan is finished.
 - Between cycles, report in ≤ 5 lines: item, score, commits, **the URL or command to see it**, what is next. No questions unless blocked.
@@ -89,7 +90,7 @@ findings as claims: verify each before acting; reject with a reason when wrong.
 | Accessibility   | WCAG 2.2 AA (axe in e2e + keyboard pass)                                                                                      | rubric 7            |
 | Performance     | Core Web Vitals (LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1), no N+1, bounded queries                                               | rubric 8            |
 | API             | Zalando guidelines, RFC 9457, cursor pagination, idempotency                                                                  | steps 2–3           |
-| Delivery        | trunk-based, small batches, DORA four keys, Conventional Commits, Keep a Changelog, SemVer                                    | steps 7–8           |
+| Delivery        | trunk-based, small batches, DORA metrics (five since 2024), Conventional Commits, Keep a Changelog, SemVer                    | steps 7–8           |
 
 ## Do not
 
