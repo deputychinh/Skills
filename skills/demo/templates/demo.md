@@ -32,6 +32,10 @@ Request: "<verbatim>" · Delivered: <YYYY-MM-DD> · Lead time: <days from reques
 | --- | --- | --- | --- |
 | | | | |
 
+## Feedback
+
+- <what the user said, or "no feedback — <YYYY-MM-DD>">
+
 ## Next
 
 - <next slice>

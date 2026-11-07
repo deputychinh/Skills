@@ -3,7 +3,7 @@
 Tags: **[SRE]** Beyer et al., _Site Reliability Engineering_ (sre.google/sre-book) · **[SREW]**
 _The Site Reliability Workbook_ · **[WAF]** AWS Well-Architected Framework · **[C4]** c4model.com ·
 **[FOWLER]** martinfowler.com · **[FSA]** Richards & Ford, _Fundamentals of Software Architecture_ ·
-**[RI]** Nygard, _Release It!_ · **[HOUSE]** house references. ADRs, fitness functions and the
+**[RI]** Nygard, _Release It!_ · **[HOUSE]** the skills' own checklists in `init-project`. ADRs, fitness functions and the
 threat model are produced by `architect`; this file only prepares their inputs.
 
 Verified on 2026-11-07 against https://sre.google/sre-book/service-level-objectives/,
@@ -58,8 +58,8 @@ sets, timeouts shorter than the caller's, graceful shutdown, and what is retried
 
 - Draw trust boundaries on the container diagram: internet → API, API → DB, clients → object
   storage (presigned), worker → third parties. Each crossing names authn, authz and validation. **[HOUSE]**
-- PII inventory: which fields, where stored, who reads them, retention, delete path (Vietnam Decree
-  13/2023, GDPR where relevant). **[HOUSE]**
+- PII inventory: which fields, where stored, who reads them, retention, delete path (GDPR and
+  the local data-protection law where relevant). **[HOUSE]**
 - Untrusted content (uploads, user URLs, model output) handled in sandboxed or allow-listed paths. **[HOUSE]**
 - Hand this to `architect` step 8 for the threat model (OWASP Top 10:2025, ASVS 5.0 L1). **[HOUSE]**
 

@@ -1,9 +1,9 @@
-# Worked example: Kiln asset upload and preview pipeline
+# Worked example: image upload-and-preview pipeline for an "assets" app
 
-Shows the workflow end to end on a real house design. The final shape matches Kiln's
-`docs/architecture/README.md` and ADRs 0001, 0003–0010; the load numbers are illustrative
-assumptions (`HYPOTHESIS`), not Kiln measurements. Prices are from memory — check the provider's
-pricing page before using them in a real decision.
+Shows the workflow end to end on a neutral sample: a small team app where people upload images and
+browse them in a gallery with previews. Every load number is an illustrative assumption
+(`HYPOTHESIS`), not a measurement. Prices are from memory — check the provider's pricing page before
+using them in a real decision.
 
 ## Contents
 
@@ -19,19 +19,21 @@ pricing page before using them in a real decision.
 
 ## 1. Requirements
 
-- Use cases: an artist uploads an image or `.glb` model (new asset or new version); sees it in the
-  gallery with a preview; opens the detail page; uploads resume safely after a network drop.
+- Use cases: a member uploads an image (new asset or new version); sees it in the gallery with a
+  preview; opens the detail page; a retried upload after a network drop never duplicates or loses it.
 - Targets: create-asset API p95 < 300 ms; preview ready for 95 % of images within 60 s; no lost or
   duplicated uploads on retry; originals durable (object storage, versioned keys); availability
-  99.5 % (`HYPOTHESIS` for a studio tool); cost < $300/month in year one (`HYPOTHESIS`).
-- Constraints: one developer; FastAPI + Postgres + Python worker + S3; no GPU.
-- Non-goals: video, real-time collaboration, multi-region.
+  99.5 % (`HYPOTHESIS` for an internal team tool); cost < $300/month in year one (`HYPOTHESIS`).
+- Constraints: one developer; an API (FastAPI or Node) + Postgres + a background worker + S3-compatible
+  storage; no GPU.
+- Non-goals: video, 3D models, real-time collaboration, multi-region.
 
 ## 2. Estimate
 
-Assumptions (`HYPOTHESIS`): 50 artists; 40 uploads each per working day; average file 20 MB; 8 busy
-hours; burst factor 5 over the busy-hour average; 250 working days; 100 gallery views per artist per
-day with 24 thumbnails of 40 KB; 90 % images at 4 CPU-s each, 10 % models at 30 CPU-s; 7 API calls
+Assumptions (`HYPOTHESIS`): 50 members; 40 uploads each per working day; average file 20 MB; 8 busy
+hours; burst factor 5 over the busy-hour average; 250 working days; 100 gallery views per member per
+day with 24 thumbnails of 40 KB; 90 % ordinary images at 4 CPU-s each, 10 % very large
+images at 30 CPU-s; 7 API calls
 per upload (create, completion, status polls).
 
 `estimate.py` output (stdlib script as in `estimation-and-scaling.md` §1):
@@ -48,9 +50,9 @@ Postgres rows ~3 GB/year
 
 Reading it:
 
-- API load (3 req/s peak) is trivial for one FastAPI process and one Postgres. Not the driver.
+- API load (3 req/s peak) is trivial for one API process and one Postgres. Not the driver.
 - **Limiting numbers:** upload bytes (56 Mbit/s at peak, 20 MB bodies) and **worker CPU at peak
-  (≈ 2–3 busy workers, with 30 s model renders)**. Storage growth (10 TB/year) drives cost.
+  (≈ 2–3 busy workers, with 30 s renders of the largest images)**. Storage growth (10 TB/year) drives cost.
 - Postgres stays small (~3 GB/year): no partitioning, no replica.
 
 ## 3. Interface and data
@@ -71,19 +73,19 @@ expired pending versions by `(state, created_at)`.
 
 ```mermaid
 flowchart LR
-  artist([Artist]) --> web[Web app / CLI / Blender add-on]
-  web -->|HTTPS JSON /api/v1| api[API - FastAPI]
+  member([Member]) --> web[Web app]
+  web -->|HTTPS JSON /api/v1| api[API]
   web -->|presigned POST / signed GET| s3[(Object storage)]
   api -->|SQL| db[(Postgres: records + jobs)]
   api -.->|sign URLs locally, HEAD/copy| s3
-  worker[Worker - Python] -->|SKIP LOCKED| db
+  worker[Worker] -->|SKIP LOCKED| db
   worker -->|read original, write WebP| s3
 ```
 
 Upload flow: create (asset + version + key row in one transaction) → client POSTs the file straight
 to a staging key → completion `HEAD`s, checks size/type, copies to the final key with
 `CopySourceIfMatch`, sets `processing` and inserts the `thumbnail` job **in one transaction** →
-worker claims with a lease, renders in a sandboxed child, writes `thumbs/…webp`, marks `ready`.
+worker claims with a lease, decodes and resizes in a sandboxed child process, writes `thumbs/…webp`, marks `ready`.
 
 ## 5. Storage
 
@@ -103,7 +105,7 @@ worker claims with a lease, renders in a sandboxed child, writes `thumbs/…webp
 | Gallery thumbnails | rung 5: signed URLs stable per 10-min window + `Cache-Control: private, immutable` | browser cache absorbs repeats                                               |
 | API / Postgres     | rung 0–1 only                                                                      | > 100×                                                                      |
 
-At 10× (500 artists): worker slots ×10 (separate machines, same queue), storage ~100 TB/year so
+At 10× (500 members): worker slots ×10 (separate machines, same queue), storage ~100 TB/year so
 lifecycle rules matter, still one Postgres. A broker becomes worth discussing only past hundreds of
 jobs/s.
 
@@ -122,14 +124,14 @@ jobs/s.
 
 ### Decision: how do file bytes reach storage?
 
-| Option                         | Upload throughput        | API load                 | Integrity control                                     | Ops burden | Reversibility |
-| ------------------------------ | ------------------------ | ------------------------ | ----------------------------------------------------- | ---------- | ------------- |
-| Stream through the API         | bounded by API processes | 56 Mbit/s through Python | full                                                  | medium     | easy          |
-| Presigned PUT                  | storage-native           | JSON only                | weak: size/type not enforced by all servers           | low        | easy          |
-| **Presigned POST with policy** | storage-native           | JSON only                | key, type and exact size pinned; re-checked by `HEAD` | low        | easy          |
+| Option                         | Upload throughput        | API load                  | Integrity control                                     | Ops burden | Reversibility |
+| ------------------------------ | ------------------------ | ------------------------- | ----------------------------------------------------- | ---------- | ------------- |
+| Stream through the API         | bounded by API processes | 56 Mbit/s through the API | full                                                  | medium     | easy          |
+| Presigned PUT                  | storage-native           | JSON only                 | weak: size/type not enforced by all servers           | low        | easy          |
+| **Presigned POST with policy** | storage-native           | JSON only                 | key, type and exact size pinned; re-checked by `HEAD` | low        | easy          |
 
 Choice: presigned POST — it removes the limiting number from the API and keeps size/type
-enforcement (Kiln ADR 0004). Revisit when: a target store rejects POST policies.
+enforcement. Revisit when: a target store rejects POST policies.
 
 ### Decision: job queue
 
@@ -149,12 +151,12 @@ Choice: Postgres queue. Revisit when: sustained jobs > ~500/s or several indepen
 | Cloudflare R2                | ~0.015               | free   | ~$150/month                  | low (S3 API)         |
 | Self-hosted Garage/SeaweedFS | disks + ops          | free   | hardware + time              | lowest, highest toil |
 
-Choice: S3 API behind the `ObjectStorage` port, SeaweedFS locally, provider chosen at deploy (Kiln
-ADR 0003). Revisit when: the storage bill passes $300/month or egress dominates.
+Choice: S3 API behind an `ObjectStorage` port, an S3-compatible server locally, provider chosen at
+deploy. Revisit when: the storage bill passes $300/month or egress dominates.
 
 ## 9. Hand-off to `architect`
 
 ADRs: presigned POST uploads; staging keys + conditional promotion; idempotency keys in one
-transaction; Postgres job queue with leases; sandboxed model previews; signed-URL windows.
+transaction; Postgres job queue with leases; sandboxed image decoding; signed-URL windows.
 Fitness functions to define there: create p95 < 300 ms in an API timing test; thumbnail freshness
 from job timestamps; a test asserting the lease arithmetic; the domain import rule.

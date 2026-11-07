@@ -1,6 +1,6 @@
 ---
 name: discover
-description: Turns an idea into a one-page brief — press release and FAQ, the five customer questions, an impact map, the riskiest hypothesis and an appetite — or kills it with a reason. Use when a request is still a wish or a vague product idea and nobody has written down who it is for, what problem it solves and how success is measured. Not the entry point for a request to build something — `ship` calls this skill.
+description: Turns an idea into a one-page brief — product benchmark of 2–3 leading products, press release and FAQ, the five customer questions, an impact map, the riskiest hypothesis and an appetite — or kills it with a reason. Use when a request is still a wish or a vague product idea and nobody has written down who it is for, what problem it solves and how success is measured, or when the user asks "is this worth building", "who is this for" or "write a brief / PR-FAQ". Not the entry point for a request to build something — `ship` calls this skill first and hands the brief to `spec`.
 ---
 
 # discover — turn a request into a brief worth building
@@ -9,13 +9,16 @@ Output: `docs/delivery/<NNN-slug>/brief.md` from `templates/brief.md`. One page.
 script at the end, so write it as if the product shipped today.
 
 **Light mode** (`ship`'s Small new path): steps 2–4, 8 and 9 and a one-line headline only — no press
-release body, FAQ, impact map or four-risk list.
+release body, FAQ, impact map or four-risk list. Keep step 1 when the product is a known category
+(a to-do app, a dashboard, a booking form): users judge it against the products they already use,
+so a short benchmark is the cheapest way to avoid an obvious gap.
 
 ## Steps
 
 1. **Benchmark the job**: for a product or a feature people already use elsewhere, run `benchmark`
-   part A on 2–3 reference products and keep only the rows that change a decision.
-2. **Read what exists**: the request verbatim, the repo (README, docs/plan.md, CLAUDE.md), anything David
+   part A on 2–3 reference products; it writes `docs/delivery/<slug>/benchmark.md`. Keep only the
+   rows that change a decision and link the file from the brief's "Product benchmark" section.
+2. **Read what exists**: the request verbatim, the repo (README, docs/plan.md, CLAUDE.md), anything the user
    linked. Note facts vs. guesses.
 3. **Five customer questions** (Working Backwards): who is the customer; what problem; what is the
    benefit; how do we know they need it; what does the experience look like. Answer from facts; mark
@@ -23,7 +26,7 @@ release body, FAQ, impact map or four-risk list.
 4. **Ask, once, only what blocks**: these questions join `ship`'s single triage question (≤ 4 in all),
    ranked by impact × uncertainty, each multiple choice with your recommended option first. Skip any you can answer by reading or by
    a reasonable default — record the default as a ruling in `status.md`. Never ask about technology
-   choices David does not care about.
+   choices the user does not care about; the delivery profile already answers stack and autonomy.
 5. **Press release + FAQ**: headline, one-paragraph problem, one-paragraph solution, a customer quote
    (marked illustrative), how to start; external FAQ (users) and internal FAQ (cost, risk, what we will
    not do).
@@ -32,7 +35,7 @@ release body, FAQ, impact map or four-risk list.
 7. **Riskiest assumption** as a falsifiable hypothesis with a metric and how the demo will show it.
    Check the four risks: value, usability, feasibility, viability — one line each.
 8. **Appetite**: how much work this is worth (e.g. "1 day", "3 cycles"), set before solution design.
-9. **Kill or go**: if no credible press release can be written, say so in `status.md` and tell David why
+9. **Kill or go**: if no credible press release can be written, say so in `status.md` and tell the user why
    in three lines. Otherwise mark Discover done.
 
 ## Anti-patterns

@@ -4,9 +4,9 @@ Spec: `spec.md` · ADRs: <links> · Updated: <YYYY-MM-DD>
 
 ## Driving characteristics
 
-| Characteristic | Target (from spec) | Fitness function |
-| --- | --- | --- |
-| | | |
+| Characteristic | Target (from spec) | Fitness function | Benchmark row |
+| --- | --- | --- | --- |
+| | | | [`benchmarks/plan.md`](../../../benchmarks/plan.md) <workload> |
 
 ## Context map
 

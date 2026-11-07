@@ -1,6 +1,6 @@
 ---
 name: architect
-description: Decides and records a system's shape — driving quality characteristics, bounded contexts, data flows, integration timeouts and fallbacks, AI-call rules, fitness functions, threat model and ADRs. Use when a spec is ready and the design must be settled before planning, or when a change touches a decision recorded in an ADR. Inside a delivery, `ship` calls this skill.
+description: Decides and records a system's shape — driving quality characteristics, bounded contexts, data flows, integration timeouts and fallbacks, AI-call rules, fitness functions tied to `benchmarks/plan.md`, a threat model and ADRs. Use when a spec is ready and the design must be settled before planning, when a change touches a decision recorded in an ADR, or when the user asks "how should we structure this", "monolith or services" or "write an ADR". Numbers-first sizing of a new system is `system-design`; this skill turns it into decisions. Inside a delivery, `ship` calls this skill after `spec` and before `shape-plan`.
 ---
 
 # architect — the least-worst design that meets the spec, written down
@@ -30,11 +30,13 @@ plan use `database`.
    where idempotent, circuit breaker, bulkhead, bounded result sets. Write each in the design table.
 6. **AI features** (when the product calls a model): pick the model by task and cost; structured
    outputs with a schema; a fallback when the model is wrong, slow or down; prompt and model version
-   recorded with each result; an eval set of ≥ 20 examples (real ones if David supplies them, otherwise collected or synthetic and labelled as such) judged by a scripted check or an LLM-judge rubric, with a pass threshold; prompt-injection
+   recorded with each result; an eval set of ≥ 20 examples (real ones if the user supplies them, otherwise collected or synthetic and labelled as such) judged by a scripted check or an LLM-judge rubric, with a pass threshold; prompt-injection
    boundary (untrusted text never reaches tools or system prompts unescaped); cost and latency budget.
    Load the `claude-api` skill before writing Claude API code.
 7. **Fitness functions**: for each driving characteristic, an automated check (test, lint rule,
-   budget in CI, e2e timing, eval threshold). A characteristic without one is a wish.
+   budget in CI, e2e timing, eval threshold). A characteristic without one is a wish. Performance
+   and cost ones point at their row in `benchmarks/plan.md` and run with `make bench`, so the design,
+   the benchmark plan and CI hold one number, not three.
 8. **Threat model** (OWASP Top 10:2025, ASVS 5.0 L1): assets, entry points, trust boundaries →
    `docs/security.md`.
 9. **ADR per decision** that would be expensive to reverse; record the options rejected and why.
@@ -46,5 +48,5 @@ Big ball of mud; the database or framework at the centre; distributed system by 
 
 Sources: Richards & Ford _Fundamentals of Software Architecture_; Evans _DDD_, Khononov _Learning DDD_;
 Martin _Clean Architecture_; Ousterhout _A Philosophy of Software Design_; Kleppmann _DDIA_; Nygard
-_Release It!_; Ford et al. _Building Evolutionary Architectures_. The house checklists live in
+_Release It!_; Ford et al. _Building Evolutionary Architectures_. The shared checklists live in
 [`../init-project/references/`](../init-project/references/) (API design, data and reliability, security, frontend and UX).

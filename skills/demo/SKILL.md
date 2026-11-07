@@ -1,12 +1,12 @@
 ---
 name: demo
-description: Builds a short results page for finished, verified work — what David can open now, evidence per acceptance criterion, what was cut and why, how to run it — publishes or opens it and starts the app. Use when a request, release or milestone is done and David should see the result.
+description: Builds a short results page for finished, verified work — what the user can open now, evidence per acceptance criterion, what was cut and why, how to run it — publishes it as an artifact when such a tool exists (else writes and opens `demo.html`), starts the app and records feedback for the next slice. Use whenever a request, slice, release or milestone is done and the user should see the result, or when they ask "show me", "what did you build" or "demo it". Inside a delivery, `ship` calls this skill after `verify-app`; with no feedback it records "no feedback" and `ship` continues.
 ---
 
 # demo — show working software against the brief
 
 Input: `brief.md` (the press release is the script), `spec.md`, `verify-app` evidence, `status.md`,
-`git log`. Output: `docs/delivery/<NNN-slug>/demo.md` from `templates/demo.md`, a page David can open,
+`git log`. Output: `docs/delivery/<NNN-slug>/demo.md` from `templates/demo.md`, a page the user can open,
 and the app running locally.
 
 ## Steps
@@ -20,14 +20,17 @@ and the app running locally.
    - hypothesis result, or how it will be measured if not measurable yet;
    - delivery numbers: commits, items shipped, review scores, lead time from request to demo;
    - known issues and the next slice.
-3. **Make it visible**:
-   - If an Artifact tool is available, publish the demo as a page (load `artifact-design` first;
-     embed the screenshots) and give David the link.
-   - Otherwise render `demo.md` to `demo.html` next to it and `open` it.
-   - Also `open` the running app's URL.
-4. **Collect feedback for the next slice**: what David says, the hypothesis metric, the benchmark
-   diff — write them into `status.md` (Slices table) so `ship` can re-plan before the next slice.
-5. **Message David** in Vietnamese, ≤ 12 lines: the link, the app URL and run command, what works,
+3. **Make it visible** — whatever this environment offers, nothing project-specific:
+   - If a tool that publishes pages (an Artifact tool or similar) is available, publish the demo as a
+     page (load its design guidance first; embed the screenshots) and give the user the link.
+   - Otherwise render `demo.md` to a self-contained `demo.html` next to it (screenshots inlined or
+     relative) and open it with the platform's opener (`open`, `xdg-open`, `start`).
+   - Also open the running app's URL; in a headless session, print both paths instead.
+4. **Collect feedback for the next slice**: what the user says, the hypothesis metric, the
+   benchmark diff — write them into `status.md` (Slices table) so `ship` can re-plan before the next
+   slice. If the user gives no feedback, record "no feedback — <date>" and let `ship` continue:
+   waiting on silence stalls an autonomous delivery, and the next demo is the next chance to steer.
+5. **Message the user** in the reply language per the delivery profile, ≤ 12 lines: the link, the app URL and run command, what works,
    what was cut, what is next. No percent-complete; no slides of things that do not run.
 
 ## Anti-patterns

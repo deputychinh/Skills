@@ -1,6 +1,6 @@
 ---
 name: system-design
-description: Designs a system or a significant part of one before it is built — functional and non-functional requirements, back-of-the-envelope estimates (QPS, storage, bandwidth, compute, cost), API and data model sketch, C4 context and container diagrams, storage and consistency choices, the scaling ladder, SLOs and failure modes, security and privacy boundaries, observability, evolution path, and trade-off tables that feed ADRs. Produces one design file with numbers, diagrams and tables. Use when a new product, service, pipeline or major feature needs its shape decided, when load, data size or cost may change the design, or when David asks "thiết kế hệ thống", "system design", "kiến trúc", "scale", "chịu tải", "high level design", "nên dùng database gì", "có cần microservices không". Not for writing the code — use `backend`; ADRs, fitness functions and the threat model are `architect`'s. Inside a delivery, `ship` and `architect` call this skill.
+description: Designs a system or a significant part of one before it is built — requirements with numbers, back-of-the-envelope estimates (QPS, storage, bandwidth, compute, cost), API and data sketch, C4 diagrams, storage and consistency choices, the scaling ladder, SLOs, failure modes, privacy boundaries and trade-off tables. Use when a new product, service, pipeline or major feature needs its shape decided, when load, data size or cost could change the design, or when the user asks "system design", "high-level design", "will it scale", "which database" or "do we need microservices". Not for code (`backend`); ADRs and threat models are `architect`'s. Inside a delivery, `ship` and `architect` call this skill.
 ---
 
 # system-design — numbers first, then the simplest shape that survives them
@@ -19,8 +19,8 @@ table written here is the one `architect` copies — it is not written twice.
 
 1. **Frame.** Read the brief/spec, `docs/architecture/README.md` and `docs/adr/`. Write: 3–7 core
    use cases; non-functional targets as numbers (latency p95, availability, durability, data size,
-   freshness, cost ceiling, privacy rules); constraints (house stack: FastAPI, Postgres, Python
-   worker on a Postgres queue, S3; one developer; budget); explicit non-goals. Unknown numbers get a
+   freshness, cost ceiling, privacy rules); constraints (the repo's stack, else the backend default per the delivery profile; a
+   Postgres-backed job queue and S3-compatible storage as the starting point; team size; budget); explicit non-goals. Unknown numbers get a
    stated assumption marked `HYPOTHESIS`. _Evidence:_ §1 "Requirements" of the design file; no
    target without a number or a `HYPOTHESIS` tag.
 2. **Estimate.** Users → actions/day → requests/day → average and peak QPS (peak factor stated);
@@ -58,7 +58,7 @@ table written here is the one `architect` copies — it is not written twice.
 10. **Challenge the design.** Re-check estimates against latency numbers, ask "what breaks first at
     10×, and what does it cost to fix then?", and run the core checklist below. Inside a delivery,
     hand off to `architect`. _Evidence:_ the checklist with each line ticked or answered; open
-    questions listed with owners (David only for business/money/legal).
+    questions listed with owners (the owner only for business, money or legal).
 
 ## Core checklist
 
@@ -103,5 +103,5 @@ table written here is the one `architect` copies — it is not written twice.
   choice, scaling ladder, consistency models, CAP/PACELC.
 - `references/reliability-and-evolution.md` — SLOs and error budgets, failure modes, security and
   privacy boundaries, cost, observability, C4, evolution from monolith, trade-off table template.
-- `references/worked-example-kiln.md` — Kiln's asset upload and preview pipeline: estimate →
-  design → trade-off tables.
+- `references/worked-example-assets.md` — an image upload-and-preview pipeline for a sample
+  "assets" app: estimate → design → trade-off tables.

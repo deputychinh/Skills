@@ -25,6 +25,12 @@ How to start: <one line>.
 - Q: What will we not do? A: …
 - Q: What is the riskiest part? A: …
 
+## Product benchmark
+
+See [`benchmark.md`](benchmark.md) (references, version, date). Decisions it drives:
+
+- We do … because … (copied / deliberately different / out of scope)
+
 ## Five customer questions
 
 | Question | Answer | Fact or HYPOTHESIS |

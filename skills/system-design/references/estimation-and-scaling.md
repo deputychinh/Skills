@@ -5,7 +5,7 @@ March 2026; 1st ed. 2017) · **[XU]** Alex Xu, _System Design Interview_ vol. 1 
 with Sahn Lam (2022) · **[FSA]** Richards & Ford, _Fundamentals of Software Architecture_ ·
 **[DEAN]** Jeff Dean's "Latency numbers every programmer should know" · **[ABADI]** Abadi, "Consistency
 Tradeoffs in Modern Distributed Database System Design", IEEE Computer 45(2), 2012 · **[FOWLER]**
-martinfowler.com · **[PG]** PostgreSQL docs · **[HOUSE]** `~/.claude/skills/init-project/references/data-and-reliability.md`.
+martinfowler.com · **[PG]** PostgreSQL docs · **[HOUSE]** [`init-project/references/data-and-reliability.md`](../../init-project/references/data-and-reliability.md).
 Book content is paraphrased from memory unless a verification line covers it.
 
 Verified on 2026-11-07 against https://martin.kleppmann.com/2026/03/24/designing-data-intensive-applications-2e.html
@@ -81,9 +81,9 @@ compress. **[DEAN]**
 Availability per 30-day month (arithmetic): 99 % → 7.2 h; 99.9 % → 43 min; 99.95 % → 22 min;
 99.99 % → 4.3 min. Serial dependencies multiply: two 99.9 % dependencies in series ≈ 99.8 %.
 
-Practical single-box figures for the house stack — rough, measure before relying on them _(memory)_:
+Practical single-box figures for a Postgres + FastAPI or Node stack — rough, measure before relying on them _(memory)_:
 one Postgres on a modest VM handles thousands of simple indexed queries/s and tables of 10⁸ rows
-with the right indexes; one FastAPI process serves hundreds of simple requests/s; a Postgres
+with the right indexes; one FastAPI or Node process serves hundreds of simple requests/s; a Postgres
 `SKIP LOCKED` queue comfortably handles hundreds of jobs/s. **[PG]** for `SKIP LOCKED` semantics.
 
 ## 3. Scaling ladder
@@ -150,4 +150,4 @@ restore)? How does the schema evolve (expand → migrate → contract)?
 - **Ordering**: only within a key/partition; carry a version or sequence number and make consumers
   ignore stale updates. _(memory)_
 - **Clocks**: wall clocks jump; use the database clock for leases and expiries in one place
-  (Kiln maintenance lease) and monotonic clocks for durations. **[DDIA]** _(memory)_ **[HOUSE]**
+  (e.g. a maintenance-job lease) and monotonic clocks for durations. **[DDIA]** _(memory)_ **[HOUSE]**

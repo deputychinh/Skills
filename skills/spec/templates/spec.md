@@ -19,9 +19,12 @@ Brief: `brief.md` · Status: draft | ready · Updated: <YYYY-MM-DD>
 
 ## Quality targets
 
-| Characteristic | Target | How it is checked |
-| --- | --- | --- |
-| | | |
+| Characteristic | Workload | Data | Target | Percentile | Environment | How it is checked |
+| --- | --- | --- | --- | --- | --- | --- |
+| Latency | Search notes | 10 000 notes | ≤ 300 ms | p95 | production build, 2 vCPU | `make bench` (k6) vs `benchmarks/baseline.json` |
+| | | | | | | |
+
+Every row is copied into `benchmarks/plan.md` (`benchmark` part B).
 
 ## Non-goals and no-gos
 

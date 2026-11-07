@@ -4,10 +4,11 @@ Appetite: <time> · Estimate: <range, confidence> · Updated: <YYYY-MM-DD>
 
 ## Slices
 
-| Slice | Stories / ACs | How David sees it | Estimate |
-| --- | --- | --- | --- |
-| 0 Walking skeleton | — | `make dev`, open <URL> | |
-| 1 | S1 AC1–AC4 | | |
+| Slice | Stories / ACs | How the user sees it | Estimate | Release |
+| --- | --- | --- | --- | --- |
+| 0 Walking skeleton | — | `make dev`, open <URL> | | v0.1.0 |
+| 0b Harness + baseline | quality targets | `make bench`, `benchmarks/baseline.json` | | — |
+| 1 | S1 AC1–AC4 | | | v0.2.0 |
 
 ## Backlog items
 
