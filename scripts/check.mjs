@@ -1,6 +1,6 @@
 // Validates every skill under skills/: the rules Claude Code needs to load it, plus house rules.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 
 const ROOT = new URL('../skills/', import.meta.url).pathname;
 const NAME_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -8,6 +8,8 @@ const NAME_MAX = 64;
 const DESCRIPTION_MAX = 1024;
 const SKILL_MAX_LINES = 500;
 // Backticked paths into a skill's own folders, e.g. `templates/story.md` or `references/`.
+// Markdown links: [text](target).
+const MARKDOWN_LINK = /\]\(([^)\s]+)\)/g;
 const LOCAL_PATH = /`((?:templates|references)\/[\w./-]*)`/g;
 
 const errors = [];
@@ -75,6 +77,18 @@ for (const skill of skills) {
     for (const [, path] of body.matchAll(LOCAL_PATH)) {
       if (!existsSync(join(dir, path))) {
         fail(`${where}/SKILL.md`, `refers to \`${path}\`, which does not exist`);
+      }
+    }
+  }
+
+  // Relative markdown links in every .md of the skill (e.g. `../ship/references/…`) must resolve.
+  for (const file of walk(dir)) {
+    if (!file.endsWith('.md') || relative(dir, file).startsWith('templates/')) continue;
+    for (const [, target] of readFileSync(file, 'utf8').matchAll(MARKDOWN_LINK)) {
+      const path = target.split('#')[0];
+      if (!path || /^[a-z]+:/.test(path)) continue;
+      if (!existsSync(join(dirname(file), path))) {
+        fail(relative(ROOT, file), `links to ${path}, which does not exist`);
       }
     }
   }

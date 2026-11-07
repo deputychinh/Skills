@@ -53,6 +53,10 @@ scripts/check.mjs          validation run by `make check`, the pre-commit hook a
 scripts/link.sh            the installer
 ```
 
+## Evals
+
+[`evals/`](evals/README.md) holds scenarios the suite must handle (a PDF-summary app, a Safari bug, resuming a delivery). Run the affected ones in a fresh session after changing a skill.
+
 ## Adding or changing a skill
 
 1. Create `skills/<kebab-name>/SKILL.md`; the frontmatter `name` equals the folder.

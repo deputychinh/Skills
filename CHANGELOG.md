@@ -4,6 +4,20 @@ Follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Two independent reviews of the suite (6.5, then 7/10) drove these fixes: one push rule (push every green commit when `origin` exists) across `deliver-loop`, its rubric and `init-project`; `init-project` defers to `ship` (no second question round, ADR 0001 for stack only, empty backlog for `shape-plan`); `ship` triages Bug, Quick, Small, Small new and Full paths, looks for keys in the environment before asking, asks at most once at triage, numbers deliveries, resumes from the `status.md` Next action and requires `claude-api` plus an eval set for AI features; `verify-app` reproduces in the browser engine a report names (WebKit for Safari); `deliver-loop` hands back to `ship` and keeps project gotchas in `references/gotchas.md`; every description says what and when, with "`ship` calls this" guards.
+- References: Brooks' retracted "throw one away" dropped; the Accelerate approval-board finding stated exactly; unverified Kiro, BMad and `/verify` claims marked; tables of contents added.
+
+### Added
+
+- `evals/`: three scenarios (a PDF-summary app, a Safari bug in Kiln, resuming from the ledger) with must / must-not checklists.
+- `make check` follows relative markdown links between skills.
+
+### Fixed
+
+- Commit `76e93eb` ("docs(repo): state what and when…") also carries the `ship` triage and reference fixes: their own commit was rejected by commitlint (header too long) and the chained command did not stop.
+
 ### Added
 
 - A delivery suite that takes one request to a demo: `ship` (controller, triage into Quick / Small / Full, `status.md` ledger, rulings instead of questions), `discover` (PR/FAQ, impact map, hypothesis, appetite), `spec` (story map, EARS criteria, spec checklist), `architect` (driving characteristics, ADRs, fitness functions, AI-call rules), `shape-plan` (walking skeleton first, backlog items, zero-context tasks, circuit breaker), `verify-app` (run as the owner will, evidence per criterion), `demo` (results page and link) and `improve-skills` (lessons into this repo). Phase checklists distilled from the canonical SDLC books and current agent workflows in `skills/ship/references/`.
