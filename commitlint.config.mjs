@@ -26,6 +26,8 @@ export default {
         'frontend',
         'css-design',
         'cache-optimize',
+        'benchmark',
+        'release',
       ],
     ],
     'scope-empty': [2, 'never'],
