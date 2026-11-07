@@ -1,6 +1,6 @@
 ---
 name: fix-bug
-description: Use when something does not work as it should — a bug report, "X does nothing", "it's broken", a crash, a failing or flaky CI test, a production error, a regression after a deploy, or a postmortem's root-cause action — even when the fix looks like one line. Produces a captured report (expected, actual, unchanged behaviour, environment), a reproduction in the reported environment shrunk to a minimal case, the cause found with logs, traces, `git bisect run` or characterisation tests, a regression test that fails first, a fix of the cause, a sweep for the same bug elsewhere, review through `deliver-loop`, and field confirmation that the error signature is gone. `ship` routes bugs here; `monitor` and `release` send defects here.
+description: The defect step inside `ship` — for a whole request ("it's broken", "errors went up after the deploy") start with `ship`, which routes here. Use directly when already inside a delivery, or when a bug report, "X does nothing", "it's broken", a crash, a failing or flaky CI test, a production error, a regression after a deploy, or a postmortem's root-cause action — even when the fix looks like one line. Produces a captured report (expected, actual, unchanged behaviour, environment), a reproduction in the reported environment shrunk to a minimal case, the cause found with logs, traces, `git bisect run` or characterisation tests, a regression test that fails first, a fix of the cause, a sweep for the same bug elsewhere, review through `deliver-loop`, and field confirmation that the error signature is gone. `ship` routes bugs here; `monitor` and `release` send defects here.
 ---
 
 # fix-bug — reproduce, find the cause, prove the fix, confirm it in the field
@@ -12,6 +12,17 @@ backed by something that failed before and passes after.
 Per the delivery profile (see the repo README): fix and verify without asking; ask the owner only
 for what nobody else can answer (production data access, a behaviour change users will notice, a
 trade-off between two expected behaviours).
+
+## Before step 1: the ledger and, in production, mitigation first
+
+- **No delivery open?** Open one the way `ship` does: `docs/delivery/<NNN>-<slug>/status.md` from
+  `ship`'s template with `Path: Bug` (or `Path: Incident` when production users are affected now).
+  The ledger is what makes the work resumable and reviewable; a fix without one loses its why.
+- **Users affected in production right now?** Decide mitigation _before_ investigating — roll back
+  to the last good release, turn the flag off, or halt the rollout — and write the decision with its
+  reason and time under Rulings, even when the decision is "no rollback possible here" (say what
+  would be done where it is possible). Mitigation restores users in minutes; a root-cause fix takes
+  hours, and users should not wait for it. Then follow `monitor`'s incident path alongside this one.
 
 ## Workflow
 
@@ -96,7 +107,11 @@ trade-off between two expected behaviours).
 
 The bug report, the reproduction (command or test with its failing output), the cause with its
 evidence, the regression test failing then passing, the sweep result, the review score, and the
-field confirmation (error-tracker or log query for the new release) or "local only".
+field confirmation (error-tracker or log query for the new release) or "local only". Plus, in
+`status.md`: the path, the mitigation ruling (production bugs) recorded before the fix commit, a
+post-deploy check (what to look at, at +5 min / +1 h / +24 h, or "local only"), and a short
+**Retro**. A production incident also leaves a blameless note from `monitor`'s postmortem template.
+These are part of done, not extras — they are what the next person reads.
 
 ## References
 

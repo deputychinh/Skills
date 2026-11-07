@@ -1,6 +1,6 @@
 ---
 name: monitor
-description: Use when a service runs somewhere real and someone must know when it breaks — adding logs, metrics, traces, error tracking, uptime checks, dashboards, SLOs or alerts; when an alert fires or "the site is down"; for a postmortem; or for a weekly health review — even if the user only says "add monitoring". Produces structured logs with request ids, RED/USE metrics, OpenTelemetry traces (Node or Python), error tracking, synthetic checks, crash and ANR monitoring for iOS and Android apps (Crashlytics or Sentry, MetricKit, Android vitals), 1–3 SLOs with burn-rate alerts and runbook lines, an incident path (declare, mitigate first, communicate, blameless postmortem) and backlog items from trends. Cheap defaults fit a solo project. `ship` routes incidents here; `release` uses its signals; defects go to `fix-bug`.
+description: Use when a service runs somewhere real and someone must know when it breaks — adding logs, metrics, traces, error tracking, uptime checks, dashboards, SLOs or alerts; when an alert fires or "the site is down"; for a postmortem; or for a weekly health review — even if the user only says "add monitoring". Produces structured logs with request ids, RED/USE metrics, OpenTelemetry traces (Node or Python), error tracking, synthetic checks, crash and ANR monitoring for iOS and Android apps (Crashlytics or Sentry, MetricKit, Android vitals), 1–3 SLOs with burn-rate alerts and runbook lines, an incident path (declare, mitigate first, communicate, blameless postmortem) and backlog items from trends. Cheap defaults fit a solo project. `ship` routes incidents here; `release` uses its signals; defects go to `fix-bug`. For a whole request ("the site is down, fix it") start with `ship`, which runs this incident path and `fix-bug` together.
 ---
 
 # monitor — know before users tell you, mitigate first, learn every time
@@ -79,6 +79,10 @@ A native app needs client-side signals the server cannot see; details in `refere
    minimum-supported-version check for harmful defects.
 
 ## Workflow — incident path
+
+The incident is not closed until `status.md` (Path: Incident) shows the mitigation ruling with its
+time, the fix or its backlog item, and a blameless note from `templates/postmortem.md` with owned
+actions — short is fine; missing is not.
 
 When an alert fires or a user reports breakage, follow `references/incidents.md`. In short:
 
