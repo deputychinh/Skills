@@ -1,6 +1,6 @@
 ---
 name: architect
-description: Decides and records a system's shape — driving quality characteristics, bounded contexts, data flows, integration timeouts and fallbacks, AI-call rules, fitness functions, threat model and ADRs. Use when a spec is ready and the design must be settled before planning, or when a change touches a decision recorded in an ADR.
+description: Decides and records a system's shape — driving quality characteristics, bounded contexts, data flows, integration timeouts and fallbacks, AI-call rules, fitness functions, threat model and ADRs. Use when a spec is ready and the design must be settled before planning, or when a change touches a decision recorded in an ADR. Inside a delivery, `ship` calls this skill.
 ---
 
 # architect — the least-worst design that meets the spec, written down
