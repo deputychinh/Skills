@@ -25,7 +25,8 @@ plan use `database`.
    a characteristic forces a split.
 4. **Data**: source of truth vs. derived data for each flow; idempotency keys for every retried write;
    ordering needs; migrations expand → migrate → contract; PII classified with retention.
-5. **Integration points** (APIs, storage, queues, LLMs): timeout, retry with backoff and jitter only
+5. **Integration points** (copy the failure-mode table from `system-design`'s design file when one
+   exists; otherwise write it here) (APIs, storage, queues, LLMs): timeout, retry with backoff and jitter only
    where idempotent, circuit breaker, bulkhead, bounded result sets. Write each in the design table.
 6. **AI features** (when the product calls a model): pick the model by task and cost; structured
    outputs with a schema; a fallback when the model is wrong, slow or down; prompt and model version

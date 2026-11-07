@@ -63,7 +63,7 @@ id = :id AND version = :expected`; zero rows → conflict returned to the client
    commit); session-level ones survive rollback and break under transaction pooling. [PG] [PGB]
 
 Queues (Kiln ADR 0001: jobs on Postgres): claim with
-`SELECT … FROM job WHERE status = 'queued' ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1`. `SKIP LOCKED`
+`SELECT … FROM jobs WHERE status = 'queued' AND run_after <= now() ORDER BY run_after FOR UPDATE SKIP LOCKED LIMIT 1` (with a lease column set in the same statement, as Kiln's queue does). `SKIP LOCKED`
 gives an intentionally inconsistent view — right for queue consumers, wrong for general reads. Back it
 with a partial index on the queued rows. `NOWAIT` errors instead of waiting. [PG] [house]
 

@@ -28,9 +28,9 @@ Goal: order of magnitude, to find the limiting resource and to reject designs, n
 1. **Users**: total, daily active, concurrent at peak. State the source or `HYPOTHESIS`.
 2. **Actions per user per day** for each core use case; requests per action (an upload may be 3 API
    calls + 1 storage PUT).
-3. **QPS**: `requests/day ÷ 86 400` (≈ 10⁵ s/day). Peak = average × peak factor (2–3 for global
-   consumer traffic; 5–10 for a workday tool used in one time zone — compress the day to the 8 busy
-   hours, then add burst). _(memory: rules of thumb)_
+3. **QPS**: `requests/day ÷ 86 400` (≈ 10⁵ s/day). Peak = average × peak factor. Either spread over the whole day (factor 2–3 for global consumer
+   traffic, 5–10 for a workday tool in one time zone) **or** compress the day to its ~8 busy hours
+   and apply only a burst factor of 2–3 — never both, or the peak is counted twice. _(memory: rules of thumb)_
 4. **Read/write split** and which side is heavy.
 5. **Storage**: objects/day × size × retention × replication/versions; rows/day × row size (incl.
    indexes ≈ 2× raw) _(memory)_.
@@ -47,7 +47,7 @@ Shortcuts: 1 M req/day ≈ 12 req/s average; 100 M/day ≈ 1 200/s. 1 KB × 1 M 
 Script skeleton for `estimate.py` (stdlib, run with `python3 estimate.py`):
 
 ```python
-ASSUMPTIONS = {"users": 50, "uploads_per_user_day": 40, "avg_mb": 20, "peak_factor": 5, "busy_hours": 8}
+ASSUMPTIONS = {"users": 50, "uploads_per_user_day": 40, "avg_mb": 20, "peak_factor": 2, "busy_hours": 8}  # busy hours already compress the day
 a = ASSUMPTIONS
 uploads_day = a["users"] * a["uploads_per_user_day"]
 avg_qps = uploads_day / (a["busy_hours"] * 3600)

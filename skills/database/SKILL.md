@@ -1,6 +1,6 @@
 ---
 name: database
-description: Designs and changes relational schemas and queries in PostgreSQL — data model with constraints in the database, zero-downtime Alembic migrations (expand → migrate → contract, lock timeouts, CREATE INDEX CONCURRENTLY, batched backfills), indexes proven with EXPLAIN (ANALYZE, BUFFERS), query review (N+1, keyset pagination, bounded results), transaction and locking choices with retries, connection pooling, backups with a tested restore, and PII retention. Produces a migration that is safe to run on a live table, the plans that prove each hot query, and notes in the delivery folder. Use when a change adds or alters a table, column, constraint or index, when a query is slow ("chậm", "query chậm", "tối ưu database", "thêm index", "migration", "đổi schema", "database"), when concurrent writes can collide, or before launch to check backups and retention. Inside a delivery, `ship` and `deliver-loop` call this skill.
+description: Designs and changes relational schemas and queries in PostgreSQL — data model with constraints in the database, zero-downtime Alembic migrations (expand → migrate → contract, lock timeouts, CREATE INDEX CONCURRENTLY, batched backfills), indexes proven with EXPLAIN (ANALYZE, BUFFERS), query review (N+1, keyset pagination, bounded results), transaction and locking choices with retries, connection pooling, backups with a tested restore, and PII retention. Produces a migration that is safe to run on a live table, the plans that prove each hot query, and notes in the delivery folder. Use when a change adds or alters a table, column, constraint or index, when a query is slow ("query chậm", "tối ưu database", "thêm index", "migration", "đổi schema", "database"), when concurrent writes can collide, or before launch to check backups and retention. Inside a delivery, `ship` and `deliver-loop` call this skill.
 ---
 
 # database — schema changes that never lock production, queries proven by their plans
@@ -15,7 +15,7 @@ Evidence goes to `docs/delivery/<NNN-slug>/evidence/db/` (or the story's QA sect
 
 1. **Load the context.** Read the ADRs that touch data, `docs/conventions.md`, the current Alembic
    head (`alembic heads`, `alembic history -r -3:`) and the tables involved (`\d+ <table>` via
-   `psql "$DATABASE_URL"`). Note row counts (`SELECT reltuples FROM pg_class WHERE relname = …`).
+   `psql "$DATABASE_URL"`, or `docker compose exec db psql -U <user> <db>` when `psql` is not installed on the host). Note row counts (`SELECT reltuples FROM pg_class WHERE relname = …`).
    _Evidence_: one paragraph "current shape" in `evidence/db/notes.md`.
 2. **Model the change.** Write the target tables as DDL first: keys, `NOT NULL`, `CHECK`, `UNIQUE`,
    foreign keys with an explicit `ON DELETE`, `timestamptz`, enums as `CHECK` or lookup tables. Start in

@@ -72,7 +72,7 @@ skill — call it rather than repeating it here. Evidence goes to `docs/delivery
 
 1. A number before and after, same method, production build, realistic data — or it did not happen.
 2. Percentiles (p75 for web vitals, p95/p99 for APIs), never averages alone.
-3. Lab numbers find causes; field numbers decide success. Lighthouse cannot measure INP (TBT is a proxy).
+3. Lab numbers find causes; field numbers decide success. Lighthouse navigation runs cannot measure INP (TBT is the proxy); use a Lighthouse timespan / user flow or a DevTools trace of the interaction.
 4. The LCP element is in the initial HTML, never lazy-loaded, and has `fetchpriority="high"` when it is an image.
 5. Every image has dimensions or `aspect-ratio`; late content has reserved space.
 6. First-route JS within budget; heavy features (3D viewer, charts, editors) loaded on demand.

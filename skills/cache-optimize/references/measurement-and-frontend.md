@@ -66,7 +66,8 @@ graphs miss — the usual case for a web API waiting on the DB. [GREGG]
   segmented mobile/desktop; a page passes only if all three pass. INP > 500 ms is poor. [WD]
 - **Field** (real users): CrUX, PageSpeed Insights, Search Console, or own RUM with the `web-vitals`
   library. **Lab**: Lighthouse, DevTools — for diagnosis and regression catching, not as the verdict.
-  Lighthouse cannot measure INP; it reports TBT as the lab proxy. [WD]
+  Lighthouse navigation runs cannot measure INP (they report TBT as the lab proxy); a Lighthouse
+  timespan / user-flow run or a DevTools trace of the interaction can. [WD]
 - A solo app with few users has no CrUX data: log `web-vitals` to the API (`navigator.sendBeacon`)
   and read p75 from logs. [WD] [mem for sendBeacon]
 - **LCP sub-parts** with rough target shares: TTFB ~40 %, resource load delay < 10 %, resource load

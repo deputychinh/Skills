@@ -13,6 +13,10 @@ debug at 2 a.m. and afford; every extra moving part must be paid for by a number
 
 ## Workflow
 
+**Quick path:** for a brief with under ~1 000 users and no new data store, skip the estimates (step 2), the
+C4 diagrams and the cost section; write the components, data and trade-off table only. The failure-mode
+table written here is the one `architect` copies — it is not written twice.
+
 1. **Frame.** Read the brief/spec, `docs/architecture/README.md` and `docs/adr/`. Write: 3–7 core
    use cases; non-functional targets as numbers (latency p95, availability, durability, data size,
    freshness, cost ceiling, privacy rules); constraints (house stack: FastAPI, Postgres, Python
@@ -38,8 +42,7 @@ debug at 2 a.m. and afford; every extra moving part must be paid for by a number
    number from step 2 that Postgres cannot meet. _Evidence:_ §5 storage table with a "why not
    Postgres" cell for every non-Postgres choice.
 6. **Scale only where the numbers say.** Walk the ladder in `references/estimation-and-scaling.md`
-   §3 (vertical → indexes/query fixes → cache → read replica → async/queue → partition → split
-   service) and stop at the first rung that gives ≥ 3× headroom over year-one peak. Say what you'd
+   §3 (measure → fix queries and indexes → vertical → stateless × N → async/queue → cache → read replica → partition → split a service → shard) and stop at the first rung that gives ≥ 3× headroom over year-one peak. Say what you'd
    do at 10×. _Evidence:_ "bottleneck → rung → headroom" table.
 7. **Reliability and consistency.** Draft 1–3 SLOs from the targets; a failure-mode table (each
    dependency down, slow, returning junk; duplicate and out-of-order messages; partial failure

@@ -1,6 +1,6 @@
 ---
 name: css-design
-description: Designs and styles product UI the house way — design tokens (primitive → semantic → component) with light and dark themes and reduced motion, intrinsic layouts with flex, grid, container queries, logical properties and clamp(), spacing and type scales, readable typography, colour that passes WCAG 2.2 AA contrast and never carries meaning alone, Material 3 adaptive layouts per window size class, every component state (hover, focus-visible, active, disabled, loading, error), focus styles and 24/44 px targets, BEM CSS that passes Stylelint, and a screenshot review against Refactoring UI and Nielsen heuristics. Use when creating or changing how a screen or component looks or lays out, adding tokens or a theme, or when David says "giao diện", "UI", "CSS", "màu", "font", "responsive", "layout", "đẹp hơn", "dark mode", "spacing" or "nhìn xấu". Behaviour, state and tests belong to `frontend`. Inside a delivery, `ship` and `deliver-loop` call this skill.
+description: Designs and styles product UI the house way — design tokens (primitive → semantic → component) with light and dark themes and reduced motion, intrinsic layouts with flex, grid, container queries, logical properties and clamp(), spacing and type scales, readable typography, colour that passes WCAG 2.2 AA contrast and never carries meaning alone, Material 3 adaptive layouts per window size class, every component state (hover, focus-visible, active, disabled, loading, error), focus styles and 24/44 px targets, BEM CSS that passes Stylelint, and a screenshot review against Refactoring UI and Nielsen heuristics. Use when creating or changing how a screen or component looks or lays out, adding tokens or a theme, or when David says "CSS", "màu", "font", "responsive", "layout", "đẹp hơn", "dark mode", "spacing" or "nhìn xấu". Behaviour, state and tests belong to `frontend`. Inside a delivery, `ship` and `deliver-loop` call this skill.
 ---
 
 # css-design — calm, consistent screens built from tokens, readable at 390 px and 1280 px
@@ -55,7 +55,7 @@ belongs to `verify-app`.
 1. No raw colour, spacing, font size, radius, shadow, z-index or duration outside the tokens file.
 2. Components use semantic tokens (`--x-color-on-surface-muted`), never primitives (`--x-grey-500`).
 3. Every theme defines every semantic token; dark is designed, not inverted.
-4. Body text ≥ 4.5:1, large text (≥ 24 px, or ≥ 18.5 px bold) and UI boundaries/states ≥ 3:1, in
+4. Body text ≥ 4.5:1, large text (≥ 24 px, or ≥ 18.67 px (14 pt) bold) and UI boundaries/states ≥ 3:1, in
    both themes; ratios are not rounded.
 5. Colour never the only signal: error, selected, success also have text, icon, weight or shape.
 6. Every focusable element has a visible `:focus-visible` ring (2 px solid, offset, ≥ 3:1 change),

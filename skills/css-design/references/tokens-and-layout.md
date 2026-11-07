@@ -66,7 +66,7 @@ Tags: **[MDN]**, **[web.dev]** Learn CSS, **[EL]** Every Layout, **[M3]** Materi
 Verified on 2026-11-07 against https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html
 and https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html
 
-- Text 4.5:1; large text 3:1 (≥ 18 pt ≈ 24 px, or ≥ 14 pt bold ≈ 18.5 px). Ratios are not rounded
+- Text 4.5:1; large text 3:1 (≥ 18 pt ≈ 24 px, or ≥ 14 pt bold ≈ 18.67 px). Ratios are not rounded
   (4.499:1 fails). Exempt: disabled controls, pure decoration, logotypes. **[WCAG 1.4.3]**
 - Non-text 3:1 against adjacent colours for what identifies a control and its states (borders of
   inputs, checkbox marks, selected tab indicator, focus indicator, meaningful chart parts); hover
