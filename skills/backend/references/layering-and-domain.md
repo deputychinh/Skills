@@ -5,6 +5,10 @@ Patterns with Python_ ("Cosmic Python", cosmicpython.com) · **[12F]** 12factor.
 docs · **[RFC9457]** · **[HOUSE]** `~/.claude/skills/init-project/references/backend-architecture.md`
 and Kiln `docs/conventions.md`. Items marked _(memory)_ were not re-checked online for this draft.
 
+Stack note: §1–5 are stack-neutral; file names, `@dataclass`, pydantic-settings, SQLAlchemy and
+§6 are **Python-specific**. Node equivalents (Nest modules, abstract-class ports,
+`TransactionManager.run`, zod config, problem filter) are in `node-typescript.md` §3–4.
+
 Verified on 2026-11-07 against https://www.cosmicpython.com/book/chapter_04_service_layer.html,
 https://www.cosmicpython.com/book/chapter_06_uow.html, https://12factor.net/,
 https://fastapi.tiangolo.com/advanced/events/ and https://fastapi.tiangolo.com/async/.
@@ -19,6 +23,8 @@ https://fastapi.tiangolo.com/advanced/events/ and https://fastapi.tiangolo.com/a
 6. FastAPI specifics
 
 ## 1. Layers and the dependency rule
+
+Python layout (Node layout: `node-typescript.md` §3):
 
 | Layer                          | Holds                                                                  | May import        | Test with                 |
 | ------------------------------ | ---------------------------------------------------------------------- | ----------------- | ------------------------- |
@@ -37,7 +43,8 @@ https://fastapi.tiangolo.com/advanced/events/ and https://fastapi.tiangolo.com/a
 - One composition root wires concrete adapters; nothing else instantiates an adapter. **[HOUSE]**
 - Check the rule mechanically: `grep -rnE "^(from|import) (fastapi|sqlalchemy|boto3|httpx|pydantic)" <pkg>/domain`
   must print nothing; add an import-linter contract or a pytest that walks `domain/` imports so CI
-  enforces it. **[HOUSE]**
+  enforces it. **[HOUSE]** Node: `grep -rnE "from '(@nestjs|@prisma|fastify|zod)" src/**/domain`
+  plus an ESLint `no-restricted-paths` rule.
 - Prefer few deep modules over many pass-through classes; a port earns its place when there are two
   implementations (real + fake) or a real boundary. _(memory: Ousterhout)_
 
@@ -60,13 +67,14 @@ WHERE version = :v`; on mismatch raise a domain `Conflict` → 409. **[HOUSE]**
 
 ## 3. Domain modelling
 
-- Value objects: `@dataclass(frozen=True, slots=True)`, validated in `__post_init__`, compared by
-  value; money, sizes, content types, slugs, date ranges are value objects, never bare `str`/`float`. **[HOUSE]**
+- Value objects (Python): `@dataclass(frozen=True, slots=True)`, validated in `__post_init__`; Node:
+  a class with `private constructor` + static `create()` that validates, `readonly` fields;
+  compared by value; money, sizes, content types, slugs, date ranges are value objects, never bare `str`/`float`. **[HOUSE]**
 - Entities carry identity (UUID v7 strings in Kiln) and state transitions as methods
   (`version.complete(etag)`), each rejecting illegal transitions with a typed error. **[HOUSE]**
 - A state machine is an enum of states plus one table of allowed transitions; test every
   disallowed pair (Hypothesis `sampled_from` over the enum product). **[HOUSE]**
-- Time is injected (a `Clock` port), stored in UTC; no `datetime.now()` in the domain. **[HOUSE]**
+- Time is injected (a `Clock` port), stored in UTC; no `datetime.now()` / `Date.now()` in the domain. **[HOUSE]**
 - Domain objects never hold sessions, clients or settings; they receive values. **[CA]**
 - Repositories return domain objects, one per aggregate root, with intention-revealing query
   methods (`find_expired_pending(older_than)`). **[HOUSE]** **[CP ch. 2]** _(memory for ch. 2)_
@@ -93,8 +101,9 @@ WHERE version = :v`; on mismatch raise a domain `Conflict` → 409. **[HOUSE]**
 
 - Config in the environment, separate from code; backing services are attached resources swapped by
   config. **[12F III, IV]**
-- One `Settings` class (pydantic-settings), env prefix (`KILN_*`), read once at start-up; invalid or
-  missing values crash the process before it serves traffic. **[HOUSE]**
+- Python: one `Settings` class (pydantic-settings), env prefix (`KILN_*`), read once at start-up; invalid or
+  missing values crash the process before it serves traffic. **[HOUSE]** Node: one zod env schema
+  parsed once at boot (`node-typescript.md` §4).
 - Secrets typed as `SecretStr`, never logged, never defaulted; locally `.env`, in production a
   secret store. **[HOUSE]**
 - Stateless processes, scale out by adding processes, start fast and shut down gracefully, logs as
@@ -103,6 +112,8 @@ WHERE version = :v`; on mismatch raise a domain `Conflict` → 409. **[HOUSE]**
 - Every bound is a named constant or setting with a validated range (bulkhead size ≤ 32 in Kiln). **[HOUSE]**
 
 ## 6. FastAPI specifics
+
+Python only; for NestJS/Fastify see `node-typescript.md` §2 and §7.
 
 - Use the `lifespan` async context manager for start-up/shutdown resources; `@app.on_event` is
   deprecated and is skipped when `lifespan` is set. **[FA events]**

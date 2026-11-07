@@ -10,6 +10,11 @@ https://github.com/OWASP/ASVS/tree/master/5.0/en (chapter list),
 https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html,
 https://hypothesis.readthedocs.io/en/latest/ and https://hypothesis.readthedocs.io/en/latest/stateful.html.
 
+Stack note: the checklist rows and the pyramid are stack-neutral. Python-specific: SQLAlchemy,
+`shell=True`, `pickle`/`yaml.load`, `hmac.compare_digest`, `pip-audit`, the grep block, pytest,
+Hypothesis and mutmut. Node equivalents (prototype pollution, ReDoS, helmet, npm supply chain,
+Vitest/Jest, supertest/`inject`, Testcontainers, fast-check, Stryker) are in `node-typescript.md` §8–9.
+
 ## Contents
 
 1. Security checklist per change
@@ -49,7 +54,7 @@ Authorization, V9 Self-contained Tokens, V11 Cryptography, V13 Configuration, V1
 V15 Secure Coding and Architecture, V16 Security Logging and Error Handling. **[ASVS]** Level 1 for
 every repo, Level 2 when money, health data or auth is involved. **[HOUSE]**
 
-Quick greps before commit (each should print nothing or only reviewed lines):
+Quick greps before commit (each should print nothing or only reviewed lines). Python:
 
 ```sh
 grep -rnE "text\(f\"|execute\(f\"|shell=True|pickle\.loads|yaml\.load\(|verify=False" services/
@@ -57,7 +62,18 @@ grep -rnE "except Exception|except:" services/ | grep -v problems.py
 grep -rnE "log\w*\.(info|warning|error|debug)\(.*(email|password|token|secret|url)" services/
 ```
 
+Node:
+
+```sh
+grep -rnE "eval\(|new Function\(|child_process|exec\(|\\\$queryRawUnsafe|\\\$executeRawUnsafe|new RegExp\(" src/
+grep -rnE "catch \{\s*\}|catch \(\w+\) \{\s*\}|console\." src/
+grep -rnE "logger\.\w+\(.*(email|password|token|secret)" src/
+```
+
 ## 2. Testing
+
+Python names below; Node: `*.spec.ts` next to the code, `test/integration/*.int-spec.ts`,
+supertest or `app.inject()` for API tests, fast-check for properties, Stryker for mutation.
 
 | Level                | What                                                                            | Doubles                 | Share                        |
 | -------------------- | ------------------------------------------------------------------------------- | ----------------------- | ---------------------------- |
@@ -88,7 +104,8 @@ grep -rnE "log\w*\.(info|warning|error|debug)\(.*(email|password|token|secret|ur
 
 ## 3. Mutation checks for critical rules
 
-Run on the module that holds a changed critical rule (authz, money, state transitions, idempotency,
+Python (mutmut) below; Node uses Stryker with the Vitest runner (`node-typescript.md` §9). Run on
+the module that holds a changed critical rule (authz, money, state transitions, idempotency,
 lease arithmetic), not on the whole codebase. _(memory: tool behaviour; verify flags against the
 installed version)_
 

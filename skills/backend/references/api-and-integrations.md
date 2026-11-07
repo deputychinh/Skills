@@ -13,6 +13,10 @@ https://sre.google/sre-book/monitoring-distributed-systems/,
 https://opentelemetry.io/docs/specs/semconv/http/http-spans/,
 https://opentelemetry.io/docs/languages/python/ and https://www.postgresql.org/docs/current/sql-select.html.
 
+Stack note: §1–2 and the rules in §3–5 are stack-neutral. The job-table claim SQL, lease columns
+and the Python OpenTelemetry line are the **Python house worker**; for Node (pg-boss, BullMQ,
+Kafka outbox, cockatiel/opossum, pino, OTel Node SDK) see `node-typescript.md` §6–7.
+
 ## Contents
 
 1. Contract
@@ -65,6 +69,9 @@ https://opentelemetry.io/docs/languages/python/ and https://www.postgresql.org/d
 
 ## 3. Background jobs and the outbox
 
+Python worker on a Postgres job table below; Node: pg-boss (jobs created in the same transaction)
+or BullMQ behind an outbox relay — `node-typescript.md` §6.
+
 - Write the job row in the same transaction as the state change (transactional outbox); never
   "commit then enqueue". **[HOUSE]** _(memory: Richardson, Microservices Patterns)_
 - Claim with `SELECT … FOR UPDATE SKIP LOCKED LIMIT n`; Postgres documents this as fit for
@@ -110,6 +117,8 @@ fail slowly or return garbage. **[RI]** _(memory, paraphrase)_
 - [ ] AI calls: through a port, timeout, schema-validated output, fallback adapter — rules in
       `architect` step 6; load `claude-api` before writing the adapter. **[HOUSE]**
 - [ ] Test each path with a fake adapter that can be slow, fail, or return junk. **[HOUSE]**
+- [ ] Node: `fetch` with `AbortSignal.timeout`, cockatiel `wrap(retry, circuitBreaker, timeout)`,
+      `bulkhead` — `node-typescript.md` §6.
 
 ## 5. Observability
 
@@ -121,7 +130,7 @@ fail slowly or return garbage. **[RI]** _(memory, paraphrase)_
       `code`, `duration_ms`; ERROR means a human must act. **[HOUSE]** **[12F XI]**
 - [ ] Accept and echo `X-Request-Id`; propagate it into jobs (`payload.request_id`) and outbound calls. **[HOUSE]**
 - [ ] Never log PII, tokens, signed URLs, request bodies or file contents; log ids and sizes. **[HOUSE]**
-- [ ] OpenTelemetry for Python: traces and metrics are stable, logs are still "development" (Nov 2026) — keep structured stdlib logging and correlate by trace id. **[OTEL]**
+- [ ] OpenTelemetry for Python (Node: NodeSDK loaded with `--import`, pino logs — `node-typescript.md` §7): traces and metrics are stable, logs are still "development" (Nov 2026) — keep structured stdlib logging and correlate by trace id. **[OTEL]**
 - [ ] HTTP server span name `{method} {http.route}` (never the raw path); required attributes include
       `http.request.method`, `url.path`, `url.scheme`; leave span status unset for 4xx, set Error for 5xx. **[OTEL semconv]**
 - [ ] Label cardinality bounded: route template, method, status class, job kind — never user ids. _(memory)_

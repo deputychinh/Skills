@@ -6,6 +6,7 @@ Follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `backend` treats Node (TypeScript: NestJS or Fastify) and Python (FastAPI) as equal stacks, with `references/node-typescript.md` matched to the bazaar repo (NestJS 12, zod 4, Prisma, pino, OpenTelemetry, Vitest).
 - `frontend` is Vue-first (David's preference): Vue 3.5 `<script setup>`, Pinia 4, Vue Router 5, TanStack Query for Vue, VeeValidate, vue-i18n, Vitest + Vue Testing Library, eslint-plugin-vue and vue-tsc, in `references/vue-patterns.md`; React stays as the secondary stack for existing React repos.
 - `benchmark` (product benchmark of 2–3 reference tools with decisions; performance plan with workloads, targets, a committed baseline, `make bench` and a CI regression guard) and `release` (SemVer and changelog, one artefact promoted, smoke on the target, rehearsed rollback, SLOs and symptom alerts, findings back into the backlog).
 - `ship` is drawn and run as loops: item loop, slice loop with re-planning after each demo, release loop and learn loop; the ledger tracks slices. `discover`, `spec`, `shape-plan`, `verify-app`, `deliver-loop` and `demo` call `benchmark` and `release` at their step.
