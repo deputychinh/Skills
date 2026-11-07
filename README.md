@@ -17,7 +17,8 @@ make install   # npm tooling + links every skill into ~/.claude/skills
 ```
 
 `make link` only (re)creates the links. An existing real folder with the same name is moved aside
-to `<name>.bak-<timestamp>`, never deleted.
+to `~/.claude/skills-backup/<name>.bak-<timestamp>`, never deleted (outside the skills folder, so Claude
+Code does not load it twice).
 
 ## Layout
 
