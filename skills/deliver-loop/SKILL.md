@@ -11,6 +11,8 @@ Ask only for what nobody but the owner can supply (secrets, paid accounts, legal
 destructive or outward-facing actions not yet authorised). Everything else: decide, record the
 decision, move on.
 
+When a request arrives without a backlog, start with `ship` instead: it writes the brief, spec, design and plan, fills the backlog, runs this loop, then `verify-app` and `demo`.
+
 `<PREFIX>` is the backlog id prefix of the repo (e.g. `KILN`, `AEC`). Read first, every cycle: the repo's `CLAUDE.md`, `docs/plan.md`, `docs/backlog.md`,
 `docs/conventions.md`, `docs/testing.md`. Standards live in `~/.claude/skills/init-project/references/`
 (cite them, do not quote from memory) and the rubric in `rubric.md` next to this file.

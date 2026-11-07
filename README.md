@@ -3,10 +3,33 @@
 David's personal [Claude Code skills](https://docs.claude.com/en/docs/claude-code/skills), kept in git and
 installed into `~/.claude/skills` by symlink, so an edit here is live in the next Claude Code session.
 
-| Skill                                          | What it does                                                                                                                                                             | Trigger                                                                 |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| [`init-project`](skills/init-project/SKILL.md) | Bootstraps a repo the house way: git on `main`, Conventional Commits, Makefile, docs (conventions, testing, ADR 0001, plan, backlog), CI and a stack baseline per preset | `/init-project`, "dự án mới", "new project"                             |
-| [`deliver-loop`](skills/deliver-loop/SKILL.md) | Works a backlog autonomously: BA → design → TDD → QA → independent 10-point review ≥ 9 → commit and push → retro                                                         | `/deliver-loop`, `/loop /deliver-loop`, "làm tiếp", "work autonomously" |
+A request goes through one controller, `ship`, which calls the phase skills in order and ends with a
+demo you can open. Each phase skill also works on its own.
+
+```mermaid
+flowchart LR
+  req([Request]) --> ship
+  ship --> discover --> spec --> init[init-project] --> architect --> plan[shape-plan]
+  plan --> loop[deliver-loop] --> verify[verify-app] --> demo --> improve[improve-skills]
+```
+
+| Skill                                              | Use when                                                                     | Output                                                                            |
+| -------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| [`ship`](skills/ship/SKILL.md)                     | David hands over a project or feature request and wants it carried to a demo | `docs/delivery/<slug>/status.md` ledger, every phase below                        |
+| [`discover`](skills/discover/SKILL.md)             | the request is still an idea                                                 | `brief.md`: PR/FAQ, impact map, hypothesis, appetite                              |
+| [`spec`](skills/spec/SKILL.md)                     | "done" must be defined                                                       | `spec.md`: story map, EARS / Given-When-Then criteria, quality targets, non-goals |
+| [`init-project`](skills/init-project/SKILL.md)     | the repo does not exist yet                                                  | green, documented repo with conventions, CI and ADR 0001                          |
+| [`architect`](skills/architect/SKILL.md)           | the system's shape must be decided                                           | `design.md`, ADRs, fitness functions, threat model, AI-call budgets               |
+| [`shape-plan`](skills/shape-plan/SKILL.md)         | the work must be cut into a plan                                             | `plan.md`, walking skeleton first, backlog items, tasks for a fresh subagent      |
+| [`deliver-loop`](skills/deliver-loop/SKILL.md)     | backlog items must be built                                                  | per item: story, TDD, QA, independent review ≥ 9/10, commit and push              |
+| [`verify-app`](skills/verify-app/SKILL.md)         | before saying anything is done                                               | the app run from the README, evidence per acceptance criterion                    |
+| [`demo`](skills/demo/SKILL.md)                     | the result should be shown                                                   | `demo.md` and a page with screenshots, what works, what was cut, how to run       |
+| [`improve-skills`](skills/improve-skills/SKILL.md) | a lesson was learned                                                         | the lesson committed into the skill that owns it                                  |
+
+The phase checklists cite the canonical books (Patton, Adzic, Shape Up, Evans, Martin, Ousterhout,
+Beck, Fowler, Humble & Farley, Accelerate, Release It!, SRE, Software Engineering at Google, …) and
+current agent workflows (Anthropic skill guidance, superpowers, spec-kit, BMad, Kiro, Working
+Backwards): see [`skills/ship/references/`](skills/ship/references/).
 
 ## Install
 
