@@ -15,8 +15,8 @@ script at the end, so write it as if the product shipped today.
 2. **Five customer questions** (Working Backwards): who is the customer; what problem; what is the
    benefit; how do we know they need it; what does the experience look like. Answer from facts; mark
    the rest `HYPOTHESIS:`.
-3. **Ask, once, only what blocks**: at most 5 questions, ranked by impact × uncertainty, each multiple
-   choice with your recommended option first (AskUserQuestion). Skip any you can answer by reading or by
+3. **Ask, once, only what blocks**: these questions join `ship`'s single triage question (≤ 4 in all),
+   ranked by impact × uncertainty, each multiple choice with your recommended option first. Skip any you can answer by reading or by
    a reasonable default — record the default as a ruling in `status.md`. Never ask about technology
    choices David does not care about.
 4. **Press release + FAQ**: headline, one-paragraph problem, one-paragraph solution, a customer quote
