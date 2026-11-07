@@ -1,7 +1,7 @@
 {
   "name": "skills",
   "private": true,
-  "description": "David's personal Claude Code skills, installed into ~/.claude/skills by symlink.",
+  "description": "software-lifecycle: Claude Code skills that carry a request through the whole software lifecycle — build, release, verify, monitor and maintain.",
   "engines": {
     "node": ">=24"
   },

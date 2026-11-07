@@ -1,0 +1,16 @@
+{
+  "name": "software-lifecycle",
+  "description": "One entry point, the whole software lifecycle: ship triages any request and calls 19 specialist skills to discover, specify, design, plan, build, verify, demo, release, monitor and maintain software.",
+  "owner": {
+    "name": "Software lifecycle skills maintainers"
+  },
+  "plugins": [
+    {
+      "name": "software-lifecycle",
+      "source": "./",
+      "description": "ship plus 19 specialist skills for the whole software lifecycle, for Vue or React and Node or Python projects.",
+      "category": "development",
+      "tags": ["lifecycle", "delivery", "spec", "architecture", "testing", "release", "monitoring"]
+    }
+  ]
+}

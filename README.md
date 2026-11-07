@@ -1,101 +1,220 @@
-# Skills
+# Software lifecycle skills for Claude Code
 
-David's personal [Claude Code skills](https://docs.claude.com/en/docs/claude-code/skills), kept in git and
-installed into `~/.claude/skills` by symlink, so an edit here is live in the next Claude Code session.
+A set of [Claude Code skills](https://code.claude.com/docs/en/skills) that carry a request through
+the whole software lifecycle: from a vague idea or a bug report to a spec, a design, a plan, reviewed
+code, a verified demo, a release with post-deploy checks, monitoring, and maintenance. One skill,
+`ship`, is the entry point; it triages the request, keeps a ledger in `docs/delivery/<slug>/status.md`,
+decides everything that does not need you, and calls the other 19 skills as specialists. Vue and
+React, Node and Python are supported as equals, and your preferences live in a small delivery profile
+instead of being baked into the skills.
 
-A request goes through one controller, `ship`. It is a set of loops, not a line: an **item loop**
-(build → review → improve ≤ 3), a **slice loop** (plan → items → verify → demo → feedback → re-plan),
-a **release loop** (release → observe → findings → backlog) and a **learn loop** (retro →
-`improve-skills`). Long runs continue unattended with `/loop /deliver-loop`, resuming from
-`docs/delivery/*/status.md`. Each phase skill also works on its own.
+## One command, the whole lifecycle
+
+Start with `/ship`, or simply ask for what you want; the `ship` description is written so a plain
+request triggers it:
+
+```text
+/ship a notes app where I can tag notes and search them
+/ship the export button does nothing on Safari
+error rate went up after this morning's deploy
+upgrade our dependencies and patch the security advisories
+```
+
+Installed as a plugin, the command is namespaced: `/software-lifecycle:ship` (plain requests work
+the same). A long run continues where it stopped: ask `ship` to resume, and it reads the ledger.
+
+## The lifecycle
 
 ```mermaid
 flowchart TD
-  req([Request]) --> ship{ship: triage}
-  ship -->|Full / Small new| discover --> spec --> init[init-project] --> architect --> plan[shape-plan]
-  ship -->|Bug / Quick / Small| plan
-  discover -.-> benchA[benchmark A: reference products]
-  spec -.-> benchB[benchmark B: targets + baseline]
-  architect -.-> sd[system-design] & db[database]
+  start(["/ship or a plain request"]) --> triage{"ship: triage"}
+  triage -->|Full / Small new| discover
+  triage -->|Small| spec
+  triage -->|Quick| item
+  triage -->|Bug / incident| fixbug
 
-  subgraph slice [Slice loop — one appetite-sized slice]
+  subgraph build ["Build new"]
     direction TB
-    plan --> item
-    subgraph itemloop [Item loop — deliver-loop]
-      item[story → design → TDD] --> check[verify + independent review]
-      check -->|below 9, round ≤ 3| fix[improve] --> check
-      check -->|≥ 9 or debt filed| done[ship item]
+    discover --> spec --> architect --> plan["shape-plan"]
+    spec -.->|new repo| init["init-project"] -.-> architect
+    subgraph slice ["Slice loop"]
+      direction TB
+      plan --> item
+      subgraph itemloop ["Item loop: deliver-loop"]
+        item["story → design → TDD"] --> review["checks + independent review"]
+        review -->|below 9, round ≤ 3| improve["improve"] --> review
+        review -->|≥ 9| done["commit item"]
+      end
+      done -->|next item| item
+      done -->|slice done| verify["verify-app"] --> demo --> feedback["feedback"]
+      feedback -->|re-plan| plan
     end
-    done -->|more items| item
-    done --> verify[verify-app + benchmark diff] --> demo --> feedback[feedback]
-    feedback -->|re-plan: spec / plan, cut scope| plan
   end
 
-  item -.-> be[backend] & fe[frontend] & css[css-design] & db
-  verify -.-> perf[cache-optimize]
-  feedback -->|release boundary| release --> observe[observe: SLOs, metrics] --> backlog[(backlog)]
-  backlog --> plan
-  feedback --> retro[retro] --> improve[improve-skills] -.->|better skills next run| ship
+  feedback -->|release boundary| release
+  subgraph rel ["Release"]
+    direction TB
+    release["release: tag, deploy, smoke"] --> cp5["check +5 min"] --> cp60["check +1 h"] --> cp24["check +24 h"]
+    cp5 & cp60 & cp24 -.->|trigger breached| rollback["roll back"]
+  end
+
+  cp24 --> slo
+  subgraph operate ["Operate / Monitor"]
+    direction TB
+    slo["monitor: SLOs, symptom alerts"] --> alert{"alert fires?"}
+    alert -->|incident: mitigate first| incident["incident note"]
+  end
+
+  incident --> fixbug
+  rollback --> fixbug
+  subgraph maintain ["Maintain"]
+    direction TB
+    fixbug["fix-bug"]
+    upgrades["upgrades, security patches"]
+    debt["performance, debt"]
+  end
+
+  fixbug -->|regression test + fix| item
+  upgrades --> backlog[("backlog")]
+  debt --> backlog
+  alert -->|findings| backlog
+  backlog -->|back to Build| plan
+
+  demo -.-> retro["retro"]
+  release -.-> retro
+  fixbug -.-> retro
+  retro --> learn["improve-skills"] -.->|better skills next run| triage
 ```
 
-| Skill                                              | Use when                                                                     | Output                                                                                                                               |
-| -------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| [`ship`](skills/ship/SKILL.md)                     | David hands over a project or feature request and wants it carried to a demo | `docs/delivery/<slug>/status.md` ledger, every phase below                                                                           |
-| [`discover`](skills/discover/SKILL.md)             | the request is still an idea                                                 | `brief.md`: PR/FAQ, impact map, hypothesis, appetite                                                                                 |
-| [`spec`](skills/spec/SKILL.md)                     | "done" must be defined                                                       | `spec.md`: story map, EARS / Given-When-Then criteria, quality targets, non-goals                                                    |
-| [`init-project`](skills/init-project/SKILL.md)     | the repo does not exist yet                                                  | green, documented repo with conventions, CI and ADR 0001                                                                             |
-| [`architect`](skills/architect/SKILL.md)           | the system's shape must be decided                                           | `design.md`, ADRs, fitness functions, threat model, AI-call budgets                                                                  |
-| [`shape-plan`](skills/shape-plan/SKILL.md)         | the work must be cut into a plan                                             | `plan.md`, walking skeleton first, backlog items, tasks for a fresh subagent                                                         |
-| [`deliver-loop`](skills/deliver-loop/SKILL.md)     | backlog items must be built                                                  | per item: story, TDD, QA, independent review ≥ 9/10, commit and push                                                                 |
-| [`verify-app`](skills/verify-app/SKILL.md)         | before saying anything is done                                               | the app run from the README, evidence per acceptance criterion                                                                       |
-| [`demo`](skills/demo/SKILL.md)                     | the result should be shown                                                   | `demo.md` and a page with screenshots, what works, what was cut, how to run                                                          |
-| [`improve-skills`](skills/improve-skills/SKILL.md) | a lesson was learned                                                         | the lesson committed into the skill that owns it                                                                                     |
-| [`system-design`](skills/system-design/SKILL.md)   | a system or a big part must be designed before building                      | requirements, estimates, components, storage choice, trade-off tables, C4 sketch                                                     |
-| [`database`](skills/database/SKILL.md)             | tables, migrations, indexes, queries or transactions change                  | constraints in the database, zero-downtime migrations, EXPLAIN evidence, isolation choices                                           |
-| [`backend`](skills/backend/SKILL.md)               | server code changes: routes, services, domain, jobs, integrations            | layered code, RFC 9457 errors, idempotency, timeouts, structured logs, tests on real dependencies                                    |
-| [`frontend`](skills/frontend/SKILL.md)             | screens, components, hooks, forms or data fetching change                    | state in the right place, four states per view, role-based tests, axe, focus management                                              |
-| [`css-design`](skills/css-design/SKILL.md)         | visual design or CSS changes                                                 | tokens, intrinsic layouts, contrast, component states, BEM and Stylelint, screenshots                                                |
-| [`cache-optimize`](skills/cache-optimize/SKILL.md) | something is slow or a performance target applies                            | a budget, measurements, the fix at the bottleneck, HTTP and app caching, regression guards                                           |
-| [`benchmark`](skills/benchmark/SKILL.md)           | comparing with other products, or setting and guarding performance targets   | product-benchmark table with decisions; `benchmarks/plan.md`, a committed baseline, `make bench`, a CI regression guard              |
-| [`release`](skills/release/SKILL.md)               | work leaves the machine or a release boundary is reached                     | SemVer tag and changelog, one artefact promoted, smoke on the target, rehearsed rollback, SLOs and alerts, findings into the backlog |
+- **Build new**: discover → spec → architect → shape-plan, then the **slice loop** (items → verify →
+  demo → feedback → re-plan) around the **item loop** (build → independent review → improve, at most
+  three rounds, ship at ≥ 9/10).
+- **Release**: a SemVer tag, one build promoted unchanged, a smoke check, and post-deploy checkpoints
+  at +5 min, +1 h and +24 h with explicit rollback triggers.
+- **Operate / Monitor**: user-facing SLOs, alerts on symptoms, and an incident path that mitigates
+  first.
+- **Maintain**: bugs through `fix-bug`, upgrades, patches, performance and debt; everything returns to
+  Build through the backlog.
+- **Learn**: every path ends with a retro; `improve-skills` folds the lesson into the skill that owns
+  that stage.
 
-The phase checklists cite the canonical books (Patton, Adzic, Shape Up, Evans, Martin, Ousterhout,
-Beck, Fowler, Humble & Farley, Accelerate, Release It!, SRE, Software Engineering at Google, …) and
-current agent workflows (Anthropic skill guidance, superpowers, spec-kit, BMad, Kiro, Working
-Backwards): see [`skills/ship/references/`](skills/ship/references/).
+## What ship calls at each stage
+
+| Skill                                              | Stage            | What it does                                                                                     | When ship calls it                                              |
+| -------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| [`ship`](skills/ship/SKILL.md)                     | entry point      | triage, ledger, decisions, calls everything below                                                | always: any request to build, change, fix or run software       |
+| [`discover`](skills/discover/SKILL.md)             | Build            | one-page brief: PR/FAQ, five customer questions, impact map, riskiest hypothesis, appetite       | the request is still an idea                                    |
+| [`spec`](skills/spec/SKILL.md)                     | Build            | story map, EARS or Given/When/Then criteria, measurable quality targets, non-goals               | "done" must be defined                                          |
+| [`benchmark`](skills/benchmark/SKILL.md)           | Build, Verify    | product benchmark of leading products; performance plan, baseline, `make bench`, CI guard        | comparing products, or setting and guarding performance targets |
+| [`init-project`](skills/init-project/SKILL.md)     | Build            | green, documented repo: conventions, CI, Makefile, ADR 0001, project CLAUDE.md                   | the repo does not exist yet                                     |
+| [`system-design`](skills/system-design/SKILL.md)   | Build            | requirements with numbers, estimates, storage and consistency choices, trade-offs, C4 sketch     | a new system or a big part needs its shape decided              |
+| [`architect`](skills/architect/SKILL.md)           | Build            | quality characteristics, bounded contexts, ADRs, fitness functions, threat model                 | a spec is ready, or a change touches an ADR                     |
+| [`shape-plan`](skills/shape-plan/SKILL.md)         | Build            | ordered plan with an appetite, walking skeleton first, backlog items, circuit breaker            | the work must be cut and planned                                |
+| [`deliver-loop`](skills/deliver-loop/SKILL.md)     | Build            | builds backlog items one by one, each through an independent review scored ≥ 9/10                | a backlog exists                                                |
+| [`backend`](skills/backend/SKILL.md)               | Build            | layered Node or Python server code, RFC 9457 errors, idempotency, timeouts, tests on a real DB   | an endpoint, job or integration changes                         |
+| [`frontend`](skills/frontend/SKILL.md)             | Build            | Vue or React UI with four states per view, accessible forms, role-based tests, Playwright + axe  | a screen, component or data fetch changes                       |
+| [`css-design`](skills/css-design/SKILL.md)         | Build            | tokens, intrinsic layouts, contrast, component states, BEM, screenshot review                    | how something looks or lays out changes                         |
+| [`database`](skills/database/SKILL.md)             | Build, Maintain  | constraints in the database, zero-downtime migrations, EXPLAIN evidence, tested restore          | a table, index, query or transaction changes                    |
+| [`cache-optimize`](skills/cache-optimize/SKILL.md) | Verify, Maintain | a budget, profiling to the bottleneck, the smallest fix, HTTP and app caching, regression guards | something is slow or a budget applies                           |
+| [`verify-app`](skills/verify-app/SKILL.md)         | Verify           | runs the app as the user will and collects evidence per acceptance criterion                     | before anything is called done, and after a deploy              |
+| [`demo`](skills/demo/SKILL.md)                     | Verify           | results page: what to open, evidence, what was cut, how to run                                   | a slice, release or milestone is done                           |
+| [`release`](skills/release/SKILL.md)               | Release          | ready check, SemVer tag and changelog, deploy, checkpoints at +5 min / +1 h / +24 h, rollback    | a release boundary is reached                                   |
+| [`monitor`](skills/monitor/SKILL.md)               | Operate          | SLOs, symptom alerts, dashboards, runbooks, incident handling                                    | there is a deploy target, or an alert fires                     |
+| [`fix-bug`](skills/fix-bug/SKILL.md)               | Maintain         | reproduce → root cause → failing regression test → fix → verify                                  | a defect, in development or in production                       |
+| [`improve-skills`](skills/improve-skills/SKILL.md) | Learn            | classifies a lesson and commits it into the skill that owns that stage                           | at every retro, or when a skill proved wrong                    |
+
+Each specialist also works on its own when you invoke it directly.
 
 ## Install
 
-```sh
-git clone https://github.com/deputychinh/Skills.git ~/Documents/David/Code/skills
-cd ~/Documents/David/Code/skills
-make install   # npm tooling + links every skill into ~/.claude/skills
-```
+### As a Claude Code plugin (recommended)
 
-`make link` only (re)creates the links. An existing real folder with the same name is moved aside
-to `~/.claude/skills-backup/<name>.bak-<timestamp>`, never deleted (outside the skills folder, so Claude
-Code does not load it twice).
-
-## Layout
+The repository is a plugin marketplace (`.claude-plugin/marketplace.json`) that lists one plugin,
+`software-lifecycle`, whose skills are the `skills/` folder. Inside Claude Code:
 
 ```text
-skills/<name>/SKILL.md     frontmatter (name, description) + instructions
-skills/<name>/templates/   files a skill copies into a project ({{PLACEHOLDERS}} allowed)
-skills/<name>/references/  knowledge the skill reads and cites
-scripts/check.mjs          validation run by `make check`, the pre-commit hook and CI
-scripts/link.sh            the installer
+/plugin marketplace add deputychinh/Skills
+/plugin install software-lifecycle@software-lifecycle
+```
+
+Or from your shell:
+
+```sh
+claude plugin marketplace add deputychinh/Skills
+claude plugin install software-lifecycle@software-lifecycle
+```
+
+Plugin skills are namespaced, so the entry point is `/software-lifecycle:ship`.
+
+### Manual install by symlink
+
+For working on the skills themselves, link them into `~/.claude/skills` so an edit is live in the
+next session (the commands are then un-namespaced, for example `/ship`):
+
+```sh
+git clone https://github.com/deputychinh/Skills.git skills
+cd skills
+make install   # npm tooling + links every skill into ~/.claude/skills
+make link      # (re)create the links only
+```
+
+An existing real folder with the same name is moved aside to
+`~/.claude/skills-backup/<name>.bak-<timestamp>`, never deleted. Use one install method at a time, or
+every skill loads twice.
+
+## Delivery profile
+
+Preferences are never baked into the skills. Skills read a `## Delivery profile` section from the
+project's `CLAUDE.md`, else from your `~/.claude/CLAUDE.md`. Every key is optional:
+
+| Key              | Default when absent                                                                                                     |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| reply language   | the language the user writes in                                                                                         |
+| frontend default | the repo's existing framework; new project: ask once at triage (Vue or React both supported)                            |
+| backend default  | the repo's existing stack; new project: ask once at triage (Node/TypeScript or Python both supported)                   |
+| autonomy         | decide-and-record: ask only what nobody else can answer (secrets, money, legal, irreversible or outward-facing actions) |
+| push policy      | commit locally; push only when the profile says `push every green commit` and a remote exists                           |
+| review gate      | independent review, ship at ≥ 9/10 with requirements fit = 1 and security ≥ 0.5, at most 3 improve rounds               |
+| deploy target    | none ("local only") until the user names one                                                                            |
+| projects folder  | the current working directory's parent, or ask once                                                                     |
+
+Copy, paste and edit:
+
+```markdown
+## Delivery profile
+
+- reply language: English
+- frontend default: Vue
+- backend default: Python
+- autonomy: decide-and-record
+- push policy: push every green commit
+- review gate: ship at ≥ 9/10, requirements fit = 1, security ≥ 0.5, at most 3 improve rounds
+- deploy target: none
+- projects folder: ~/code
 ```
 
 ## Evals
 
-[`evals/`](evals/README.md) holds scenarios the suite must handle (a PDF-summary app, a Safari bug, resuming a delivery). Run the affected ones in a fresh session after changing a skill.
+[`evals/`](evals/README.md) holds scenarios the suite must handle, each with a request, a starting
+folder and a checklist. To run one, give a **fresh** Claude Code session (no history, the skills
+installed) the scenario's request in the named folder, then grade the transcript and the resulting
+repo against the checklist and record the result in `evals/README.md`. Re-run the scenarios that name
+a skill after every change to it.
 
-## Adding or changing a skill
+## Contributing
 
-1. Create `skills/<kebab-name>/SKILL.md`; the frontmatter `name` equals the folder.
-2. Add the name to `scope-enum` in `commitlint.config.mjs`.
-3. `make link && make lint`, then commit, e.g. `feat(deliver-loop): …`.
+- Layout: `skills/<name>/SKILL.md` (frontmatter `name` = folder name, `description` says what the
+  skill produces and when to use it), `templates/` for files a skill copies into a project,
+  `references/` for knowledge it reads and cites. Rules for contributors and agents are in
+  [`CLAUDE.md`](CLAUDE.md).
+- Add a new skill's name to `scope-enum` in `commitlint.config.mjs`.
+- `make lint` (Prettier + `scripts/check.mjs`: frontmatter, size, referenced files, placeholders) and
+  `claude plugin validate .` must pass.
+- Conventional Commits with a scope from `commitlint.config.mjs`, for example
+  `feat(fix-bug): reproduce in the browser the user named`.
+- A lesson from real use goes into the skill that owns that stage, written as general guidance with
+  its reason, in the same commit as the change it caused.
 
-Lessons learned while using a skill go into that skill (its checklist or gotchas) in the same commit
-as the change that taught them. [Kiln](https://github.com/deputychinh/Kiln) is the project these
-skills are proven on.
+## License
+
+License: to be chosen by the maintainer.

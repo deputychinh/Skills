@@ -1,0 +1,9 @@
+{
+  "name": "software-lifecycle",
+  "displayName": "Software lifecycle",
+  "description": "One command, the whole lifecycle: /ship triages any request (new product, feature, bug, incident, release) and calls specialist skills to discover, specify, design, plan, build, verify, demo, release, monitor and maintain software.",
+  "author": {
+    "name": "Software lifecycle skills maintainers"
+  },
+  "keywords": ["lifecycle", "delivery", "spec", "architecture", "vue", "react", "node", "python"]
+}
