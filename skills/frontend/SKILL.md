@@ -32,8 +32,9 @@ fills gaps and never overrides them. Visual work (tokens, layout, colour, CSS) b
    the feature plus deliberate shared changes.
 5. **Copy and formatting.** Every visible string comes from `src/locales/en*.ts` with the same key in
    `vi*.ts` (the locales test enforces parity); numbers and dates through `Intl`. _Evidence:_ locales
-   test green; `grep -rnE --include='*.tsx' '>[^<{}]*[A-Za-z]{3,}[^<{}]*<' src/features/<name> | grep -vE ':\s*(Promise|Array|Record|ChangeEvent)<'` finds no
-   hard-coded copy.
+   test green; no hard-coded copy — enforced by an ESLint rule (`react/jsx-no-literals`, or
+   `i18next/no-literal-string`) where the repo has one, so the evidence is the lint exit code; a grep
+   for copy cannot tell JSX text from TypeScript generics.
 6. **Style it with `css-design`.** Tokens only, BEM block = file name, component states styled.
    _Evidence:_ Stylelint green.
 7. **Stories (component libraries).** One story per state in `<Name>.stories.tsx`, sample data from
