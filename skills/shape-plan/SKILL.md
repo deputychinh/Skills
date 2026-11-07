@@ -16,17 +16,20 @@ Output: `docs/delivery/<NNN-slug>/plan.md` (from `templates/plan.md`) and items 
    runnable from the README, through CI, with one e2e test. If the brief needs it online, the skeleton
    also deploys to the target David named in triage (or a free preview tier), so every later slice
    ships the same way. No feature work before it runs.
-3. **Riskiest first**: order items so the unknowns (a model's quality, a third-party API, performance)
+3. **Benchmark harness second** when the spec has performance targets: one item builds `make bench`
+   (k6, pytest-benchmark / vitest bench, Lighthouse CI, bundle budget) and commits the baseline on
+   the skeleton, so every later item is measured against it (`benchmark` part B).
+4. **Riskiest first**: order items so the unknowns (a model's quality, a third-party API, performance)
    are proven early — a spike with a written result if needed.
-4. **Backlog items** each fit one `deliver-loop` cycle: one story or part of one, its ACs listed, its
+5. **Backlog items** each fit one `deliver-loop` cycle: one story or part of one, its ACs listed, its
    demo-able outcome stated. Split anything bigger.
-5. **Tasks for a zero-context builder** inside each item: exact files to create or change, the test to
+6. **Tasks for a zero-context builder** inside each item: exact files to create or change, the test to
    write first, the command that proves it, 5–30 minutes each (larger than superpowers' 2–5 is fine when the test and command are exact), in red → green → commit order. Mark tasks
    that can run in parallel `[P]` only when they touch different files.
-6. **Estimate in ranges** with confidence ("2–4 cycles, 70 %"); count and compare with past items in
+7. **Estimate in ranges** with confidence ("2–4 cycles, 70 %"); count and compare with past items in
    this repo (`git log`, backlog history) before guessing. Re-estimate after the skeleton.
-7. **Circuit breaker**: write what gets cut if the appetite runs out, in order.
-8. **Readiness check** before build: every item traces to ACs; every AC is covered by an item; the
+8. **Circuit breaker**: write what gets cut if the appetite runs out, in order.
+9. **Readiness check** before build: every item traces to ACs; every AC is covered by an item; the
    skeleton is first; the plan names how David will see each slice (URL, command, screenshot).
 
 ## Anti-patterns

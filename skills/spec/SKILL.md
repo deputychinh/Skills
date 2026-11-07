@@ -20,7 +20,8 @@ story; this spec is the parent.
    - behaviour: `WHEN <event> [WHILE <state>] THE SYSTEM SHALL <response>` (EARS) or Given/When/Then;
    - include the negative and boundary cases (empty, too long, wrong type, offline, unauthorised, concurrent).
      Use the domain's own words (ubiquitous language) and keep a glossary for terms that could be misread.
-4. **Quality targets** with numbers, only the 3–7 that drive the design: e.g. LCP ≤ 2.5 s, p95 API
+4. **Quality targets** with numbers — each with its workload, data size and percentile, written into
+   `benchmarks/plan.md` with `benchmark` part B — only the 3–7 that drive the design: e.g. LCP ≤ 2.5 s, p95 API
    ≤ 300 ms, WCAG 2.2 AA, availability, data retention, cost per request for AI calls.
 5. **Non-goals** and **no-gos**: what we will not build and the rabbit holes we will avoid.
 6. **Unknowns** marked `[NEEDS CLARIFICATION: …]`, never guessed. Resolve each by reading, a spike, a

@@ -26,7 +26,9 @@ webkit`, write the failing test there; if WebKit does not reproduce it, drive re
 5. **States**: loading, empty, error (stop the API or storage and reload), success; keyboard only;
    dark and light theme if the app has both; slow network (DevTools throttling) for anything that uploads
    or streams.
-6. **Performance targets** in the spec, or anything that feels slow: measure with `cache-optimize`
+6. **Performance targets** in the spec: run `make bench` and compare with the baseline (`benchmark`);
+   a regression beyond the noise band is fixed with `cache-optimize` or accepted in writing. Anything
+   that feels slow without a target: measure with `cache-optimize`
    (Lighthouse / Core Web Vitals, k6, EXPLAIN) and record the numbers next to the target.
 7. **AI features**: run the eval set; record pass rate, latency p50/p95, cost per call; try one prompt
    injection and one model-unavailable case.

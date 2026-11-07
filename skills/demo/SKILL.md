@@ -25,7 +25,9 @@ and the app running locally.
      embed the screenshots) and give David the link.
    - Otherwise render `demo.md` to `demo.html` next to it and `open` it.
    - Also `open` the running app's URL.
-4. **Message David** in Vietnamese, ≤ 12 lines: the link, the app URL and run command, what works,
+4. **Collect feedback for the next slice**: what David says, the hypothesis metric, the benchmark
+   diff — write them into `status.md` (Slices table) so `ship` can re-plan before the next slice.
+5. **Message David** in Vietnamese, ≤ 12 lines: the link, the app URL and run command, what works,
    what was cut, what is next. No percent-complete; no slides of things that do not run.
 
 ## Anti-patterns
