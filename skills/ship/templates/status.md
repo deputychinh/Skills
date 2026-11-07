@@ -22,6 +22,12 @@ Resume: re-invoke `ship`, read this file, do the Next action.
 
 Statuses: todo → doing → done (or cut). Never move back; reopen as a new row with a reason.
 
+## Slices
+
+| Slice | Items | Verified | Demo | Feedback → re-plan | Release |
+| --- | --- | --- | --- | --- | --- |
+| 1 Skeleton | | | | | — |
+
 ## Rulings (decisions taken without asking)
 
 - <YYYY-MM-DD> <decision> — because <reason>; reversible by <how>.

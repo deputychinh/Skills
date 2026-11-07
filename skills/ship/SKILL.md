@@ -56,31 +56,64 @@ Also in triage:
 
 ## Phases (Full path)
 
-| #   | Phase     | Skill                     | Output                     | Gate to leave                                                              |
-| --- | --------- | ------------------------- | -------------------------- | -------------------------------------------------------------------------- |
-| 1   | Discover  | `discover`                | `brief.md`                 | a credible press release, or the idea is killed with a reason              |
-| 2   | Specify   | `spec`                    | `spec.md`                  | no `[NEEDS CLARIFICATION]` left; the spec checklist passes                 |
-| 3   | Set up    | `init-project` (new repo) | green, documented repo     | `make ci` green; README quick start runs                                   |
-| 4   | Architect | `architect`               | `design.md` + ADRs         | every driving characteristic has a decision and a fitness check            |
-| 5   | Plan      | `shape-plan`              | `plan.md` + backlog items  | skeleton first; every AC covered by an item; first slice fits the appetite |
-| 6   | Build     | `deliver-loop`            | reviewed commits per item  | each item shipped (≥ 9/10) or filed as debt                                |
-| 7   | Verify    | `verify-app`              | evidence per AC            | every AC has evidence from the running app                                 |
-| 8   | Demo      | `demo`                    | `demo.md` + a page         | David has a link, the app URL and the run command                          |
-| 9   | Learn     | `improve-skills`          | lessons in the skills repo | committed and pushed                                                       |
+| #   | Phase     | Skill                                                              | Output                                            | Gate to leave                                                                             |
+| --- | --------- | ------------------------------------------------------------------ | ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| 1   | Discover  | `discover` (+ `benchmark` A: 2–3 reference products)               | `brief.md`, product-benchmark table               | a credible press release, or the idea is killed with a reason                             |
+| 2   | Specify   | `spec` (+ `benchmark` B: workloads and targets)                    | `spec.md`, `benchmarks/plan.md`                   | no `[NEEDS CLARIFICATION]`; every quality target has a workload and a number              |
+| 3   | Set up    | `init-project` (new repo)                                          | green, documented repo                            | `make ci` green; README quick start runs                                                  |
+| 4   | Architect | `architect` (+ `system-design`, `database`)                        | `design.md` + ADRs                                | every driving characteristic has a decision and a fitness check                           |
+| 5   | Plan      | `shape-plan`                                                       | `plan.md` + backlog items                         | skeleton first, benchmark harness second; every AC covered; first slice fits the appetite |
+| 6   | Build     | `deliver-loop` (+ `backend`, `frontend`, `css-design`, `database`) | reviewed commits per item                         | each item shipped (≥ 9/10) or filed as debt                                               |
+| 7   | Verify    | `verify-app` (+ `benchmark` vs baseline, `cache-optimize`)         | evidence per AC, benchmark diff                   | every AC has evidence; no unexplained regression                                          |
+| 8   | Demo      | `demo`                                                             | `demo.md` + a page                                | David has a link, the app URL and the run command                                         |
+| 9   | Release   | `release` (at a release boundary)                                  | tag, deploy or "local only", smoke, SLOs          | smoke green on the target; findings in the backlog                                        |
+| 10  | Learn     | `improve-skills` (+ retro)                                         | lessons in the skills repo, next slice re-planned | committed and pushed                                                                      |
 
 A brief is credible when the five customer questions are answered from facts David gave or that you
 can cite; numbers you cannot source are marked `HYPOTHESIS`.
 
+## The loops (this is not a straight line)
+
+```
+Request → triage ─┬─> discover → spec → [init] → architect → shape-plan ─┐
+                  │                                                       v
+                  │   ┌──────────── Slice loop (one appetite-sized slice) ───────────┐
+                  │   │  plan slice → Item loop × N → verify-app → demo → feedback   │
+                  │   │       ^                                            │         │
+                  │   │       └──── re-plan: spec / plan updated, cut scope ┘         │
+                  │   └───────────────────────────────┬──────────────────────────────┘
+                  │                                   v  release boundary
+                  │                    release → observe → findings → backlog ──> next slice
+                  └─ Bug / Quick paths join at the Item loop
+Item loop (deliver-loop): story → design → TDD → verify → review → improve (≤ 3) → ship item
+Learn loop: every slice and release → retro → improve-skills → the next run uses better skills
+```
+
+1. **Item loop** — `deliver-loop`, one backlog item: build, verify, independent review, improve at
+   most 3 rounds, ship or file debt. Repeats until the slice's items are done.
+2. **Slice loop** — after each slice: `verify-app` (with the benchmark diff), `demo`, then read the
+   feedback (David's, the hypothesis metric, the benchmark) and **re-plan**: update `spec.md` and
+   `plan.md`, cut scope by the circuit breaker, pick the next slice. Write it in `status.md`.
+3. **Release loop** — at a release boundary (`plan.md` says which slice), `release`: tag, deploy,
+   smoke, observe; every finding becomes a backlog item that the next slice can take.
+4. **Learn loop** — every slice and release ends with a retro: what slowed us, what reviews caught
+   late; `improve-skills` puts it into the skills so the next request runs better.
+5. **Running unattended** — for anything longer than one sitting, start `/loop /deliver-loop`
+   (or re-invoke `ship`): each wake-up reads `status.md` and continues the current loop at its
+   Next action; a monitor or the review's completion wakes it, a 20–30 min heartbeat is the fallback.
+
 ## Specialist skills (load the ones the work touches)
 
-| Phase                | When the work involves                                            | Skill                                               |
-| -------------------- | ----------------------------------------------------------------- | --------------------------------------------------- |
-| 4 Architect          | a new system or a part that must scale, estimates, storage choice | `system-design` (then `architect` records the ADRs) |
-| 4 Architect, 6 Build | tables, migrations, indexes, queries, transactions                | `database`                                          |
-| 6 Build              | routes, services, domain, jobs, integrations                      | `backend`                                           |
-| 6 Build              | screens, components, hooks, forms, data fetching                  | `frontend`                                          |
-| 6 Build              | tokens, layout, colour, typography, component states              | `css-design`                                        |
-| 7 Verify             | a performance target, something slow, caching                     | `cache-optimize`                                    |
+| Phase                | When the work involves                                                     | Skill                                               |
+| -------------------- | -------------------------------------------------------------------------- | --------------------------------------------------- |
+| 4 Architect          | a new system or a part that must scale, estimates, storage choice          | `system-design` (then `architect` records the ADRs) |
+| 4 Architect, 6 Build | tables, migrations, indexes, queries, transactions                         | `database`                                          |
+| 6 Build              | routes, services, domain, jobs, integrations                               | `backend`                                           |
+| 6 Build              | screens, components, hooks, forms, data fetching                           | `frontend`                                          |
+| 6 Build              | tokens, layout, colour, typography, component states                       | `css-design`                                        |
+| 7 Verify             | a performance target, something slow, caching                              | `cache-optimize`                                    |
+| 1, 2, 5, 7           | comparing with other products; performance targets, baselines, regressions | `benchmark`                                         |
+| 9 Release            | tagging, deploying, smoke checks, rollback, monitoring                     | `release`                                           |
 
 ## Build (phase 6)
 
@@ -91,7 +124,7 @@ conversation (it spawns the independent reviewer, which a subagent cannot), or s
 
 ## Finishing
 
-`verify-app`, then `demo`, then `improve-skills`. The last message to David (Vietnamese, ≤ 12 lines):
+`verify-app`, then `demo`, then — at a release boundary — `release`, then the retro and `improve-skills`; then the next slice (the slice loop above) until the plan is done or the appetite is spent. The last message to David (Vietnamese, ≤ 12 lines):
 what he can open now (link, app URL, run command), what works by AC, what was cut and why, what is next.
 
 ## References
