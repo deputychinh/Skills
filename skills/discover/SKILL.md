@@ -8,6 +8,9 @@ description: Turns an idea into a one-page brief — press release and FAQ, the 
 Output: `docs/delivery/<NNN-slug>/brief.md` from `templates/brief.md`. One page. It is also the demo
 script at the end, so write it as if the product shipped today.
 
+**Light mode** (`ship`'s Small new path): steps 1–3, 7 and 8 and a one-line headline only — no press
+release body, FAQ, impact map or four-risk list.
+
 ## Steps
 
 1. **Read what exists**: the request verbatim, the repo (README, docs/plan.md, CLAUDE.md), anything David
