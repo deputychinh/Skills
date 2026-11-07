@@ -1,0 +1,39 @@
+---
+name: discover
+description: Use when a request is still an idea or a wish ("tôi muốn một app…", "ý tưởng là…", a new product or a big feature) and nobody has yet written down who it is for, what problem it solves and how success is measured — before any spec or code.
+---
+
+# discover — turn a request into a brief worth building
+
+Output: `docs/delivery/<NNN-slug>/brief.md` from `templates/brief.md`. One page. It is also the demo
+script at the end, so write it as if the product shipped today.
+
+## Steps
+
+1. **Read what exists**: the request verbatim, the repo (README, docs/plan.md, CLAUDE.md), anything David
+   linked. Note facts vs. guesses.
+2. **Five customer questions** (Working Backwards): who is the customer; what problem; what is the
+   benefit; how do we know they need it; what does the experience look like. Answer from facts; mark
+   the rest `HYPOTHESIS:`.
+3. **Ask, once, only what blocks**: at most 5 questions, ranked by impact × uncertainty, each multiple
+   choice with your recommended option first (AskUserQuestion). Skip any you can answer by reading or by
+   a reasonable default — record the default as a ruling in `status.md`. Never ask about technology
+   choices David does not care about.
+4. **Press release + FAQ**: headline, one-paragraph problem, one-paragraph solution, a customer quote
+   (marked illustrative), how to start; external FAQ (users) and internal FAQ (cost, risk, what we will
+   not do).
+5. **Impact map line**: goal (measurable) → actor → behaviour change → deliverable. Every deliverable
+   must trace to the goal; drop the ones that do not.
+6. **Riskiest assumption** as a falsifiable hypothesis with a metric and how the demo will show it.
+   Check the four risks: value, usability, feasibility, viability — one line each.
+7. **Appetite**: how much work this is worth (e.g. "1 day", "3 cycles"), set before solution design.
+8. **Kill or go**: if no credible press release can be written, say so in `status.md` and tell David why
+   in three lines. Otherwise mark Discover done.
+
+## Anti-patterns
+
+- A feature list instead of a problem (feature factory). Vanity metrics. Starting from a technology.
+- Invented numbers presented as facts. Questions whose answer does not change the plan.
+
+Sources: Bryar & Carr _Working Backwards_; Cagan _Inspired_; Adzic _Impact Mapping_; Ries _The Lean
+Startup_; Singer _Shape Up_ — details in [`../ship/references/sdlc-checklists.md`](../ship/references/sdlc-checklists.md).
