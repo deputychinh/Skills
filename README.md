@@ -11,20 +11,29 @@ flowchart LR
   req([Request]) --> ship
   ship --> discover --> spec --> init[init-project] --> architect --> plan[shape-plan]
   plan --> loop[deliver-loop] --> verify[verify-app] --> demo --> improve[improve-skills]
+  architect -.-> sd[system-design] & db[database]
+  loop -.-> be[backend] & fe[frontend] & css[css-design] & db
+  verify -.-> perf[cache-optimize]
 ```
 
-| Skill                                              | Use when                                                                     | Output                                                                            |
-| -------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| [`ship`](skills/ship/SKILL.md)                     | David hands over a project or feature request and wants it carried to a demo | `docs/delivery/<slug>/status.md` ledger, every phase below                        |
-| [`discover`](skills/discover/SKILL.md)             | the request is still an idea                                                 | `brief.md`: PR/FAQ, impact map, hypothesis, appetite                              |
-| [`spec`](skills/spec/SKILL.md)                     | "done" must be defined                                                       | `spec.md`: story map, EARS / Given-When-Then criteria, quality targets, non-goals |
-| [`init-project`](skills/init-project/SKILL.md)     | the repo does not exist yet                                                  | green, documented repo with conventions, CI and ADR 0001                          |
-| [`architect`](skills/architect/SKILL.md)           | the system's shape must be decided                                           | `design.md`, ADRs, fitness functions, threat model, AI-call budgets               |
-| [`shape-plan`](skills/shape-plan/SKILL.md)         | the work must be cut into a plan                                             | `plan.md`, walking skeleton first, backlog items, tasks for a fresh subagent      |
-| [`deliver-loop`](skills/deliver-loop/SKILL.md)     | backlog items must be built                                                  | per item: story, TDD, QA, independent review ≥ 9/10, commit and push              |
-| [`verify-app`](skills/verify-app/SKILL.md)         | before saying anything is done                                               | the app run from the README, evidence per acceptance criterion                    |
-| [`demo`](skills/demo/SKILL.md)                     | the result should be shown                                                   | `demo.md` and a page with screenshots, what works, what was cut, how to run       |
-| [`improve-skills`](skills/improve-skills/SKILL.md) | a lesson was learned                                                         | the lesson committed into the skill that owns it                                  |
+| Skill                                              | Use when                                                                     | Output                                                                                            |
+| -------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| [`ship`](skills/ship/SKILL.md)                     | David hands over a project or feature request and wants it carried to a demo | `docs/delivery/<slug>/status.md` ledger, every phase below                                        |
+| [`discover`](skills/discover/SKILL.md)             | the request is still an idea                                                 | `brief.md`: PR/FAQ, impact map, hypothesis, appetite                                              |
+| [`spec`](skills/spec/SKILL.md)                     | "done" must be defined                                                       | `spec.md`: story map, EARS / Given-When-Then criteria, quality targets, non-goals                 |
+| [`init-project`](skills/init-project/SKILL.md)     | the repo does not exist yet                                                  | green, documented repo with conventions, CI and ADR 0001                                          |
+| [`architect`](skills/architect/SKILL.md)           | the system's shape must be decided                                           | `design.md`, ADRs, fitness functions, threat model, AI-call budgets                               |
+| [`shape-plan`](skills/shape-plan/SKILL.md)         | the work must be cut into a plan                                             | `plan.md`, walking skeleton first, backlog items, tasks for a fresh subagent                      |
+| [`deliver-loop`](skills/deliver-loop/SKILL.md)     | backlog items must be built                                                  | per item: story, TDD, QA, independent review ≥ 9/10, commit and push                              |
+| [`verify-app`](skills/verify-app/SKILL.md)         | before saying anything is done                                               | the app run from the README, evidence per acceptance criterion                                    |
+| [`demo`](skills/demo/SKILL.md)                     | the result should be shown                                                   | `demo.md` and a page with screenshots, what works, what was cut, how to run                       |
+| [`improve-skills`](skills/improve-skills/SKILL.md) | a lesson was learned                                                         | the lesson committed into the skill that owns it                                                  |
+| [`system-design`](skills/system-design/SKILL.md)   | a system or a big part must be designed before building                      | requirements, estimates, components, storage choice, trade-off tables, C4 sketch                  |
+| [`database`](skills/database/SKILL.md)             | tables, migrations, indexes, queries or transactions change                  | constraints in the database, zero-downtime migrations, EXPLAIN evidence, isolation choices        |
+| [`backend`](skills/backend/SKILL.md)               | server code changes: routes, services, domain, jobs, integrations            | layered code, RFC 9457 errors, idempotency, timeouts, structured logs, tests on real dependencies |
+| [`frontend`](skills/frontend/SKILL.md)             | screens, components, hooks, forms or data fetching change                    | state in the right place, four states per view, role-based tests, axe, focus management           |
+| [`css-design`](skills/css-design/SKILL.md)         | visual design or CSS changes                                                 | tokens, intrinsic layouts, contrast, component states, BEM and Stylelint, screenshots             |
+| [`cache-optimize`](skills/cache-optimize/SKILL.md) | something is slow or a performance target applies                            | a budget, measurements, the fix at the bottleneck, HTTP and app caching, regression guards        |
 
 The phase checklists cite the canonical books (Patton, Adzic, Shape Up, Evans, Martin, Ousterhout,
 Beck, Fowler, Humble & Farley, Accelerate, Release It!, SRE, Software Engineering at Google, …) and

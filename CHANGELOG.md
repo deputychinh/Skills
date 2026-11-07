@@ -4,6 +4,10 @@ Follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Six specialist skills, each with a measured workflow, a core checklist, anti-patterns, the evidence required before "done" and sourced references (items checked online are marked with the date; the rest are marked as from memory): `system-design` (estimates, components, storage, scaling, C4, trade-offs; a worked Kiln example), `database` (Postgres modelling, lock-aware migrations, indexing and EXPLAIN, isolation and retries, backups), `backend` (layering, API contract, RFC 9457, idempotency, jobs, integrations, observability, OWASP), `frontend` (state placement, data fetching, forms, focus, WCAG 2.2, role-based tests), `css-design` (tokens, intrinsic layout, contrast, states, BEM and cascade, visual review), `cache-optimize` (budgets, profiling, Core Web Vitals, RFC 9111 caching, cache-aside, load tests, CI guards). `ship`, `architect`, `deliver-loop` and `verify-app` call them at the right step.
+
 ### Changed
 
 - Two independent reviews of the suite (6.5, then 7/10) drove these fixes: one push rule (push every green commit when `origin` exists) across `deliver-loop`, its rubric and `init-project`; `init-project` defers to `ship` (no second question round, ADR 0001 for stack only, empty backlog for `shape-plan`); `ship` triages Bug, Quick, Small, Small new and Full paths, looks for keys in the environment before asking, asks at most once at triage, numbers deliveries, resumes from the `status.md` Next action and requires `claude-api` plus an eval set for AI features; `verify-app` reproduces in the browser engine a report names (WebKit for Safari); `deliver-loop` hands back to `ship` and keeps project gotchas in `references/gotchas.md`; every description says what and when, with "`ship` calls this" guards.
