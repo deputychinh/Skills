@@ -12,21 +12,25 @@ URL `make web` printed could not reach the API (CORS on `localhost`), and the RE
 
 1. **Fresh start**: new shell, follow the README quick start word for word (install, infra, migrate,
    every process). If a step is missing or wrong, fix the README in the same change.
-2. **Open what the servers print** (e.g. `http://localhost:5173`, not only `127.0.0.1`), in a real
+2. **Use the environment the report names**: a bug seen in Safari is reproduced in WebKit — add a
+   Playwright `webkit` project (and an iPhone profile for mobile Safari), run `npx playwright install
+webkit`, write the failing test there; if WebKit does not reproduce it, drive real Safari with
+   `safaridriver --enable`. Same for Firefox, a mobile size, a slow network or a given data set.
+3. **Open what the servers print** (e.g. `http://localhost:5173`, not only `127.0.0.1`), in a real
    browser: Playwright, the Chrome DevTools MCP, or Claude in Chrome. Watch the console and network for
    errors, CORS failures and 4xx/5xx.
-3. **Walk every acceptance criterion** of the work being verified, including the negative and boundary
+4. **Walk every acceptance criterion** of the work being verified, including the negative and boundary
    cases; for each, save evidence to `docs/delivery/<slug>/evidence/` (or the story's QA section):
    screenshot at 390 px and 1280 px for UI, command and output for APIs/CLIs, timing for performance targets.
    Look at every screenshot before citing it.
-4. **States**: loading, empty, error (stop the API or storage and reload), success; keyboard only;
+5. **States**: loading, empty, error (stop the API or storage and reload), success; keyboard only;
    dark and light theme if the app has both; slow network (DevTools throttling) for anything that uploads
    or streams.
-5. **AI features**: run the eval set; record pass rate, latency p50/p95, cost per call; try one prompt
+6. **AI features**: run the eval set; record pass rate, latency p50/p95, cost per call; try one prompt
    injection and one model-unavailable case.
-6. **Gates**: the repo's full CI (`make ci` or equivalent) and e2e, chained by exit code — never judge a
+7. **Gates**: the repo's full CI (`make ci` or equivalent) and e2e, chained by exit code — never judge a
    gate from filtered output (`| tail` hides failures).
-7. **Verdict table**: AC → evidence → pass/fail. Anything failing is fixed now (with a regression test)
+8. **Verdict table**: AC → evidence → pass/fail. Anything failing is fixed now (with a regression test)
    or filed and listed as a known issue. Only then may you say "done".
 
 ## Red flags

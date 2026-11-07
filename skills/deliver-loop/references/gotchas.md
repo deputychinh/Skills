@@ -66,6 +66,8 @@ section that matches the item before step 3; the core list in `SKILL.md` applies
 
 ## Browser, UI and e2e
 
+- A browser-specific bug is reproduced in that engine: Kiln's Playwright config had only Chromium projects, so a Safari report could not fail a test until a `webkit` project was added (skills review, 2026-11-07).
+
 - Run the app the way the owner will before every review and at every release: README quick start in a fresh shell, the printed dev URL (`localhost`, not only `127.0.0.1`), the new feature clicked through. e2e on `127.0.0.1:4173` passed for all of v0.1 while `make web`'s `localhost:5173` could not reach the API (CORS).
 - Browser features that call the API cross-origin: run the real-browser e2e before the first review — curl and the CLI never send a CORS preflight, so a missing allowed header (KILN-26: `Idempotency-Key`) only shows up there. Live regions must queue outcomes, not replace them, or a batch of failures announces only the last.
 - UI e2e must cover every state's way out on every size class: a CSS rule that hid the back link on wide screens left the not-found state with no action, and only the desktop e2e run caught it.
