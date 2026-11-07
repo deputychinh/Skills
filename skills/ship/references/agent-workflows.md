@@ -2,6 +2,12 @@
 
 Paraphrased from sources fetched 2026-11-07; _(secondary)_ marks third-party coverage.
 
+## Contents
+
+[1 Anthropic skills](#1-anthropic-agent-skills-guidance) · [2 Claude Code practices](#2-anthropic-claude-code-best-practices-and-long-running-harnesses) · [3 superpowers](#3-obrasuperpowers) · [4 spec-kit](#4-github-spec-kit) · [5 BMad](#5-bmad-method-v6-stable-v7-alpha) · [6 Kiro](#6-kiro-specs) · [7 Working Backwards](#7-amazon-working-backwards-prfaq-as-agent-skills-community-sources-only--ideas-not-citations) · [Synthesis](#synthesis-phase--best-practice--source)
+
+Versions and task sizes (superpowers' 2–5 minute tasks, BMad v6/V7) were current on 2026-11-07; recheck before relying on them.
+
 > **How this repo uses it.** Adopted: trigger-plus-what descriptions, progressive disclosure, ledgers in files, fresh-evidence verification, capped review loops. **Not adopted:** human approval as a hard gate before code (superpowers brainstorming, the spec row below) — David asked for autonomy, so `ship` records rulings instead and asks only owner-only questions, once, at triage.
 
 ## 1. Anthropic: Agent Skills guidance
@@ -24,7 +30,7 @@ URLs: https://code.claude.com/docs/en/best-practices · https://www.anthropic.co
 
 - **Interview first.** "Interview me until you could write SPEC.md", then build in a fresh session; the spec is the definition of done.
 - **Guidance vs enforcement.** CLAUDE.md and skills are guidance; zero-exception rules belong in hooks or deny rules. A Stop hook exiting with code 2 keeps the agent working until the check passes.
-- **Spec-review subagent.** Reviews the diff against the spec for coverage and tests, skips style; then `/verify` runs the real app.
+- **Spec-review subagent.** Reviews the diff against the spec for coverage and tests, skips style; then `/verify` _(command name not confirmed in the docs)_ runs the real app.
 - **Long-running harness.** An initializer writes `init.sh`, a JSON feature list (all failing), a progress log and a first commit. Each later session does one feature, tests it end to end in a browser, flips only `passes`, and commits. State lives in files and git.
   **Avoid:** ALL-CAPS escalation (use a hook or a shorter file), "loop until done" nagging, calling a feature done on unit tests or curl alone, and letting agents edit the test list.
 

@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Carries one project, feature or bug request from intake to a demo David can open — triage, brief, spec, design, plan, build with deliver-loop, verification and a results page — deciding everything that does not need him. Use when David hands over a request to build or fix something ("làm cho tôi…", "tôi cần một app…", "build…", "/ship"), in a new or an existing repo, or to resume a delivery that has a `docs/delivery/*/status.md`.
+description: Use when David asks to build, make or fix anything — "làm cho tôi…", "tôi cần một app…", "sửa lỗi…", "bị lỗi", "không chạy", "X does nothing", "build…", "/ship" — in a new or an existing repo, or to resume a delivery that has `docs/delivery/*/status.md`. Carries the request from intake to a demo David can open, deciding everything that does not need him.
 ---
 
 # ship — from one request to a demo David can open
@@ -15,9 +15,12 @@ evidence, finish with a demo. You do not grade your own work and you do not ask 
    backwards. After a compaction or in a new session: re-invoke `ship`, read `status.md`, continue at
    Next action.
 2. **Ask only what nobody else can answer** — secrets and API keys, paid accounts, hosting, business or
-   legal rules, irreversible or outward-facing actions — and ask them **all at once, during triage**
-   (one AskUserQuestion, ≤ 4 questions). Until answers arrive, build against a fake adapter and keep
-   going. Everything else: decide, write it under "Rulings" with the reason, move on. David: "cứ thế
+   legal rules, irreversible or outward-facing actions. First look for the answer yourself (environment
+   variables, `.env`, the macOS keychain, the repo, memory). Ask with one AskUserQuestion (≤ 4
+   questions, all of them, at triage) only when an answer blocks the next phase; otherwise write the
+   question in `status.md`, take a safe default (e.g. a fake adapter for a missing key), mention it at
+   the end of the turn and keep going. Everything else: decide, write it under "Rulings" with the
+   reason, move on. David: "cứ thế
    làm, không cần chờ tôi approve".
 3. **No claim without fresh evidence**: a command run now, its output read, a screenshot looked at.
 4. **Working software over paperwork**: artefacts as short as the work allows; a walking skeleton runs
@@ -28,13 +31,17 @@ evidence, finish with a demo. You do not grade your own work and you do not ask 
 
 ## Step 0 · Triage
 
-| Request looks like                        | Path                                                                                                                                                                          |
-| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Bug                                       | **Bug**: write current, expected and _unchanged_ behaviour into `status.md` → reproduce as a failing test → fix → `verify-app` → short report.                                |
-| One-file fix, copy or config change       | **Quick**: test → change → `verify-app` → short report. No delivery folder.                                                                                                   |
-| One clear feature in an existing repo     | **Small**: `spec` (stories, ACs, non-goals only) → `shape-plan` (one or two backlog items) → `deliver-loop` → `verify-app` → `demo`                                           |
-| Small new tool or app for David himself   | **Small new**: light `discover` (five questions + appetite, no press release or impact map) → `spec` → `init-project` → `shape-plan` → `deliver-loop` → `verify-app` → `demo` |
-| New product, vague idea, several features | **Full**: every phase below                                                                                                                                                   |
+| Request looks like                      | Path                                                                                                                                                                                                                                                                                                           |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bug                                     | **Bug**: `status.md` with current, expected and _unchanged_ behaviour → a backlog item `<PREFIX>-<n>` → reproduce as a failing test in the environment the report names (browser engine, OS, data) → fix → `deliver-loop` steps 4–7 for that item (review ≥ 9, commit, push) → `verify-app` → ≤ 5-line report. |
+| One-file fix, copy or config change     | **Quick**: test → change → `verify-app` → short report. No delivery folder.                                                                                                                                                                                                                                    |
+| One clear feature in an existing repo   | **Small**: `spec` (stories, ACs, non-goals only) → `shape-plan` (one or two backlog items) → `deliver-loop` → `verify-app` → `demo`                                                                                                                                                                            |
+| Small new tool or app for David himself | **Small new**: light `discover` (headline, five questions, appetite; no FAQ or impact map) → `spec` → `init-project` (smallest preset that fits) → `shape-plan` → `deliver-loop` → `verify-app` → `demo`                                                                                                       |
+
+On any path, when the product calls an AI model: run `architect` step 6 (AI calls, eval set,
+fallback, budget) and load the `claude-api` skill before choosing how to call the model (e.g. native
+PDF or image input instead of a hand-made extraction pipeline).
+| New product, vague idea, several features | **Full**: every phase below |
 
 Also in triage:
 
@@ -43,6 +50,7 @@ Also in triage:
 - **Existing repo without `CLAUDE.md`, Makefile or backlog**: read it, map its real lint/test/run
   commands, write a minimal `docs/backlog.md` and a `CLAUDE.md` with those commands before building.
 - **Owner-only questions** (rule 2), e.g. "an `ANTHROPIC_API_KEY` for the app?", "deploy anywhere?".
+- **Numbering**: `NNN` is the next free three-digit number under `docs/delivery/`.
 - Write the path, the reason and the appetite into `status.md`. Upgrade the path when the work turns
   out bigger; never downgrade to skip a gate.
 
