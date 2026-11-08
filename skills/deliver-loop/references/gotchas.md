@@ -63,6 +63,7 @@ section that matches the item before step 3; the core list in `SKILL.md` applies
 - Untrusted media: measure peak memory per accepted format at its limit in a fresh subprocess (ru_maxrss of a warm process lies), and bound both pixels and file size (Pillow reads whole WebP/animated files); pin it with a subprocess regression test.
 - Parsing untrusted complex files (3D models, archives, documents): design the sandbox first — a spawned child with a wall-clock kill, its own CPU limit, an address-space limit (Linux), exit on parent death — then add bounds checks for speed. Bounds checks alone are whack-a-mole: each review finds a new bomb class (shared-node graphs, vertex amplification, chunk counts, nested lists). Record it in an ADR in the same commit.
 - Never hand-write crypto or a signature scheme to get one missing knob (such as request signing at a chosen time): subclass the library's implementation and override the narrowest hook, cross-check against the library, and record it in an ADR. A hand-written signer diverges silently for inputs the library handles.
+- Bound every integer decoded from a cursor (or any opaque token) before it reaches the database: an int past the column type made Postgres error out and the API answer 503 with Retry-After, so a crafted cursor looked like an outage. Refuse it as 400 and test the boundary (2^31 − 1, 2^31, 40 digits).
 
 ## Workers and processes
 
@@ -77,6 +78,8 @@ section that matches the item before step 3; the core list in `SKILL.md` applies
 - UI e2e must cover every state's way out on every size class: a CSS rule that hid the back link on wide screens left the not-found state with no action, and only the desktop e2e run caught it.
 - Cache-hit evidence in e2e: resource timing `transferSize` is always 0 for cross-origin resources without `Timing-Allow-Origin`; ask the DevTools protocol (`Network.requestServedFromCache`) and prove the test can fail by disabling the cache.
 - Storybook e2e: `storyFinished.status` reflects only reporters (a11y), not `play`; listen for `playFunctionThrewException`. Docgen (`react-docgen-typescript`) skips undocumented `children` and inherited native props, so set `skipChildrenPropWithoutDoc: false` plus a prop filter, and assert that every docs table row has a description. Never `reuseExistingServer` against a build the run did not make, and bound every per-story wait.
+- Client-side geometry sent to an API (regions, crops, coordinates) must be clamped with the same arithmetic the server validates, in the same doubles, after JSON: floor to the stored precision, then check x + width ≤ 1 as the server will. Property-test drags ending on every edge with a seeded generator; 1.5 % of plain edge drags were refused before that.
+- Targets drawn over images (pins, region badges, hotspots) need a crowded-marks axe test: two marks a pixel apart failed `target-size` and a pin at (1, 1) was clipped. Lay targets out in px from the measured image, clamp them inside, and move one that would cover another.
 
 ## Architecture
 
