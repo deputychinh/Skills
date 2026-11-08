@@ -37,6 +37,7 @@ section that matches the item before step 3; the core list in `SKILL.md` applies
 
 - Mutation-test every field of an idempotency fingerprint (each body field, the operation, the resource id in it): a field left out lets a retry with another body replay the first answer, and only a test that reuses the key with that one field changed (→ 422) notices.
 - A test derived from the table it checks proves nothing: pin expected tables literally and run one mutation by hand.
+- Cluster-wide test objects (database roles, shared buckets) are dropped at teardown **and** cleared at session start, and the leftover check gets its own mutant (point it at the wrong name): a role left by one SIGKILLed run failed every later run on that database, and a leftover check aimed at the wrong role passed silently.
 - Run Python mutants with `PYTHONDONTWRITEBYTECODE=1` (or clear `__pycache__`): an edit restored within the same second can leave a stale `.pyc` that fakes a kill.
 - Mutation runners need a per-mutant timeout and must restore the file in `finally`: a mutant that makes a test hang otherwise leaves the mutated file in the tree. Give the suite a per-test timeout too (`pytest-timeout`).
 - Logging and error-mapping code is code: test handlers with the real exception classes of each dependency (an SDK's timeout error may carry no response object at all), and keep library details out of the boundary (attach a `cause_code` in the adapter).
