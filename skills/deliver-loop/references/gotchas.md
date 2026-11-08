@@ -16,6 +16,7 @@ section that matches the item before step 3; the core list in `SKILL.md` applies
 ## Gates, commits and docs
 
 - Never edit an accepted ADR, even one written earlier in the same item once a reviewer has seen it: record the changed decision in a new ADR that supersedes it, and update the links (a reviewer flags the edit as a repo-rule violation).
+- Ship a web behaviour change and its e2e update in the same commit, green on the full gate (lint, unit, e2e): a fix pushed before the e2e that checked the old behaviour was updated left `main` red for one commit, and since `main` is never rewritten the delivery point was lost for good.
 - Parallel agents (builder, reviewer, another item) must not share one test database: one run dropping or truncating it made the other's unrelated tests fail. Give each its own `*_test` database (e.g. an env override per agent) and rerun a red suite on an isolated database before believing it.
 - Chain every step that must succeed — doc-editing scripts included — into the commit command (`python3 edit.py && make ci && git commit …`): a doc script that stops early otherwise still lets the code commit go out without its docs.
 - Chain the gate and the commit so a red gate cannot commit: `make ci && git add … && git commit …` — an `echo ci=$?` between them returns 0 and lets a red run commit.
@@ -74,6 +75,9 @@ section that matches the item before step 3; the core list in `SKILL.md` applies
 
 ## Browser, UI and e2e
 
+- Move focus to an error from an effect that runs after it renders, never inside the error handler: React commits the state update after the handler, so at `focusin` the field was not yet `aria-invalid` and described nothing, and a screen reader read no error. Prove it by recording `aria-invalid` and the described text at `focusin`, in a component test and in a real-browser e2e (`page.route` answering 500).
+- A message that takes focus must not also be a live region (`role="alert"`, `aria-live`), itself or through an ancestor: NVDA and JAWS read it twice. Pick one channel per outcome — focus, or a polite status — and when focus lands on a static element next to a status message, make it say something new (the reason), not the state again.
+- Assert a focus ring's width and colour (or contrast), not only `outline-style`: a 1 px or transparent ring passes a style-only check. Never `:focus { outline: none }` on an element the app focuses; give it the `:focus-visible` ring and run the ring check in the e2e, since jsdom ignores CSS.
 - Key per-entity forms by the entity id (`key={version.id}`) and put the id in idempotency-key signatures: otherwise a typed note, an error and a key carry over when the user switches entity, and a retry on the new one replays or is refused as a reused key. When an action unmounts its own button (Approve → Reopen), move focus to a stable target on purpose and assert it in the keyboard e2e (WCAG 2.4.3); run axe from a known scroll position, since it counts targets under a sticky bar as obscured.
 - A browser-specific bug is reproduced in that engine: with only Chromium projects in the Playwright config, a Safari report cannot fail a test until a `webkit` project is added.
 - Run the app the way the user will before every review and at every release: README quick start in a fresh shell, the printed dev URL (`localhost`, not only `127.0.0.1`), the new feature clicked through. e2e against a preview server on `127.0.0.1` can pass for a whole release while the dev server on `localhost` cannot reach the API, because the origins differ and CORS blocks it.
