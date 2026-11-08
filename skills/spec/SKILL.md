@@ -21,10 +21,13 @@ story; this spec is the parent.
    - behaviour: `WHEN <event> [WHILE <state>] THE SYSTEM SHALL <response>` (EARS) or Given/When/Then;
    - include the negative and boundary cases (empty, too long, wrong type, offline, unauthorised, concurrent).
      Use the domain's own words (ubiquitous language) and keep a glossary for terms that could be misread.
+   - tag each AC with the platforms it holds on — `[web]`, `[ios]`, `[android]` or `[all]` (the default)
+     — so verification covers every client in scope and no platform skips a criterion unnoticed.
 4. **Quality targets** with numbers — each with its workload, data size, percentile and environment
    (the table's columns), written into `benchmarks/plan.md` with `benchmark` part B — only the 3–7
    that drive the design; a target without its workload cannot be measured twice the same way: e.g. LCP ≤ 2.5 s, p95 API
-   ≤ 300 ms, WCAG 2.2 AA, availability, data retention, cost per request for AI calls.
+   ≤ 300 ms, WCAG 2.2 AA, availability, data retention, cost per request for AI calls; for native apps
+   also cold start, crash-free sessions, ANR rate, minimum OS versions and offline behaviour.
 5. **Non-goals** and **no-gos**: what we will not build and the rabbit holes we will avoid.
 6. **Unknowns** marked `[NEEDS CLARIFICATION: …]`, never guessed. Resolve each by reading, a spike, a
    ruling (recorded), or — only if nobody else can — one question to the user.
@@ -32,6 +35,7 @@ story; this spec is the parent.
    - every AC is testable by a machine or a clearly described manual check;
    - no AC says how (no table names, frameworks, endpoints) unless it is an external contract;
    - every story traces to the brief's goal; every brief deliverable has a story;
+   - every AC has a platform tag, and every platform in scope has at least one AC;
    - no two ACs contradict; vague words (fast, easy, intuitive, robust) are replaced by numbers;
    - each AI-dependent behaviour states its fallback when the model is wrong, slow or unavailable.
 

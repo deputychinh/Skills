@@ -96,7 +96,9 @@ commands and Maestro's CLI are from memory.
    injection and one model-unavailable case.
 8. **Gates**: the repo's full CI (`make ci` or equivalent) and e2e, chained by exit code — never judge
    a gate from filtered output (`| tail` hides failures).
-9. **Verdict table**: AC → evidence → pass/fail. Anything failing is fixed now (with a regression
+9. **Verdict table**: AC → platform → evidence → pass/fail, one row per platform the AC is tagged for
+   (`[all]` means every platform in scope), so a criterion proven on the web is not assumed on iOS or
+   Android. Anything failing is fixed now (with a regression
    test) or filed and listed as a known issue. Only then say "done".
 
 ## Red flags

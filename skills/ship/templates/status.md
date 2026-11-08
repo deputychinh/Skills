@@ -3,6 +3,7 @@
 Request (verbatim): "<what the user asked>"
 Path: Full | Small new | Small | Bug | Incident | Performance | Quick + audit | Quick | Research — because <reason>
 Appetite: <e.g. 2 days of agent work> · started <YYYY-MM-DD> · **Spent: <x> of <appetite>**
+Platforms in scope: web | iOS | Android (every gate below needs evidence on each one)
 Status: doing | blocked | done
 
 **Next action:** <the one thing to do next, specific enough to resume cold>

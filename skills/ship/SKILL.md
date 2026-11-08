@@ -5,24 +5,30 @@ description: The single entry point for the whole software lifecycle — build n
 
 # ship — one entry point for the whole lifecycle
 
-`ship` is the one skill the user needs to invoke. It covers every stage of a product's life —
-**Build new → Release → Post-deploy verification → Operate/Monitor → Maintain (bugs, upgrades,
-security patches, debt) → back to Build** — and calls the other 21 skills itself; the user never has
-to name them. A product with mobile apps keeps **one native codebase per store** (`ios` in Swift/SwiftUI,
-`android` in Kotlin/Jetpack Compose), each talking to the same backend API as the web app. You are the **controller**: pick the path, keep the ledger, run the stage skills, check
-their evidence, finish with something the user can open. You do not grade your own work and you do
-not ask "should I continue?".
+`ship` is the one skill the user needs to invoke. It runs the seven stages of the software development
+life cycle — **1 Planning → 2 Requirement analysis → 3 System design → 4 Development → 5 Testing →
+6 Deployment and launch → 7 Maintenance → back to 1** — for a web app, native mobile apps, or both, and
+calls the other 21 skills itself; the user never has to name them. A product with mobile apps keeps
+**one native codebase per store** (`ios` in Swift/SwiftUI, `android` in Kotlin/Jetpack Compose), each
+talking to the same backend API as the web app. You are the **controller**: pick the path, keep the
+ledger, run the stage skills, check their evidence, finish with something the user can open. You do
+not grade your own work and you do not ask "should I continue?".
 
 ## Lifecycle at a glance
 
-| Stage                    | What happens                                                                                                    | Skills `ship` calls                                                                                            | Artefact left                                              |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| Build new                | brief, spec, design, plan, items built and reviewed ≥ 9                                                         | `discover`, `spec`, `benchmark`, `architect`, `shape-plan`, `deliver-loop` (+ `ios`, `android` per native app) | `docs/delivery/<slug>/` brief, spec, design, plan; commits |
-| Release                  | version, changelog, deploy (or "local only"), smoke, rollback ready; store tracks and staged rollout for mobile | `release` (store path for `ios`, `android`)                                                                    | tag, CHANGELOG section, release note                       |
-| Post-deploy verification | every AC checked on the target, benchmark diff, results page                                                    | `verify-app`, `benchmark`, `demo`                                                                              | evidence per AC, `demo.md` + a page                        |
-| Operate / Monitor        | SLOs, symptom alerts, dashboards; crash-free and ANR rates for mobile; incident path when one fires             | `monitor`                                                                                                      | SLO file, alert rules, incident notes                      |
-| Maintain                 | bugs, upgrades, security patches, performance, debt                                                             | `fix-bug`, `cache-optimize`, `deliver-loop`                                                                    | regression tests, backlog items, commits                   |
-| Learn                    | retro on every path; lessons into the skills                                                                    | `improve-skills`                                                                                               | Retro section in `status.md`, skill edits                  |
+| SDLC stage              | `ship` stages (table below)    | Skills `ship` calls                                                                                    | Gate to leave, on every platform in scope                      |
+| ----------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
+| 1 Planning              | triage, 1 Discover             | `discover`, `benchmark` A                                                                              | credible brief; path, appetite and platforms in `status.md`    |
+| 2 Requirement analysis  | 2 Specify                      | `spec`, `benchmark` B                                                                                  | every AC tagged by platform; every quality target has a number |
+| 3 System design         | 3 Set up, 4 Architect, 5 Plan  | `init-project`, `architect`, `system-design`, `database`, `shape-plan`                                 | one API contract; walking skeleton planned on every platform   |
+| 4 Development           | 6 Build (item loop)            | `deliver-loop` + `backend`, `frontend`, `css-design` (web), `ios`, `android`, `database`               | each item reviewed per the review gate, with its tests         |
+| 5 Testing               | 7 Verify, 8 Demo (slice loop)  | `verify-app` (browser; simulators and emulators), `benchmark`, `cache-optimize`, `demo`                | evidence per AC and platform; no unexplained regression        |
+| 6 Deployment and launch | 9 Release                      | `release` (web deploy and rollback; TestFlight, Play tracks, staged rollout), post-deploy `verify-app` | smoke green on the target; store rollout healthy               |
+| 7 Maintenance           | 10 Operate, Maintain, 11 Learn | `monitor` (SLOs; crash-free and ANR for apps), `fix-bug`, `cache-optimize`, `improve-skills`           | alerts with runbooks; findings in the backlog; retro written   |
+
+Maintenance feeds the backlog, which re-enters stage 1 (re-prioritise) or stage 4 (a regression fix).
+What each stage owes per platform — web, iOS, Android — is in `references/sdlc-web-mobile.md`; read the
+row for the stage you are entering before you run its skill.
 
 ## Where am I? (every invocation)
 
@@ -55,7 +61,12 @@ what lets a fresh session or a compacted context pick up exactly where the last 
 7. **Notify once per slice**: one short message per finished slice (what changed, where to see it,
    what is next) — and a push notification when the environment offers one. No feedback from the user
    by the next slice → take the next slice and record "no feedback" in the slice row.
-8. Reply in the language from the delivery profile; repo files, code and commits in English unless the
+8. **Platform parity**: the platforms fixed at triage are the scope of every gate. Each AC carries a
+   platform tag (`[web]`, `[ios]`, `[android]`, untagged = `[all]`); a gate passes only with evidence
+   on every platform in scope, and a lagging platform is a recorded scope cut, never a silent gap. The
+   API contract comes before any client and stays compatible with the oldest supported app build,
+   because a shipped binary cannot be recalled.
+9. Reply in the language from the delivery profile; repo files, code and commits in English unless the
    repo says otherwise.
 
 ## Delivery profile
@@ -115,19 +126,19 @@ Also in triage:
 
 ## Stages (Full path)
 
-| #   | Stage     | Skill                                                                                | Output                               | Gate to leave                                                                             |
-| --- | --------- | ------------------------------------------------------------------------------------ | ------------------------------------ | ----------------------------------------------------------------------------------------- |
-| 1   | Discover  | `discover` (+ `benchmark` A: 2–3 reference products)                                 | `brief.md`, product-benchmark table  | a credible press release, or the idea is killed with a reason                             |
-| 2   | Specify   | `spec` (+ `benchmark` B: workloads and targets)                                      | `spec.md`, `benchmarks/plan.md`      | no `[NEEDS CLARIFICATION]`; every quality target has a workload and a number              |
-| 3   | Set up    | `init-project` (new repo)                                                            | green, documented repo               | `make ci` green; README quick start runs                                                  |
-| 4   | Architect | `architect` (+ `system-design`, `database`)                                          | `design.md` + ADRs                   | every driving characteristic has a decision and a fitness check                           |
-| 5   | Plan      | `shape-plan`                                                                         | `plan.md` + backlog items            | skeleton first, benchmark harness second; every AC covered; first slice fits the appetite |
-| 6   | Build     | `deliver-loop` (+ `backend`, `frontend`, `css-design`, `database`, `ios`, `android`) | reviewed commits per item            | each item shipped per the review gate, filed as debt, or `blocked`                        |
-| 7   | Verify    | `verify-app` (+ `benchmark` vs baseline, `cache-optimize`)                           | evidence per AC, benchmark diff      | every AC has evidence; no unexplained regression                                          |
-| 8   | Demo      | `demo`                                                                               | `demo.md` + a page                   | the user has a link, the app URL and the run command                                      |
-| 9   | Release   | `release` (at a release boundary)                                                    | tag, deploy or "local only", smoke   | smoke green on the target; findings in the backlog                                        |
-| 10  | Operate   | `monitor` (once there is a deploy target)                                            | SLOs, symptom alerts, runbook        | every user-facing SLO has an alert that was fired once on purpose                         |
-| 11  | Learn     | retro + `improve-skills`                                                             | Retro section, lessons in the skills | retro written; lessons committed                                                          |
+| #   | SDLC | Stage     | Skill                                                                                | Output                               | Gate to leave                                                                             |
+| --- | ---- | --------- | ------------------------------------------------------------------------------------ | ------------------------------------ | ----------------------------------------------------------------------------------------- |
+| 1   | 1    | Discover  | `discover` (+ `benchmark` A: 2–3 reference products)                                 | `brief.md`, product-benchmark table  | a credible press release, or the idea is killed with a reason                             |
+| 2   | 2    | Specify   | `spec` (+ `benchmark` B: workloads and targets)                                      | `spec.md`, `benchmarks/plan.md`      | no `[NEEDS CLARIFICATION]`; every quality target has a workload and a number              |
+| 3   | 3    | Set up    | `init-project` (new repo)                                                            | green, documented repo               | `make ci` green; README quick start runs                                                  |
+| 4   | 3    | Architect | `architect` (+ `system-design`, `database`)                                          | `design.md` + ADRs                   | every driving characteristic has a decision and a fitness check                           |
+| 5   | 3    | Plan      | `shape-plan`                                                                         | `plan.md` + backlog items            | skeleton first, benchmark harness second; every AC covered; first slice fits the appetite |
+| 6   | 4    | Build     | `deliver-loop` (+ `backend`, `frontend`, `css-design`, `database`, `ios`, `android`) | reviewed commits per item            | each item shipped per the review gate, filed as debt, or `blocked`                        |
+| 7   | 5    | Verify    | `verify-app` (+ `benchmark` vs baseline, `cache-optimize`)                           | evidence per AC, benchmark diff      | every AC has evidence; no unexplained regression                                          |
+| 8   | 5    | Demo      | `demo`                                                                               | `demo.md` + a page                   | the user has a link, the app URL and the run command                                      |
+| 9   | 6    | Release   | `release` (at a release boundary)                                                    | tag, deploy or "local only", smoke   | smoke green on the target; findings in the backlog                                        |
+| 10  | 7    | Operate   | `monitor` (once there is a deploy target)                                            | SLOs, symptom alerts, runbook        | every user-facing SLO has an alert that was fired once on purpose                         |
+| 11  | 7    | Learn     | retro + `improve-skills`                                                             | Retro section, lessons in the skills | retro written; lessons committed                                                          |
 
 A brief is credible when the five customer questions are answered from facts the user gave or that
 you can cite; numbers you cannot source are marked `HYPOTHESIS`.
@@ -135,19 +146,19 @@ you can cite; numbers you cannot source are marked `HYPOTHESIS`.
 ## The loops
 
 ```
-Request → Where am I? → triage ─┬─> discover → spec → [init] → architect → shape-plan ─┐
-                                │                                                     v
-                                │  ┌──────── Slice loop (one appetite-sized slice) ────────┐
-                                │  │ Item loop × N → verify-app → demo → notify → feedback │
-                                │  │      ^                                    │           │
-                                │  │      └── re-plan: spec / plan updated, scope cut ┘     │
-                                │  └──────────────────────────┬────────────────────────────┘
-                                │                             v  release boundary
-                                │        release → post-deploy verify → monitor → findings
-                                │                                                 │
-                                │        Maintain: bugs (fix-bug), upgrades, debt <┘ → backlog
-                                └─ Bug / Incident / Performance / Quick paths join at the Item loop
-Item loop (deliver-loop): story → design → TDD → verify → review → improve (≤ 3) → ship | debt | blocked
+Request → Where am I? → 1 triage ─┬─> 1 discover → 2 spec → 3 [init] → architect → shape-plan ─┐
+                                  │                                                           v
+                                  │  ┌──── Slice loop (one appetite-sized slice) ─────────────────────┐
+                                  │  │ 4 Item loop × N → 5 verify-app (web | ios | android) → demo   │
+                                  │  │       ^                     → notify → feedback ──┐         │
+                                  │  │       └── re-plan: spec / plan updated, scope cut ┘         │
+                                  │  └──────────────────────────────┬──────────────────────────────┘
+                                  │                                 v  release boundary
+                                  │  6 release: web deploy + checkpoints │ store tracks + staged rollout
+                                  │        → post-deploy verify → 7 monitor → findings ─┐
+                                  │  7 Maintain: bugs (fix-bug), upgrades, debt  <──────┘ → backlog → 1
+                                  └─ Bug / Incident / Performance / Quick paths join at the Item loop
+Item loop (deliver-loop): story → design → TDD per platform → checks → review → improve (≤ 3) → ship | debt | blocked
 Learn loop: every path ends with a retro → improve-skills
 ```
 
@@ -204,4 +215,6 @@ next — or, when `blocked`, exactly what fails and what is needed.
 - `references/agent-workflows.md` — what Anthropic's skill guidance, superpowers, spec-kit, BMad, Kiro
   and Working Backwards skills do per phase, with URLs; items that contradict the decide-and-record
   autonomy default are marked "not adopted".
+- `references/sdlc-web-mobile.md` — the seven SDLC stages mapped to `ship`'s stages, with what each
+  owes per platform (web, iOS, Android), the platform parity rules and each stage's gate.
 - `templates/status.md` — the ledger.
