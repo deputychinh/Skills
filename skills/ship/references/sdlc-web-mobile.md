@@ -8,36 +8,36 @@ to decide what a stage still owes before its gate, per platform in scope.
 
 1. [Stage map](#stage-map)
 2. [Platform parity rules](#platform-parity-rules)
-3. [1 · Planning](#1--planning)
-4. [2 · Requirement analysis](#2--requirement-analysis)
-5. [3 · System design](#3--system-design)
-6. [4 · Development](#4--development)
-7. [5 · Testing](#5--testing)
-8. [6 · Deployment and launch](#6--deployment-and-launch)
-9. [7 · Maintenance](#7--maintenance)
+3. [S1 · Planning](#s1--planning)
+4. [S2 · Requirement analysis](#s2--requirement-analysis)
+5. [S3 · System design](#s3--system-design)
+6. [S4 · Development](#s4--development)
+7. [S5 · Testing](#s5--testing)
+8. [S6 · Deployment and launch](#s6--deployment-and-launch)
+9. [S7 · Maintenance](#s7--maintenance)
 10. [Sources](#sources)
 
 ## Stage map
 
-| SDLC stage              | `ship` stages               | Skills                                                                            | Leaves behind                                      |
-| ----------------------- | --------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------- |
-| 1 Planning              | triage, Discover            | `ship`, `discover`, `benchmark` A                                                 | `status.md`, `brief.md`, product-benchmark table   |
-| 2 Requirement analysis  | Specify                     | `spec`, `benchmark` B                                                             | `spec.md`, `benchmarks/plan.md`                    |
-| 3 System design         | Set up, Architect, Plan     | `init-project`, `architect`, `system-design`, `database`, `shape-plan`            | `design.md`, ADRs, OpenAPI, `plan.md`, backlog     |
-| 4 Development           | Build (item loop)           | `deliver-loop`, `backend`, `frontend`, `css-design`, `ios`, `android`, `database` | reviewed commits, tests, story files               |
-| 5 Testing               | Verify, Demo (slice loop)   | `verify-app`, `benchmark`, `cache-optimize`, `demo`                               | evidence per AC and platform, benchmark diff, page |
-| 6 Deployment and launch | Release, post-deploy verify | `release`, `verify-app` (post-deploy mode)                                        | tag, changelog, release note, store track status   |
-| 7 Maintenance           | Operate, Maintain, Learn    | `monitor`, `fix-bug`, `cache-optimize`, `deliver-loop`, `improve-skills`          | SLOs, alerts, incident notes, backlog items        |
+| SDLC stage               | `ship` stages               | Skills                                                                            | Leaves behind                                      |
+| ------------------------ | --------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------- |
+| S1 Planning              | triage, Discover            | `ship`, `discover`, `benchmark` A                                                 | `status.md`, `brief.md`, product-benchmark table   |
+| S2 Requirement analysis  | Specify                     | `spec`, `benchmark` B                                                             | `spec.md`, `benchmarks/plan.md`                    |
+| S3 System design         | Set up, Architect, Plan     | `init-project`, `architect`, `system-design`, `database`, `shape-plan`            | `design.md`, ADRs, OpenAPI, `plan.md`, backlog     |
+| S4 Development           | Build (item loop)           | `deliver-loop`, `backend`, `frontend`, `css-design`, `ios`, `android`, `database` | reviewed commits, tests, story files               |
+| S5 Testing               | Verify, Demo (slice loop)   | `verify-app`, `benchmark`, `cache-optimize`, `demo`                               | evidence per AC and platform, benchmark diff, page |
+| S6 Deployment and launch | Release, post-deploy verify | `release`, `verify-app` (post-deploy mode)                                        | tag, changelog, release note, store track status   |
+| S7 Maintenance           | Operate, Maintain, Learn    | `monitor`, `fix-bug`, `cache-optimize`, `deliver-loop`, `improve-skills`          | SLOs, alerts, incident notes, backlog items        |
 
-Testing is not only stage 5: unit and integration tests are written test-first in stage 4, and stage 5
-proves the slice end to end on every platform. Maintenance feeds the backlog, which re-enters stage 1
-(re-prioritise) or stage 4 (a regression fix), so the seven stages form a cycle, not a line.
+Testing is not only S5: unit and integration tests are written test-first in S4, and S5
+proves the slice end to end on every platform. Maintenance feeds the backlog, which re-enters S1
+(re-prioritise) or S4 (a regression fix), so the seven stages form a cycle, not a line.
 
 ## Platform parity rules
 
 - Fix the platforms in scope at triage (`mobile` profile key) and write them into `status.md`.
-- Tag each acceptance criterion with the platforms it applies to: `[web]`, `[ios]`, `[android]` or
-  `[all]`. An untagged AC means `[all]`, so no platform silently skips a criterion.
+- Tag every acceptance criterion with the platforms it applies to: `[web]`, `[ios]`, `[android]` or
+  `[all]`. `spec` rejects an untagged AC, so no platform silently skips a criterion.
 - A gate is met only when it holds on every platform in scope; record evidence per platform. One
   platform lagging is a recorded scope cut with a reason, never a quiet omission.
 - Design the API contract once, before any client. A shipped mobile binary cannot be updated on
@@ -46,7 +46,7 @@ proves the slice end to end on every platform. Maintenance feeds the backlog, wh
 - Same feature, native idiom: web follows the design tokens, iOS the Human Interface Guidelines,
   Android Material 3. Behaviour and copy match; layout and navigation follow each platform.
 
-## 1 · Planning
+## S1 · Planning
 
 Goal: decide whether to build, for whom, how big, on which platforms.
 
@@ -57,7 +57,7 @@ Goal: decide whether to build, for whom, how big, on which platforms.
   presence); which stores; developer accounts and their cost are owner-only questions.
 - **Gate**: a credible press release with sourced numbers; platforms and appetite in `status.md`.
 
-## 2 · Requirement analysis
+## S2 · Requirement analysis
 
 Goal: define "done" so that it can be checked.
 
@@ -69,35 +69,39 @@ Goal: define "done" so that it can be checked.
   store review guidelines, privacy labels (App Store) and Data safety (Play).
 - **Gate**: no `[NEEDS CLARIFICATION]`; every AC has a platform tag; every target has a number.
 
-## 3 · System design
+## S3 · System design
 
 Goal: settle the shape before code, then cut it into a plan.
 
+- **First**: `init-project` for a new repo (web app plus `ios/` and `android/` per the profile), so
+  the design is recorded in a green repo.
 - **All**: `architect` — driving characteristics, bounded contexts, ADRs, threat model, fitness
   functions; `database` for the schema; `system-design` when scale needs estimates. The OpenAPI
-  contract with RFC 9457 errors and auth flows is written once for every client.
+  contract with RFC 9457 errors and auth flows is written once for every client. Small paths skip
+  `architect` unless the change touches an ADR.
 - **Web**: routing, rendering mode (SPA, SSR or static), caching layers, design tokens.
 - **Mobile**: local store (SwiftData or Core Data, Room), sync and conflict policy, API versioning for
   old binaries, tokens in the Keychain or Android Keystore, push provider, screen map per platform
   idiom.
-- **Then**: `init-project` for a new repo (web app plus `ios/` and `android/` per the profile), and
-  `shape-plan` — walking skeleton through every platform in scope first, benchmark harness second.
+- **Then**: `shape-plan` — walking skeleton through every platform in scope first, benchmark harness
+  second.
 - **Gate**: every driving characteristic has a decision and a fitness check; the first slice fits the
   appetite and reaches every platform.
 
-## 4 · Development
+## S4 · Development
 
 Goal: build backlog items one at a time, each reviewed before it lands.
 
-- **All**: `deliver-loop` — story file, design note, failing test, code, checks, independent review
-  scored out of 10, at most three improve rounds, commit at ≥ 9 or file as debt or `blocked`.
+- **All**: `deliver-loop` — story file with platform-tagged ACs, design note, failing test, code per
+  tagged platform, checks, independent review scored out of 10, at most three improve rounds, commit
+  at ≥ 9 or file as debt or `blocked`.
 - **Web**: `backend`, `frontend` (Vue or React, four states per view), `css-design`.
 - **iOS**: `ios` — SwiftUI, Swift concurrency, XCTest and UI tests, Dynamic Type and VoiceOver.
 - **Android**: `android` — Compose, Material 3, ViewModel and StateFlow, unit and Compose UI tests,
   TalkBack.
 - **Gate**: each item shipped per the review gate, with its tests, on every platform it is tagged for.
 
-## 5 · Testing
+## S5 · Testing
 
 Goal: prove the slice works as the user will use it, then show it.
 
@@ -108,7 +112,7 @@ Goal: prove the slice works as the user will use it, then show it.
   slow network, permission denied, app killed and restored; a physical mid-range device for timing.
 - **Gate**: every AC has evidence on every platform in scope; no unexplained regression.
 
-## 6 · Deployment and launch
+## S6 · Deployment and launch
 
 Goal: put one verified build in users' hands with a way back.
 
@@ -117,12 +121,14 @@ Goal: put one verified build in users' hands with a way back.
   that need it.
 - **Web**: one build promoted unchanged, smoke on the target, checkpoints at +5 min, +1 h and +24 h,
   numeric rollback triggers, one-command rollback.
-- **Mobile**: build number bump, TestFlight then App Review; Play internal → closed → production track;
-  phased or staged rollout gated on crash-free sessions and ANR rate. A store cannot roll back a
+- **Mobile**: build number bump, TestFlight then App Review; Play internal → closed → production
+  track; phased or staged rollout gated on crash-free sessions and ANR rate. A store cannot roll back a
   binary: halt the rollout, switch the feature off with a remote flag, ship an expedited fix.
-- **Gate**: smoke green on the target, post-deploy `verify-app` passed, findings in the backlog.
+- **Verify**: `verify-app` post-deploy mode against the web URL; its Mobile mode again on the
+  TestFlight or Play internal build before widening a rollout.
+- **Gate**: smoke green on the target, both `verify-app` runs passed, findings in the backlog.
 
-## 7 · Maintenance
+## S7 · Maintenance
 
 Goal: keep it healthy, learn, and feed the next cycle.
 

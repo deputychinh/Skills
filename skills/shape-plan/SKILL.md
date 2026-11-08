@@ -12,8 +12,12 @@ Output: `docs/delivery/<NNN-slug>/plan.md` (from `templates/plan.md`) and items 
 
 1. **Appetite and slices**: take the brief's appetite; release 1 = the spec's first story-map slice.
    Mark nice-to-haves with `~`; they are cut first.
-2. **Walking skeleton is item 1** (if `init-project` already proved one, item 1 is only what it lacks — deploy or CI): the thinnest end-to-end path (UI → API → storage → back) on every platform in scope — web, iOS, Android — so no client meets the API for the first time late,
-   runnable from the README, through CI, with one e2e test. If the brief needs it online, the skeleton
+2. **Walking skeleton is item 1** (if `init-project` already proved one, item 1 is only what it
+   lacks — deploy or CI): the thinnest end-to-end path (UI → API → storage → back) on every platform
+   in scope — web, iOS, Android — so no client meets the API for the first time late. On a Small path
+   in a repo whose clients already run, there is no skeleton item: each item covers its tagged
+   platforms instead. The skeleton is runnable from the README, through CI, with one e2e test. If the
+   brief needs it online, the skeleton
    also deploys to the deploy target per the delivery profile (or a free preview tier), so every later slice
    ships the same way. No feature work before it runs.
 3. **Harness + baseline second** when the spec has quality targets: one item builds `make bench`

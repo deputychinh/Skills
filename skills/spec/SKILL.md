@@ -21,8 +21,9 @@ story; this spec is the parent.
    - behaviour: `WHEN <event> [WHILE <state>] THE SYSTEM SHALL <response>` (EARS) or Given/When/Then;
    - include the negative and boundary cases (empty, too long, wrong type, offline, unauthorised, concurrent).
      Use the domain's own words (ubiquitous language) and keep a glossary for terms that could be misread.
-   - tag each AC with the platforms it holds on — `[web]`, `[ios]`, `[android]` or `[all]` (the default)
-     — so verification covers every client in scope and no platform skips a criterion unnoticed.
+   - tag each AC with the platforms it holds on — `[web]`, `[ios]`, `[android]` or `[all]` — so
+     verification covers every client in scope and no platform skips a criterion unnoticed; a
+     web-only product tags every AC `[web]`.
 4. **Quality targets** with numbers — each with its workload, data size, percentile and environment
    (the table's columns), written into `benchmarks/plan.md` with `benchmark` part B — only the 3–7
    that drive the design; a target without its workload cannot be measured twice the same way: e.g. LCP ≤ 2.5 s, p95 API

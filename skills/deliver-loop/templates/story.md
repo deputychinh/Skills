@@ -10,11 +10,11 @@ INVEST: Independent ☐ Negotiable ☐ Valuable ☐ Estimable ☐ Small ☐ Test
 
 ## Acceptance criteria
 
-| Id | Given | When | Then |
-| --- | --- | --- | --- |
-| AC1 | | | |
-| AC2 (negative) | | | |
-| AC3 (edge) | | | |
+| Id | Platforms (web, ios, android, all) | Given | When | Then |
+| --- | --- | --- | --- | --- |
+| AC1 | | | | |
+| AC2 (negative) | | | | |
+| AC3 (edge) | | | | |
 
 ## Non-functional
 
@@ -38,9 +38,9 @@ INVEST: Independent ☐ Negotiable ☐ Valuable ☐ Estimable ☐ Small ☐ Test
 
 ## QA
 
-| AC | Test(s) | Result |
-| --- | --- | --- |
-| AC1 | | |
+| AC | Platform | Test(s) | Result |
+| --- | --- | --- | --- |
+| AC1 | | | |
 
 Exploratory checks: …
 
