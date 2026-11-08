@@ -34,6 +34,7 @@ section that matches the item before step 3; the core list in `SKILL.md` applies
 
 ## Testing technique
 
+- Mutation-test every field of an idempotency fingerprint (each body field, the operation, the resource id in it): a field left out lets a retry with another body replay the first answer, and only a test that reuses the key with that one field changed (→ 422) notices.
 - A test derived from the table it checks proves nothing: pin expected tables literally and run one mutation by hand.
 - Run Python mutants with `PYTHONDONTWRITEBYTECODE=1` (or clear `__pycache__`): an edit restored within the same second can leave a stale `.pyc` that fakes a kill.
 - Mutation runners need a per-mutant timeout and must restore the file in `finally`: a mutant that makes a test hang otherwise leaves the mutated file in the tree. Give the suite a per-test timeout too (`pytest-timeout`).
@@ -43,6 +44,7 @@ section that matches the item before step 3; the core list in `SKILL.md` applies
 
 ## Concurrency and reliability
 
+- A compare-and-set must check the token the client saw (a revision or ETag it sends), not only the server's own read in the same request: approve → reopen returns to the same state, so a state-only check lets a stale page decide (ABA). Send the revision from the UI and prove it with an ABA test on the real database.
 - Throttles (sign-in, rate limits): reserve the attempt before the expensive check, in one transaction under an advisory lock per key (`pg_advisory_xact_lock`, keys taken in a fixed order), then release; counting first and recording after let 30 parallel attempts make 27 checks against a limit of 10. Prove it with N threads on their own connections behind a barrier.
 - Concurrency: every read-modify-write is a lock or a compare-and-set, with a two-thread test.
 - Fakes hide concurrency bugs: every race claim needs one run against the real dependency — a race that fails a noticeable share of runs against a real object store can pass every time against an in-memory fake.
@@ -72,6 +74,7 @@ section that matches the item before step 3; the core list in `SKILL.md` applies
 
 ## Browser, UI and e2e
 
+- Key per-entity forms by the entity id (`key={version.id}`) and put the id in idempotency-key signatures: otherwise a typed note, an error and a key carry over when the user switches entity, and a retry on the new one replays or is refused as a reused key. When an action unmounts its own button (Approve → Reopen), move focus to a stable target on purpose and assert it in the keyboard e2e (WCAG 2.4.3); run axe from a known scroll position, since it counts targets under a sticky bar as obscured.
 - A browser-specific bug is reproduced in that engine: with only Chromium projects in the Playwright config, a Safari report cannot fail a test until a `webkit` project is added.
 - Run the app the way the user will before every review and at every release: README quick start in a fresh shell, the printed dev URL (`localhost`, not only `127.0.0.1`), the new feature clicked through. e2e against a preview server on `127.0.0.1` can pass for a whole release while the dev server on `localhost` cannot reach the API, because the origins differ and CORS blocks it.
 - Browser features that call the API cross-origin: run the real-browser e2e before the first review — curl and the CLI never send a CORS preflight, so a missing allowed header (a custom `Idempotency-Key`, say) only shows up there. Live regions must queue outcomes, not replace them, or a batch of failures announces only the last.
