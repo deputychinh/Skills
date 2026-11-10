@@ -4,6 +4,13 @@ Follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The full histo
 
 ## [Unreleased]
 
+### Changed
+
+- `ios`: SwiftPM records the deployment target as the binary's SDK version; link with the real SDK and check it.
+- `benchmark`: main-thread benchmarks stay out of the parallel test run; per-element views get a largest-input workload.
+- `deliver-loop`: mutation-killing tests and wiring guards with the first commit; capability probes through the real
+  build; screenshots at the minimum window size before review.
+
 ### Added
 
 - MIT license.

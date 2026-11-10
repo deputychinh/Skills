@@ -208,3 +208,7 @@ xcodebuild test -scheme App -testPlan App \
 - `List` with unstable ids (`id: \.self` on mutable values) causing reloads and lost state.
 - Assuming one window: iPad and iPhone Duo can show several scenes; keep state per scene.
 - Testing only on the newest OS; the deployment target's oldest OS is where crashes hide.
+- A SwiftPM-built binary records the deployment target as its SDK version (`otool -l` → `LC_BUILD_VERSION sdk`), and
+  newer system frameworks gate behaviour on the linked SDK: on macOS 27 Translation reported installed packs as
+  `notInstalled` to an "SDK 26" binary. Pass `-Xlinker -platform_version -Xlinker macos <min> -Xlinker <xcrun sdk>` in
+  every build path and fail the build when `otool` shows another SDK.

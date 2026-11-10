@@ -33,6 +33,10 @@ Items marked _(memory)_ are from established practice and were not re-checked on
 - Prefer medians and p95 over means; keep raw samples so a later reader can re-analyse.
 - Byte budgets need no band: bundles are deterministic.
 - When CI machines are too noisy, run nightly on a fixed runner and alert on trends instead of failing PRs.
+- Keep main-thread benchmarks (UI layout, rendering) out of the parallel unit-test run: they hold the main thread for
+  hundreds of ms and make unrelated timing tests fail. Gate them on an env var that only `make bench` sets.
+- Any view that creates one element per character, word or row gets a workload at the largest input it accepts:
+  a furigana view was fine at 300 characters and froze the window for 3.5 s at the 20 000-character input cap.
 
 ## 4. Load tests
 
